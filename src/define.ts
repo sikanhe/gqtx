@@ -1,4 +1,4 @@
-import * as gql from 'graphql';
+import * as graphql from 'graphql';
 
 type OutputType<Ctx, Src> =
   | Scalar<Src>
@@ -30,7 +30,7 @@ type Scalar<Src> = {
   description?: string;
   serialize: (value: any) => Src | null;
   parseValue?: (value: any) => Src | null;
-  parseLiteral?: (valueAST: gql.ValueNode) => Src | null;
+  parseLiteral?: (valueAST: graphql.ValueNode) => Src | null;
 };
 
 type Enum<Src> = {
@@ -358,42 +358,43 @@ export function mutationType<Ctx>({
   };
 }
 
-export function toSchema<Ctx>(schema: Schema<Ctx>): gql.GraphQLSchema {
-  return new gql.GraphQLSchema({
+export function toSchema<Ctx>(schema: Schema<Ctx>): graphql.GraphQLSchema {
+  return new graphql.GraphQLSchema({
     query: toGraphQOutputType(schema.query, new Map()) as any,
   });
 }
 
 function toGraphQLInputType<Src>(
   t: InputType<Src>,
-  typeMap: Map<AllType<any, any>, gql.GraphQLType>
-): gql.GraphQLInputType {
-  if (typeMap.get(t)) {
-    return typeMap.get(t) as gql.GraphQLInputType;
+  typeMap: Map<AllType<any, any>, graphql.GraphQLType>
+): graphql.GraphQLInputType {
+  const found = typeMap.get(t);
+
+  if (found) {
+    return typeMap.get(t) as graphql.GraphQLInputType;
   }
 
   switch (t.kind) {
     case 'Scalar':
     case 'Enum':
-      return toGraphQOutputType(t, typeMap) as gql.GraphQLInputType;
+      return toGraphQOutputType(t, typeMap) as graphql.GraphQLInputType;
     case 'NonNull':
-      return new gql.GraphQLNonNull(toGraphQLInputType(t.ofType, typeMap));
+      return new graphql.GraphQLNonNull(toGraphQLInputType(t.ofType, typeMap));
     case 'List':
-      return new gql.GraphQLList(toGraphQLInputType(t.ofType, typeMap));
+      return new graphql.GraphQLList(toGraphQLInputType(t.ofType, typeMap));
     case 'InputObject':
       const fields = t.fieldsFn();
-      const gqlFieldConfig: gql.GraphQLInputFieldConfigMap = {};
+      const gqlFieldConfig: graphql.GraphQLInputFieldConfigMap = {};
 
       Object.keys(fields).forEach(k => {
         const field = (fields as any)[k];
-        console.log(field);
         gqlFieldConfig[k] = {
           type: toGraphQLInputType(field.type, typeMap),
           description: field.description,
-        } as gql.GraphQLInputFieldConfig;
+        } as graphql.GraphQLInputFieldConfig;
       });
 
-      const obj = new gql.GraphQLInputObjectType({
+      const obj = new graphql.GraphQLInputObjectType({
         name: t.name,
         fields: gqlFieldConfig as any,
       });
@@ -405,11 +406,12 @@ function toGraphQLInputType<Src>(
 
 function toGraphQOutputType<Ctx, Src>(
   t: OutputType<Ctx, Src>,
-  typeMap: Map<AllType<any, any>, gql.GraphQLType>
-): gql.GraphQLOutputType {
-  console.log(t);
-  if (typeMap.get(t)) {
-    return typeMap.get(t) as gql.GraphQLOutputType;
+  typeMap: Map<AllType<any, any>, graphql.GraphQLType>
+): graphql.GraphQLOutputType {
+  const found = typeMap.get(t);
+
+  if (found) {
+    return typeMap.get(t) as graphql.GraphQLOutputType;
   }
 
   switch (t.kind) {
@@ -417,17 +419,17 @@ function toGraphQOutputType<Ctx, Src>(
       let scalar;
 
       if (t.name === 'String') {
-        scalar = gql.GraphQLString;
+        scalar = graphql.GraphQLString;
       } else if (t.name === 'Int') {
-        scalar = gql.GraphQLInt;
+        scalar = graphql.GraphQLInt;
       } else if (t.name === 'Float') {
-        scalar = gql.GraphQLFloat;
+        scalar = graphql.GraphQLFloat;
       } else if (t.name === 'Boolean') {
-        scalar = gql.GraphQLBoolean;
+        scalar = graphql.GraphQLBoolean;
       } else if (t.name === 'ID') {
-        scalar = gql.GraphQLID;
+        scalar = graphql.GraphQLID;
       } else {
-        scalar = new gql.GraphQLScalarType({
+        scalar = new graphql.GraphQLScalarType({
           name: t.name,
           description: t.description,
           serialize: t.serialize,
@@ -439,7 +441,7 @@ function toGraphQOutputType<Ctx, Src>(
       typeMap.set(t, scalar);
       return scalar;
     case 'Enum':
-      const enumT = new gql.GraphQLEnumType({
+      const enumT = new graphql.GraphQLEnumType({
         name: t.name,
         description: t.description,
         values: t.values.reduce(
@@ -453,19 +455,19 @@ function toGraphQOutputType<Ctx, Src>(
       typeMap.set(t, enumT);
       return enumT;
     case 'NonNull':
-      return new gql.GraphQLNonNull(toGraphQOutputType(t.ofType, typeMap));
+      return new graphql.GraphQLNonNull(toGraphQOutputType(t.ofType, typeMap));
     case 'List':
-      return new gql.GraphQLList(toGraphQOutputType(t.ofType, typeMap));
+      return new graphql.GraphQLList(toGraphQOutputType(t.ofType, typeMap));
     case 'ObjectType':
-      const obj = new gql.GraphQLObjectType({
+      const obj = new graphql.GraphQLObjectType({
         name: t.name,
         interfaces: t.interfaces.map(intf => toGraphQOutputType(intf, typeMap)) as any,
         fields: () => {
           const fields = t.fieldsFn();
-          const gqlFieldConfig: gql.GraphQLFieldConfigMap<Src, Ctx> = {};
+          const gqlFieldConfig: graphql.GraphQLFieldConfigMap<Src, Ctx> = {};
 
           function mapArgs<T>(args: ArgMap<T>): any {
-            const result = {} as gql.GraphQLFieldConfigArgumentMap;
+            const result = {} as graphql.GraphQLFieldConfigArgumentMap;
 
             Object.keys(args).forEach(k => {
               result[k] = {
@@ -483,7 +485,7 @@ function toGraphQOutputType<Ctx, Src>(
               description: field.description,
               resolve: field.resolve,
               args: mapArgs(field.arguments),
-            } as gql.GraphQLFieldConfig<Src, Ctx, any>;
+            } as graphql.GraphQLFieldConfig<Src, Ctx, any>;
           });
           return gqlFieldConfig;
         },
@@ -493,7 +495,7 @@ function toGraphQOutputType<Ctx, Src>(
       return obj;
 
     case 'Union':
-      const union = new gql.GraphQLUnionType({
+      const union = new graphql.GraphQLUnionType({
         name: t.name,
         types: t.types.map(t => toGraphQOutputType(t, typeMap)) as any,
         resolveType: (any: any) => typeMap.get(t.resolveType(any)) as any,
@@ -502,11 +504,11 @@ function toGraphQOutputType<Ctx, Src>(
       typeMap.set(t, union);
       return union;
     case 'Interface':
-      const intf = new gql.GraphQLInterfaceType({
+      const intf = new graphql.GraphQLInterfaceType({
         name: t.name,
         fields: () => {
           const fields = t.fieldsFn();
-          const result: gql.GraphQLFieldConfigMap<Src, Ctx> = {};
+          const result: graphql.GraphQLFieldConfigMap<Src, Ctx> = {};
 
           fields.forEach(field => {
             result[field.name] = {
