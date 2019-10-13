@@ -85,7 +85,12 @@ type Field<Ctx, Src, TArg extends object, Out> = {
   description?: string;
   type: OutputType<Ctx, Out>;
   arguments: ArgMap<TArg>;
-  resolve: (src: Src, args: TOfArgMap<ArgMap<TArg>>, ctx: Ctx) => Out | Promise<Out>;
+  resolve: (
+    src: Src,
+    args: TOfArgMap<ArgMap<TArg>>,
+    ctx: Ctx,
+    info: graphql.GraphQLResolveInfo
+  ) => Out | Promise<Out>;
 };
 
 type AbstractField<Ctx, Out> = {
@@ -186,7 +191,12 @@ export function field<Ctx, Src, Arg, Out>({
   name: string;
   type: OutputType<Ctx, Out>;
   args?: ArgMap<Arg>;
-  resolve: (src: Src, args: TOfArgMap<ArgMap<Arg>>, ctx: Ctx) => Out | Promise<Out>;
+  resolve: (
+    src: Src,
+    args: TOfArgMap<ArgMap<Arg>>,
+    ctx: Ctx,
+    info: graphql.GraphQLResolveInfo
+  ) => Out | Promise<Out>;
 }): Field<Ctx, Src, any, any> {
   return {
     kind: 'Field',
