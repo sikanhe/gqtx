@@ -1,4 +1,5 @@
 import * as t from '../src/define';
+import { buildGraphQLSchema } from '../src/build';
 
 const enum Episode {
   NEWHOPE = 4,
@@ -249,7 +250,7 @@ const app = express();
 app.use(
   '/graphql',
   graphqlHTTP({
-    schema: t.toSchema(schema),
+    schema: buildGraphQLSchema(schema),
     graphiql: true,
   })
 );
