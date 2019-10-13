@@ -16,8 +16,8 @@ This is an okay approach. You are required to first write your schema in SDL , a
 
 As your schema get larger, it gets harder to maintain. You also can get vendor lock in. (Apollo Server and AppSync builds server differently).
 
-#### 4. Use other typescript graphql libraries that use `reflect-metadata` compiler/decorator magic to infer graphql types from your runtime data times 
-This requires turning on experiemental features inside the typescript compiler. This approach also breaks seperation of concerns by tying your graphql types to your database models - Although starting your project that way is fine, eventually you want your GraphQL types be the type of your API. 
+#### 4. Use other typescript graphql libraries that use `reflect-metadata` compiler/decorator magic to infer graphql types from your runtime data types 
+This requires turning on experimental features inside the typescript compiler. This approach also breaks seperation of concerns by tying your graphql types to your database models - Although starting your project that way is fine, eventually you want your GraphQL types be the type of your API. 
 
 Can we do better? It turns out we can.
 
@@ -26,8 +26,8 @@ GraphQL schemas defined by this library can express more things and place more c
 
 What this means is that only valid schemas should pass the type checker. If a schema compiles, the following holds:
 
-- The type of a field agrees with the return type of the resolve function.
-- The arguments of a field agrees with the accepted arguments of the resolve function.
+- The type of a field agrees with the return type of the resolver.
+- The arguments of a field agrees with the accepted arguments of the resolver.
 - The source of a field agrees with the type of the object to which it belongs.
 - The context argument for all resolver functions in a schema agree.
 
@@ -116,11 +116,10 @@ app.listen(4000);
 
 ## What happened?
 - We created an intermediate representation of a GraphQL schema via the helper functions exported by this library. 
-- We convert the schema to a real graphql-js schema by calling `buildGraphQLSchema` at server startup time. 
-- That's it!
+- Then, we converted the schema to a real graphql-js schema by calling `buildGraphQLSchema` at server startup time. 
+- That's it! We get a fully typesafe server with almost zero type annotation needed
 
 ## What this means: 
-- No setting up code generation tools
-- No need to write SDL 
+- No need to set code generation tools
+- No need to write SDL and having your schema patially defined in code and in a DSL file
 - No special compiler magic (`reflect-metadata`)
-- Fully typesafe server with almost zero type annotation needed
