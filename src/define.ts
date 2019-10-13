@@ -139,7 +139,8 @@ export const StringType = builtInScalar<string>(graphql.GraphQLString);
 export const IntType = builtInScalar<number>(graphql.GraphQLInt);
 export const FloatType = builtInScalar<number>(graphql.GraphQLFloat);
 export const BooleanType = builtInScalar<boolean>(graphql.GraphQLBoolean);
-export const IDType = builtInScalar<string>(graphql.GraphQLID);
+export const IntIDType = builtInScalar<number>(graphql.GraphQLID);
+export const StringIDType = builtInScalar<string>(graphql.GraphQLID);
 
 export function builtInScalar<Src>(builtInType: graphql.GraphQLScalarType): Scalar<Src | null> {
   return {

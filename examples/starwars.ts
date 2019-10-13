@@ -165,7 +165,7 @@ const humanType = t.objectType<Human>('Human', {
   description: 'A humanoid creature in the Star Wars universe.',
   interfaces: [characterInterface],
   fields: () => [
-    t.fieldFast('id', t.NonNull(t.StringType)),
+    t.fieldFast('id', t.NonNull(t.StringIDType)),
     t.fieldFast('name', t.NonNull(t.StringType)),
     t.fieldFast('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.fieldFast('homePlanet', t.StringType),
@@ -190,7 +190,7 @@ const droidType = t.objectType<Droid>('Droid', {
   description: 'A mechanical creature in the Star Wars universe.',
   interfaces: [characterInterface],
   fields: () => [
-    t.fieldFast('id', t.NonNull(t.StringType)),
+    t.fieldFast('id', t.NonNull(t.StringIDType)),
     t.fieldFast('name', t.NonNull(t.StringType)),
     t.fieldFast('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.fieldFast('primaryFunction', t.NonNull(t.StringType)),
