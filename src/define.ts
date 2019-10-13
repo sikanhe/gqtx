@@ -7,7 +7,7 @@ type OutputType<Ctx, Src> =
   | Union<Ctx, Src>
   | Interface<Ctx, Src>
   | ListType<Ctx, Src>
-  | NonNullType<Ctx, Src>
+  | NonNullType<Ctx, Src>;
 
 interface ListType<Ctx, Src> extends List<Ctx, OutputType<Ctx, Src>> {}
 interface NonNullType<Ctx, Src> extends NonNull<Ctx, OutputType<Ctx, Src>> {}
@@ -17,7 +17,7 @@ type InputType<Src> =
   | Enum<Src>
   | InputObject<Src>
   | ListInputType<Src>
-  | NonNullInputType<Src>
+  | NonNullInputType<Src>;
 
 interface ListInputType<Src> extends ListInput<InputType<Src>> {}
 interface NonNullInputType<Src> extends NonNullInput<InputType<Src>> {}
@@ -116,7 +116,7 @@ type Interface<Ctx, Src> = {
   name: string;
   description?: string;
   fieldsFn: () => Array<AbstractField<Ctx, any>>;
-  resolveType?: (src: Src) => ObjectType<Ctx, Src>;
+  resolveType?: (src: Src) => ObjectType<Ctx, Src | null>;
 };
 
 type Union<Ctx, Src> = {
@@ -201,7 +201,7 @@ export function fieldFast<Ctx, Src extends object, K extends keyof Src>(
   name: K,
   type: OutputType<Ctx, Src[K]>,
   opts?: {
-    description?: string
+    description?: string;
   }
 ): Field<Ctx, Src, any, any> {
   return {
@@ -227,15 +227,18 @@ export function abstractField<Ctx, Out>(
   };
 }
 
-export function objectType<Src, Ctx = any>(name: string, {
-  description,
-  interfaces = [],
-  fields,
-}: {
-  description?: string;
-  interfaces?: Array<Interface<Ctx, any>>;
-  fields: (self: OutputType<Ctx, Src | null>) => Array<Field<Ctx, Src, any, unknown>>;
-}): ObjectType<Ctx, Src | null> {
+export function objectType<Src, Ctx = any>(
+  name: string,
+  {
+    description,
+    interfaces = [],
+    fields,
+  }: {
+    description?: string;
+    interfaces?: Array<Interface<Ctx, any>>;
+    fields: (self: OutputType<Ctx, Src | null>) => Array<Field<Ctx, Src, any, unknown>>;
+  }
+): ObjectType<Ctx, Src | null> {
   const obj: ObjectType<Ctx, Src | null> = {
     kind: 'ObjectType',
     name,
@@ -248,13 +251,16 @@ export function objectType<Src, Ctx = any>(name: string, {
   return obj;
 }
 
-export function inputObjectType<Src>(name: string, {
-  description,
-  fields,
-}: {
-  description?: string;
-  fields: (self: InputType<Src>) => ArgMap<Src>;
-}): InputObject<Src | null> {
+export function inputObjectType<Src>(
+  name: string,
+  {
+    description,
+    fields,
+  }: {
+    description?: string;
+    fields: (self: InputType<Src>) => ArgMap<Src>;
+  }
+): InputObject<Src | null> {
   let inputObj: InputObject<Src> = {
     kind: 'InputObject',
     name,
@@ -266,29 +272,34 @@ export function inputObjectType<Src>(name: string, {
   return inputObj;
 }
 
-export function unionType<Src, Ctx>(name: string, {
-  types,
-  resolveType,
-}: {
-  types: Array<ObjectType<Ctx, Src>>;
-  resolveType: (src: any) => ObjectType<any, any>;
-}): Union<Ctx, Src> {
+export function unionType<Src, Ctx = any>(
+  name: string,
+  {
+    types,
+    resolveType,
+  }: {
+    types: Array<ObjectType<Ctx, any>>;
+    resolveType: (src: Src) => ObjectType<any, any>;
+  }
+): Union<Ctx, Src | null> {
   return {
     kind: 'Union',
     name,
     types,
     resolveType,
-  };
+  } as Union<Ctx, Src | null>;
 }
 
-export function interfaceType<Src, Ctx = any>(  name: string, {
-  description,
-  fields
-}:
-{
-  description?: string;
-  fields: (self: Interface<Ctx, Src | null>) => Array<AbstractField<Ctx, any>>
-}): Interface<Ctx, Src | null> {
+export function interfaceType<Src, Ctx = any>(
+  name: string,
+  {
+    description,
+    fields,
+  }: {
+    description?: string;
+    fields: (self: Interface<Ctx, Src | null>) => Array<AbstractField<Ctx, any>>;
+  }
+): Interface<Ctx, Src | null> {
   const obj: Interface<Ctx, Src | null> = {
     kind: 'Interface',
     name,
@@ -434,7 +445,7 @@ function toGraphQOutputType<Ctx, Src>(
           description: t.description,
           serialize: t.serialize,
           parseLiteral: t.parseLiteral,
-          parseValue: t.parseValue
+          parseValue: t.parseValue,
         });
       }
 
@@ -472,7 +483,7 @@ function toGraphQOutputType<Ctx, Src>(
             Object.keys(args).forEach(k => {
               result[k] = {
                 type: toGraphQLInputType((args as any)[k].type, typeMap),
-                description: (args as any)[k].description
+                description: (args as any)[k].description,
               };
             });
 
@@ -520,7 +531,7 @@ function toGraphQOutputType<Ctx, Src>(
           return result;
         },
       });
-      
+
       typeMap.set(t, intf);
       return intf;
   }
