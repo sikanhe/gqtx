@@ -34,8 +34,7 @@ What this means is that only valid schemas should pass the type checker. If a sc
 ### What does it look like?
 
 ```ts
-import * as t from 'gqtx/define'
-import { buildGraphQLSchema } from 'gqtx'
+import t, { buildGraphQLSchema } from 'gqtx'
 
 enum Role {
   Admin,
@@ -65,9 +64,9 @@ const RoleEnum = t.enumType({
 const UserType = t.objectType<User>('User', {
   description: 'A User',
   fields: () => [
-    t.fieldFast('id', t.NonNull(t.IntIDType)),
+    t.fieldFast('id', t.NonNull(t.ID)),
     t.fieldFast('role', t.NonNull(RoleEnum)),
-    t.fieldFast('name', t.NonNull(t.StringType)),
+    t.fieldFast('name', t.NonNull(t.String)),
   ],
 });
 
@@ -77,7 +76,7 @@ const Query = t.queryType({
       name: 'userById',
       type: UserType,
       args: {
-        id: { type: t.NonNullInput(t.IntIDType) },
+        id: { type: t.NonNullInput(t.ID) },
       },
       resolve: (_, args) => {
         // `args` is automatically inferred as { id: string }

@@ -7,7 +7,7 @@ export function buildGraphQLSchema<Ctx>(schema: Schema<Ctx>): graphql.GraphQLSch
   });
 }
 
-function toGraphQLInputType<Ctx>(
+export function toGraphQLInputType<Ctx>(
   t: InputType<any>,
   typeMap: Map<AllType<Ctx>, graphql.GraphQLType>
 ): graphql.GraphQLInputType {
@@ -52,7 +52,7 @@ function toGraphQLInputType<Ctx>(
   }
 }
 
-function toGraphQOutputType<Ctx>(
+export function toGraphQOutputType<Ctx>(
   t: OutputType<Ctx, any>,
   typeMap: Map<AllType<Ctx>, graphql.GraphQLType>
 ): graphql.GraphQLOutputType {

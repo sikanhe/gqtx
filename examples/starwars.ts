@@ -1,5 +1,4 @@
-import * as t from '../src/define';
-import { buildGraphQLSchema } from '../src/build';
+import t, { buildGraphQLSchema } from '../src';
 
 const enum Episode {
   NEWHOPE = 4,
@@ -154,8 +153,8 @@ const episodeEnum = t.enumType({
 
 const characterInterface = t.interfaceType<ICharacter>('Character', {
   fields: self => [
-    t.abstractField('id', t.NonNull(t.StringType)),
-    t.abstractField('name', t.NonNull(t.StringType)),
+    t.abstractField('id', t.NonNull(t.String)),
+    t.abstractField('name', t.NonNull(t.String)),
     t.abstractField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.abstractField('friends', t.NonNull(t.List(self))),
   ],
@@ -165,10 +164,10 @@ const humanType = t.objectType<Human>('Human', {
   description: 'A humanoid creature in the Star Wars universe.',
   interfaces: [characterInterface],
   fields: () => [
-    t.fieldFast('id', t.NonNull(t.StringIDType)),
-    t.fieldFast('name', t.NonNull(t.StringType)),
+    t.fieldFast('id', t.NonNull(t.ID)),
+    t.fieldFast('name', t.NonNull(t.String)),
     t.fieldFast('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.fieldFast('homePlanet', t.StringType),
+    t.fieldFast('homePlanet', t.String),
     t.field({
       name: 'friends',
       type: t.NonNull(t.List(characterInterface)),
@@ -178,7 +177,7 @@ const humanType = t.objectType<Human>('Human', {
     }),
     t.field({
       name: 'secretBackStory',
-      type: t.StringType,
+      type: t.String,
       resolve: () => {
         throw new Error('secretBackstory is secret');
       },
@@ -190,10 +189,10 @@ const droidType = t.objectType<Droid>('Droid', {
   description: 'A mechanical creature in the Star Wars universe.',
   interfaces: [characterInterface],
   fields: () => [
-    t.fieldFast('id', t.NonNull(t.StringIDType)),
-    t.fieldFast('name', t.NonNull(t.StringType)),
+    t.fieldFast('id', t.NonNull(t.IDString)),
+    t.fieldFast('name', t.NonNull(t.String)),
     t.fieldFast('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.fieldFast('primaryFunction', t.NonNull(t.StringType)),
+    t.fieldFast('primaryFunction', t.NonNull(t.String)),
     t.field({
       name: 'friends',
       type: t.NonNull(t.List(characterInterface)),
@@ -203,7 +202,7 @@ const droidType = t.objectType<Droid>('Droid', {
     }),
     t.field({
       name: 'secretBackStory',
-      type: t.StringType,
+      type: t.String,
       resolve: () => {
         throw new Error('secretBackstory is secret');
       },
@@ -224,14 +223,14 @@ const queryType = t.queryType({
     t.field({
       name: 'human',
       type: humanType,
-      args: { id: { type: t.NonNullInput(t.StringType) } },
+      args: { id: { type: t.NonNullInput(t.String) } },
       resolve: (_, { id }) => getHuman(id),
     }),
     t.field({
       name: 'droid',
       type: droidType,
       args: {
-        id: { type: t.NonNullInput(t.StringType), description: 'id of the droid' },
+        id: { type: t.NonNullInput(t.String), description: 'id of the droid' },
       },
       resolve: (_, { id }) => getDroid(id),
     }),
