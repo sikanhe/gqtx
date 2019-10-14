@@ -1,11 +1,11 @@
 ## Getting Started
 
-`(yarn add|npm install) tsgql`
+`(yarn add|npm install) gqtx`
 
 ## Why
 I have been developing GraphQL servers for the last 3 years. I have still yet to found an approach that is *both* easy to use and minimized developer error.
 
-Let's go over our options today:
+Shortcomings with the approaches today:
 
 #### 1. Use `graphql-js` directly and manual do type casts on resolvers 
 Very error prone to have to hand write the types for all resolvers. 
@@ -19,10 +19,10 @@ As your schema get larger, it gets harder to maintain. You also can get vendor l
 #### 4. Use other typescript graphql libraries that use `reflect-metadata` compiler/decorator magic to infer graphql types from your runtime data types 
 This requires turning on experimental features inside the typescript compiler. This approach also breaks seperation of concerns by tying your graphql types to your database models - Although starting your project that way is fine, eventually you want your GraphQL types be the type of your API. 
 
-Can we do better? It turns out we can.
+Can we eat our ? It turns out we can.
 
 ## Type safety without manual work
-GraphQL schemas defined by this library can express more things and place more constraint on the graphql schema than the vanilla javascript or alternative typescript libraries: 
+GraphQL schemas defined by `gqtx` can express more things and place more constraint on the graphql schema than the vanilla javascript or alternative typescript libraries: 
 
 What this means is that only valid schemas should pass the type checker. If a schema compiles, the following holds:
 
@@ -34,8 +34,8 @@ What this means is that only valid schemas should pass the type checker. If a sc
 ### What does it look like?
 
 ```ts
-import * as t from 'tsgql/define'
-import { buildGraphQLSchema } from 'tsgql'
+import * as t from 'gqtx/define'
+import { buildGraphQLSchema } from 'gqtx'
 
 enum Role {
   Admin,
@@ -120,6 +120,6 @@ app.listen(4000);
 - That's it! We get a fully typesafe server with almost zero type annotation needed
 
 ## What this means: 
-- No need to set code generation tools
+- No need to set up code generation tools
 - No need to write SDL and having your schema patially defined in code and in a DSL file
 - No special compiler magic (`reflect-metadata`)
