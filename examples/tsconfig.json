@@ -1,0 +1,7 @@
+{
+  "extends": "../tsconfig.json",
+  "files": ["./starwars.ts"],
+  "compilerOptions": {
+    "rootDir": "."
+  }
+}

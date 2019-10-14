@@ -26,11 +26,10 @@ export type AllType<Ctx> = OutputType<Ctx, any> | InputType<any>;
 
 export type Scalar<Src> = {
   kind: 'Scalar';
-  name: string;
-  description?: string;
-  serialize: (value: Src) => Src | null;
-  parseValue?: (value: any) => Src | null;
-  parseLiteral?: (valueAST: graphql.ValueNode) => Src | null;
+  graphqlTypeConfig: graphql.GraphQLScalarTypeConfig<Src, JSON>;
+} | {
+  kind: 'Scalar';
+  builtInType: graphql.GraphQLScalarType;
 };
 
 export type Enum<Src> = {
