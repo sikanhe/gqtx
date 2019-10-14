@@ -27,6 +27,8 @@ A GraphQL schema defined by `gqtx` places more constraint on its types than the 
 - The type of a field agrees with the return type of the resolver.
 - The arguments of a field agrees with the accepted arguments of the resolver.
 - The source of a field agrees with the type of the object to which it belongs.
+- The return type of the resolver will not be input types (InputObject)
+- The arguments of a field will not include abstract types (Interface, Union)
 - The context argument for all resolver functions in a schema agree.
 
 ### What does it look like?
