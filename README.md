@@ -121,4 +121,4 @@ app.listen(4000);
 ## What this means: 
 - No need to set up code generation tools
 - No need to write SDL and having your schema patially defined in code and in a DSL file
-- No special compiler magic (`reflect-metadata`)
+- No special compiler magic or `reflect-metadata` required
