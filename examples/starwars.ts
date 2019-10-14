@@ -1,4 +1,4 @@
-import t, { buildGraphQLSchema } from '../src';
+import t, { buildGraphQLSchema } from '../dist';
 
 const enum Episode {
   NEWHOPE = 4,
