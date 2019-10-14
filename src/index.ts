@@ -5,7 +5,7 @@ export default {
   String: define.StringType,
   Int: define.IntType,
   Float: define.FloatType,
-  ID: define.ID,
+  ID: define.IDType,
   IDInt: define.IntIDType,
   IDString: define.StringIDType,
   Boolean: define.BooleanType,
