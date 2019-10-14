@@ -30,18 +30,19 @@ export function toGraphQLInputType<Ctx>(
 
       function graphqlFields() {
         const gqlFieldConfig: graphql.GraphQLInputFieldConfigMap = {};
-  
+
         Object.keys(fields).forEach(k => {
           const field = (fields as any)[k];
           gqlFieldConfig[k] = {
             type: toGraphQLInputType(field.type, typeMap),
             description: field.description,
+            deprecationReason: field.deprecationReason,
           } as graphql.GraphQLInputFieldConfig;
         });
 
-        return gqlFieldConfig
+        return gqlFieldConfig;
       }
-      
+
       const obj = new graphql.GraphQLInputObjectType({
         name: t.name,
         fields: graphqlFields,
@@ -81,7 +82,11 @@ export function toGraphQOutputType<Ctx>(
         description: t.description,
         values: t.values.reduce(
           (acc, val) => {
-            acc[val.name] = { value: val.value };
+            acc[val.name] = {
+              value: val.value,
+              deprecationReason: val.deprecationReason,
+              description: val.description,
+            };
             return acc;
           },
           {} as { [key: string]: any }
@@ -117,6 +122,7 @@ export function toGraphQOutputType<Ctx>(
               description: field.description,
               resolve: field.resolve,
               args: graphqlArgs,
+              deprecationReason: field.deprecationReason,
             } as graphql.GraphQLFieldConfig<unknown, Ctx, any>;
           });
 
@@ -147,6 +153,7 @@ export function toGraphQOutputType<Ctx>(
             result[field.name] = {
               type: toGraphQOutputType(field.type, typeMap),
               description: field.description,
+              deprecationReason: field.deprecationReason
             };
           });
 

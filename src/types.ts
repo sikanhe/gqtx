@@ -24,13 +24,15 @@ interface NonNullInputType<Src> extends NonNullInput<InputType<Src>> {}
 
 export type AllType<Ctx> = OutputType<Ctx, any> | InputType<any>;
 
-export type Scalar<Src> = {
-  kind: 'Scalar';
-  graphqlTypeConfig: graphql.GraphQLScalarTypeConfig<Src, JSON>;
-} | {
-  kind: 'Scalar';
-  builtInType: graphql.GraphQLScalarType;
-};
+export type Scalar<Src> =
+  | {
+      kind: 'Scalar';
+      graphqlTypeConfig: graphql.GraphQLScalarTypeConfig<Src, JSON>;
+    }
+  | {
+      kind: 'Scalar';
+      builtInType: graphql.GraphQLScalarType;
+    };
 
 export type Enum<Src> = {
   kind: 'Enum';
@@ -42,6 +44,7 @@ export type Enum<Src> = {
 export type EnumValue<Src> = {
   name: string;
   description?: string;
+  deprecationReason?: string;
   value: Src;
 };
 
@@ -84,6 +87,7 @@ export type Field<Ctx, Src, Out, TArg extends object = {}> = {
   description?: string;
   type: OutputType<Ctx, Out>;
   arguments: ArgMap<TArg>;
+  deprecationReason?: string;
   resolve: (
     src: Src,
     args: TOfArgMap<ArgMap<TArg>>,
@@ -96,6 +100,7 @@ export type AbstractField<Ctx, Out> = {
   kind: 'AbstractField';
   name: string;
   description?: string;
+  deprecationReason?: string;
   type: OutputType<Ctx, Out>;
 };
 

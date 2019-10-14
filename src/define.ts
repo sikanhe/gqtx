@@ -59,12 +59,13 @@ export function scalarType<Src>(
 export function enumType<Src>(
   name: string,
   {
-  description,
-  values,
-}: {
-  description?: string;
-  values: Array<EnumValue<Src>>;
-}): Enum<Src | null> {
+    description,
+    values,
+  }: {
+    description?: string;
+    values: Array<EnumValue<Src>>;
+  }
+): Enum<Src | null> {
   return {
     kind: 'Enum',
     name,
@@ -76,23 +77,30 @@ export function enumType<Src>(
 export function field<Ctx, Src, Arg, Out>(
   name: string,
   {
-  type,
-  args = {} as ArgMap<Arg>,
-  resolve,
-}: {
-  type: OutputType<Ctx, Out>;
-  args?: ArgMap<Arg>;
-  resolve: (
-    src: Src,
-    args: TOfArgMap<ArgMap<Arg>>,
-    ctx: Ctx,
-    info: graphql.GraphQLResolveInfo
-  ) => Out | Promise<Out>;
-}): Field<Ctx, Src, any, any> {
+    type,
+    args = {} as ArgMap<Arg>,
+    resolve,
+    description,
+    deprecationReason,
+  }: {
+    type: OutputType<Ctx, Out>;
+    args?: ArgMap<Arg>;
+    description?: string;
+    deprecationReason?: string;
+    resolve: (
+      src: Src,
+      args: TOfArgMap<ArgMap<Arg>>,
+      ctx: Ctx,
+      info: graphql.GraphQLResolveInfo
+    ) => Out | Promise<Out>;
+  }
+): Field<Ctx, Src, any, any> {
   return {
     kind: 'Field',
     name,
     type,
+    description,
+    deprecationReason,
     arguments: args,
     resolve,
   };
@@ -103,6 +111,7 @@ export function fieldFast<Ctx, Src extends object, K extends keyof Src>(
   type: OutputType<Ctx, Src[K]>,
   opts?: {
     description?: string;
+    deprecationReason?: string;
   }
 ): Field<Ctx, Src, any, any> {
   return {
@@ -110,6 +119,7 @@ export function fieldFast<Ctx, Src extends object, K extends keyof Src>(
     name: String(name),
     type,
     description: opts && opts.description,
+    deprecationReason: opts && opts.deprecationReason,
     arguments: {},
     resolve: (src: Src) => src[name],
   };
@@ -120,12 +130,14 @@ export function abstractField<Ctx, Out>(
   type: OutputType<Ctx, Out>,
   opts?: {
     description?: string;
+    deprecationReason?: string;
   }
 ): AbstractField<Ctx, Out> {
   return {
     kind: 'AbstractField',
     name,
     description: opts && opts.description,
+    deprecationReason: opts && opts.deprecationReason,
     type,
   };
 }
