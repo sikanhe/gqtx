@@ -141,8 +141,7 @@ export function getDroid(id: string): Droid {
   return droidData[id];
 }
 
-const episodeEnum = t.enumType({
-  name: 'Episode',
+const episodeEnum = t.enumType('Episode', {
   description: 'One of the films in the Star Wars Trilogy',
   values: [
     { name: 'NEWHOPE', value: Episode.NEWHOPE },
@@ -168,15 +167,13 @@ const humanType = t.objectType<Human>('Human', {
     t.fieldFast('name', t.NonNull(t.String)),
     t.fieldFast('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.fieldFast('homePlanet', t.String),
-    t.field({
-      name: 'friends',
+    t.field('friends', {
       type: t.NonNull(t.List(characterInterface)),
       resolve: c => {
         return Promise.all(getFriends(c));
       },
     }),
-    t.field({
-      name: 'secretBackStory',
+    t.field('secretBackStory', {
       type: t.String,
       resolve: () => {
         throw new Error('secretBackstory is secret');
@@ -193,15 +190,13 @@ const droidType = t.objectType<Droid>('Droid', {
     t.fieldFast('name', t.NonNull(t.String)),
     t.fieldFast('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.fieldFast('primaryFunction', t.NonNull(t.String)),
-    t.field({
-      name: 'friends',
-      type: t.NonNull(t.List(characterInterface)),
+    t.field('friends', {
+      type: t.List(characterInterface),
       resolve: c => {
         return Promise.all(getFriends(c));
       },
     }),
-    t.field({
-      name: 'secretBackStory',
+    t.field('secretBackStory', {
       type: t.String,
       resolve: () => {
         throw new Error('secretBackstory is secret');
@@ -212,22 +207,19 @@ const droidType = t.objectType<Droid>('Droid', {
 
 const queryType = t.queryType({
   fields: () => [
-    t.field({
-      name: 'hero',
+    t.field('hero', {
       type: characterInterface,
       args: {
         episode: { type: episodeEnum },
       },
       resolve: (_, { episode }) => getHero(episode),
     }),
-    t.field({
-      name: 'human',
+    t.field('human', {
       type: humanType,
       args: { id: { type: t.NonNullInput(t.String) } },
       resolve: (_, { id }) => getHuman(id),
     }),
-    t.field({
-      name: 'droid',
+    t.field('droid', {
       type: droidType,
       args: {
         id: { type: t.NonNullInput(t.String), description: 'id of the droid' },

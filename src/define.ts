@@ -30,19 +30,20 @@ export function builtInScalar<Src>(builtInType: graphql.GraphQLScalarType): Scal
   };
 }
 
-export function scalarType<Src>({
-  name,
-  description,
-  serialize,
-  parseValue,
-  parseLiteral,
-}: {
-  name: string;
-  description?: string;
-  serialize: (src: Src) => any | null;
-  parseValue?: (value: JSON) => Src | null;
-  parseLiteral?: (value: graphql.ValueNode) => Src | null;
-}): Scalar<Src | null> {
+export function scalarType<Src>(
+  name: string,
+  {
+    description,
+    serialize,
+    parseValue,
+    parseLiteral,
+  }: {
+    description?: string;
+    serialize: (src: Src) => any | null;
+    parseValue?: (value: JSON) => Src | null;
+    parseLiteral?: (value: graphql.ValueNode) => Src | null;
+  }
+): Scalar<Src | null> {
   return {
     kind: 'Scalar',
     graphqlTypeConfig: {
@@ -55,12 +56,12 @@ export function scalarType<Src>({
   };
 }
 
-export function enumType<Src>({
-  name,
+export function enumType<Src>(
+  name: string,
+  {
   description,
   values,
 }: {
-  name: string;
   description?: string;
   values: Array<EnumValue<Src>>;
 }): Enum<Src | null> {
@@ -72,13 +73,13 @@ export function enumType<Src>({
   };
 }
 
-export function field<Ctx, Src, Arg, Out>({
-  name,
+export function field<Ctx, Src, Arg, Out>(
+  name: string,
+  {
   type,
   args = {} as ArgMap<Arg>,
   resolve,
 }: {
-  name: string;
   type: OutputType<Ctx, Out>;
   args?: ArgMap<Arg>;
   resolve: (
@@ -117,12 +118,14 @@ export function fieldFast<Ctx, Src extends object, K extends keyof Src>(
 export function abstractField<Ctx, Out>(
   name: string,
   type: OutputType<Ctx, Out>,
-  description?: string
+  opts?: {
+    description?: string;
+  }
 ): AbstractField<Ctx, Out> {
   return {
     kind: 'AbstractField',
     name,
-    description,
+    description: opts && opts.description,
     type,
   };
 }

@@ -1,5 +1,5 @@
 import * as graphql from 'graphql';
-import { Schema, InputType, OutputType, AllType } from './define';
+import { Schema, InputType, OutputType, AllType } from './types';
 
 export function buildGraphQLSchema<Ctx>(schema: Schema<Ctx>): graphql.GraphQLSchema {
   return new graphql.GraphQLSchema({
