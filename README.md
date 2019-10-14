@@ -22,9 +22,7 @@ This requires turning on experimental features inside the typescript compiler. T
 Can we eat our ? It turns out we can.
 
 ## Type safety without manual work
-GraphQL schemas defined by `gqtx` can express more things and place more constraint on the graphql schema than the vanilla javascript or alternative typescript libraries: 
-
-What this means is that only valid schemas should pass the type checker. If a schema compiles, the following holds:
+A GraphQL schema defined by `gqtx` places more constraint on its types than the vanilla javascript or alternative typescript libraries - only valid schemas should pass the type checker. And If a schema compiles, the following holds:
 
 - The type of a field agrees with the return type of the resolver.
 - The arguments of a field agrees with the accepted arguments of the resolver.

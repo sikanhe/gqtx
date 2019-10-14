@@ -17,6 +17,6 @@
     "graphql": "^14.5.8"
   },
   "scripts": {
-    "prepublish": "tsc"
+    "prepare": "tsc"
   }
 }
