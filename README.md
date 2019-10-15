@@ -123,7 +123,7 @@ app.use(
 app.listen(4000);
 ```
 
-## What happened?
+## To Recap
 - We created an intermediate representation of a GraphQL schema via the helper functions exported by this library. 
 - Then, we converted the schema to a real graphql-js schema by calling `buildGraphQLSchema` at server startup time. 
 - Used existing express middleware `express-graphql` to server our schema with `graphiql` explorer
