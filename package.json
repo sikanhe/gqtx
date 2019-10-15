@@ -1,10 +1,17 @@
 {
   "name": "gqtx",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["/dist"],
+  "files": [
+    "/dist"
+  ],
   "license": "MIT",
+  "keywords": [
+    "graphql",
+    "typescript",
+    "graphql-server"
+  ],
   "devDependencies": {
     "@types/express": "^4.17.1",
     "express": "^4.17.1",
