@@ -3,33 +3,41 @@
 `(yarn add|npm install) gqtx`
 
 ## Why
-I have been developing GraphQL servers for the last 3 years. I have still yet to found an approach that is *both* easy to use and minimized developer error.
+Having been working on GraphQL servers for the past 3 years, I have yet to found an approach that is *both* easy to use and minimizes developer error.
 
-Shortcomings with the approaches today:
+Shortcomings with the approaches of writing a GraphQL server today:
 
 #### 1. Use `graphql-js` directly and manual do type casts on resolvers 
-Very error prone to have to hand write the types for all resolvers. 
+This is very error prone because you have to hand write the types for all resolvers. 
 
 #### 2. Use a type generation cli tool like https://graphql-code-generator.com to generate resolver types from SDL. 
 
-This is an okay approach. You are required to first write your schema in SDL , and then your resolvers in code, This breaks code sharing between types and with your other server code. 
+This is a safer but tedious approach. You are required to first write your schema in SDL, generate resolver types via tooling, and then write your resolvers in code. 
 
-As your schema get larger, it gets harder to maintain. You also can get vendor lock in. (Apollo Server and AppSync builds server differently).
+First, this creates some extra mental overhead for having each graphql type's logic be split into two files with two different languages. 
 
-#### 4. Use other typescript graphql libraries that use `reflect-metadata` compiler/decorator magic to infer graphql types from your runtime data types 
-This requires turning on experimental features inside the typescript compiler. This approach also breaks seperation of concerns by tying your graphql types to your database models - Although starting your project that way is fine, eventually you want your GraphQL types be the type of your API. 
+Second, it requires a lot of fluff to make it work - Setting up `.graphql` file IDE plugin, setting up codegen, setting background process to run codegen in real time, importing the generated types and etc.
 
-Can we eat our ? It turns out we can.
+For a new team adopting GraphQl, you would have to teach them how to write SDL and use the codegen, on top of understanding how graphql works. This is a steeper hill to climb than necessary.  
+
+*Can we get the same type safety guarantees without the cruft? It turns out we can.*
 
 ## Type safety without manual work
-A GraphQL schema defined by `gqtx` places more constraint on its types than the vanilla javascript or alternative typescript libraries - only valid schemas should pass the type checker. And If a schema compiles, the following holds:
+`gqtx` is a thing layer of redirection for writing a type-safe graphql serverin TypeScript. It provides you with a set of helper functions to create an intermediate representation of a GraphQL schema, and then converts that schema to a raw `graphql-js` schema. So you get to use everything from the reference implementation of GraphQL, but safer.
+
+If a schema compiles, the following holds:
 
 - The type of a field agrees with the return type of the resolver.
 - The arguments of a field agrees with the accepted arguments of the resolver.
 - The source of a field agrees with the type of the object to which it belongs.
 - The return type of the resolver will not be input types (InputObject)
-- The arguments of a field will not include abstract types (Interface, Union)
+- The arguments of a field will not be abstract types (Interface, Union)
 - The context argument for all resolver functions in a schema agree.
+
+Most importantly, we achieve all this without having to:
+- Set up code generation tools
+- Write SDL and having your schema patially defined in code and in a DSL file
+- Require special compiler magic such as `reflect-metadata` and decorators
 
 ### What does it look like?
 
@@ -66,6 +74,9 @@ const UserType = t.objectType<User>('User', {
   fields: () => [
     t.fieldFast('id', t.NonNull(t.ID)),
     t.fieldFast('role', t.NonNull(RoleEnum)),
+    // `fieldFast` is the safe vesion of a default resovler 
+    // field. In this case, 'name' must exist on `User`
+    // and its type must be `string`
     t.fieldFast('name', t.NonNull(t.String)),
   ],
 });
@@ -80,10 +91,9 @@ const Query = t.queryType({
       },
       resolve: (_, args) => {
         // `args` is automatically inferred as { id: string }
-        const user = users.find(u => u.id === args.id) || null
-        
-        // Also ensures we return an `User` type
-        return user;
+        const user = users.find(u => u.id === args.id)
+        // Also ensures we return an `User | null` type
+        return user || null;
       },
     }),
   ],
@@ -116,9 +126,5 @@ app.listen(4000);
 ## What happened?
 - We created an intermediate representation of a GraphQL schema via the helper functions exported by this library. 
 - Then, we converted the schema to a real graphql-js schema by calling `buildGraphQLSchema` at server startup time. 
+- Used existing express middleware `express-graphql` to server our schema with `graphiql` explorer
 - That's it! We get a fully typesafe server with almost zero type annotation needed
-
-## What this means: 
-- No need to set up code generation tools
-- No need to write SDL and having your schema patially defined in code and in a DSL file
-- No special compiler magic or `reflect-metadata` required
