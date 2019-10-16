@@ -171,7 +171,7 @@ export type SubscriptionField<Ctx, TArg, Out> = {
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,
     info: graphql.GraphQLResolveInfo
-  ) => AsyncIterator<Out>;
+  ) => AsyncIterator<Out> | Promise<AsyncIterator<Out>>;
   resolve: (
     payload: Out,
     args: TOfArgMap<ArgMap<TArg>>,
