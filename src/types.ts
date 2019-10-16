@@ -100,12 +100,6 @@ export type TOfArgMap<TArgMap> = {
     : never;
 };
 
-export type TOfInputFieldMap<TInputFieldMap> = {
-  [K in keyof TInputFieldMap]: TInputFieldMap[K] extends InputField<infer Src>
-    ? Src
-    : never;
-};
-
 export type Field<Ctx, Src, Out, TArg extends object = {}> = {
   kind: 'Field';
   name: string;
