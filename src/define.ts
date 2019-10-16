@@ -174,10 +174,12 @@ export function objectType<Src, Ctx = any>(
     description,
     interfaces = [],
     fields,
+    isTypeOf,
   }: {
     description?: string;
     interfaces?: Array<Interface<Ctx, any>>;
     fields: (self: OutputType<Ctx, Src | null>) => Array<Field<Ctx, Src, any>>;
+    isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean
   }
 ): ObjectType<Ctx, Src | null> {
   const obj: ObjectType<Ctx, Src | null> = {
@@ -186,6 +188,7 @@ export function objectType<Src, Ctx = any>(
     description,
     interfaces,
     fieldsFn: undefined as any,
+    isTypeOf,
   };
 
   obj.fieldsFn = () => fields(obj) as any;

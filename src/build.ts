@@ -160,6 +160,7 @@ export function toGraphQOutputType<Ctx>(
       const obj = new graphql.GraphQLObjectType({
         name: t.name,
         interfaces: t.interfaces.map(intf => toGraphQOutputType(intf, typeMap)) as any,
+        isTypeOf: t.isTypeOf,
         fields: () => {
           const fields = t.fieldsFn();
           const gqlFieldConfig: graphql.GraphQLFieldConfigMap<unknown, Ctx> = {};

@@ -21,7 +21,6 @@ type Human = {
   friends: Array<string>;
   appearsIn: Array<Episode>;
   homePlanet: string | null;
-  __typename: 'Human';
 };
 
 type Droid = {
@@ -31,7 +30,6 @@ type Droid = {
   friends: Array<string>;
   appearsIn: Array<Episode>;
   primaryFunction: string;
-  __typename: 'Droid';
 };
 
 const luke: Human = {
@@ -41,7 +39,6 @@ const luke: Human = {
   friends: ['1002', '1003', '2000', '2001'],
   appearsIn: [4, 5, 6],
   homePlanet: 'Tatooine',
-  __typename: 'Human',
 };
 
 const vader: Human = {
@@ -51,7 +48,6 @@ const vader: Human = {
   friends: ['1004'],
   appearsIn: [4, 5, 6],
   homePlanet: 'Tatooine',
-  __typename: 'Human',
 };
 
 const han: Human = {
@@ -61,7 +57,6 @@ const han: Human = {
   friends: ['1000', '1003', '2001'],
   appearsIn: [4, 5, 6],
   homePlanet: null,
-  __typename: 'Human',
 };
 
 const leia: Human = {
@@ -71,7 +66,7 @@ const leia: Human = {
   friends: ['1000', '1002', '2000', '2001'],
   appearsIn: [4, 5, 6],
   homePlanet: 'Alderaan',
-  __typename: 'Human',
+  // __typename: 'Human',
 };
 
 const tarkin: Human = {
@@ -81,7 +76,6 @@ const tarkin: Human = {
   friends: ['1001'],
   appearsIn: [4],
   homePlanet: null,
-  __typename: 'Human',
 };
 
 const humanData: Record<string, Human> = {
@@ -99,7 +93,6 @@ const threepio: Droid = {
   friends: ['1000', '1002', '1003', '2001'],
   appearsIn: [4, 5, 6],
   primaryFunction: 'Protocol',
-  __typename: 'Droid',
 };
 
 const artoo: Droid = {
@@ -109,7 +102,6 @@ const artoo: Droid = {
   friends: ['1000', '1002', '1003'],
   appearsIn: [4, 5, 6],
   primaryFunction: 'Astromech',
-  __typename: 'Droid',
 };
 
 const droidData: Record<string, Droid> = {
@@ -162,6 +154,7 @@ const characterInterface = t.interfaceType<ICharacter>('Character', {
 const humanType = t.objectType<Human>('Human', {
   description: 'A humanoid creature in the Star Wars universe.',
   interfaces: [characterInterface],
+  isTypeOf: (thing: ICharacter) => thing.type === 'Human',
   fields: () => [
     t.fieldFast('id', t.NonNull(t.ID)),
     t.fieldFast('name', t.NonNull(t.String)),
@@ -185,6 +178,7 @@ const humanType = t.objectType<Human>('Human', {
 const droidType = t.objectType<Droid>('Droid', {
   description: 'A mechanical creature in the Star Wars universe.',
   interfaces: [characterInterface],
+  isTypeOf: (thing: ICharacter) => thing.type === 'Droid',
   fields: () => [
     t.fieldFast('id', t.NonNull(t.IDString)),
     t.fieldFast('name', t.NonNull(t.String)),

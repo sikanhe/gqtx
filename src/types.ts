@@ -121,6 +121,7 @@ export type ObjectType<Ctx, Src> = {
   deprecationReason?: string;
   interfaces: Array<Interface<Ctx, any>>;
   fieldsFn: () => Array<Field<Ctx, Src, any, any>>;
+  isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean
 };
 
 export type InputField<Src> = {
