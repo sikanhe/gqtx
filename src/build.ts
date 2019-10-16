@@ -1,9 +1,67 @@
 import * as graphql from 'graphql';
-import { Schema, InputType, OutputType, AllType, DefaultArgument, Argument } from './types';
+import {
+  Schema,
+  InputType,
+  OutputType,
+  AllType,
+  DefaultArgument,
+  Argument,
+  SubscriptionObject,
+  ArgMap,
+} from './types';
 
 export function buildGraphQLSchema<Ctx>(schema: Schema<Ctx>): graphql.GraphQLSchema {
+  const typeMap = new Map();
   return new graphql.GraphQLSchema({
-    query: toGraphQOutputType<Ctx>(schema.query, new Map()) as graphql.GraphQLObjectType,
+    query: toGraphQOutputType<Ctx>(schema.query, typeMap) as graphql.GraphQLObjectType,
+    mutation:
+      schema.mutation &&
+      (toGraphQOutputType<Ctx>(schema.mutation, typeMap) as graphql.GraphQLObjectType),
+    subscription: schema.subscription && toGraphQLSubscriptionObject(schema.subscription, typeMap),
+  });
+}
+
+export function toGraphQLArgs<Ctx, T>(
+  args: ArgMap<T>,
+  typeMap: Map<AllType<Ctx>, graphql.GraphQLType>
+): graphql.GraphQLFieldConfigArgumentMap {
+  const graphqlArgs: graphql.GraphQLFieldConfigArgumentMap = {};
+
+  Object.keys(args).forEach(k => {
+    const arg: DefaultArgument<any> | Argument<any> = (args as any)[k];
+
+    graphqlArgs[k] = {
+      type: toGraphQLInputType(arg.type, typeMap),
+      description: arg.description,
+      defaultValue: arg.kind === 'DefaultArgument' ? arg.default : undefined,
+    };
+  });
+
+  return graphqlArgs
+}
+
+export function toGraphQLSubscriptionObject<Ctx>(
+  subscriptionObj: SubscriptionObject<Ctx>,
+  typeMap: Map<AllType<Ctx>, graphql.GraphQLType>
+): graphql.GraphQLObjectType {
+  return new graphql.GraphQLObjectType({
+    name: subscriptionObj.name,
+    fields: () => {
+      const gqlFieldConfig: graphql.GraphQLFieldConfigMap<unknown, Ctx> = {};
+
+      subscriptionObj.fields.forEach(field => {
+        gqlFieldConfig[field.name] = {
+          type: toGraphQOutputType(field.type, typeMap),
+          description: field.description,
+          subscribe: (_root: unknown, args, ctx, info) => field.subscribe(args, ctx, info),
+          resolve: field.resolve,
+          args: toGraphQLArgs(field.args, typeMap),
+          deprecationReason: field.deprecationReason,
+        };
+      });
+
+      return gqlFieldConfig;
+    },
   });
 }
 
@@ -107,24 +165,11 @@ export function toGraphQOutputType<Ctx>(
           const gqlFieldConfig: graphql.GraphQLFieldConfigMap<unknown, Ctx> = {};
 
           fields.forEach(field => {
-            const fieldArgs = field.arguments;
-            const graphqlArgs: graphql.GraphQLFieldConfigArgumentMap = {};
-
-            Object.keys(field.arguments).forEach(k => {
-              const arg: DefaultArgument<any> | Argument<any> = (fieldArgs as any)[k];
-
-              graphqlArgs[k] = {
-                type: toGraphQLInputType(arg.type, typeMap),
-                description: arg.description,
-                defaultValue: arg.kind === 'DefaultArgument' ? arg.default : undefined,
-              };
-            });
-
             gqlFieldConfig[field.name] = {
               type: toGraphQOutputType(field.type, typeMap),
               description: field.description,
               resolve: field.resolve,
-              args: graphqlArgs,
+              args: toGraphQLArgs(field.args, typeMap),
               deprecationReason: field.deprecationReason,
             } as graphql.GraphQLFieldConfig<unknown, Ctx, any>;
           });

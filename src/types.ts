@@ -69,29 +69,20 @@ export type NonNullInput<Src> = {
 };
 
 export type Argument<Src> = {
-  kind: 'Argument',
+  kind: 'Argument';
   type: InputType<Src>;
   description?: string;
 };
 
 export type DefaultArgument<Src> = {
-  kind: 'DefaultArgument',
+  kind: 'DefaultArgument';
   type: InputType<Src>;
   description?: string;
   default: Src;
 };
 
-export type InputField<Src> = {
-  type: InputType<Src>;
-  description?: string;
-};
-
 export type ArgMap<T> = {
   [K in keyof T]: DefaultArgument<T[K]> | Argument<T[K]>;
-};
-
-export type InputFieldMap<T> = {
-  [K in keyof T]: InputField<T[K]>;
 };
 
 export type TOfArgMap<TArgMap> = {
@@ -105,7 +96,7 @@ export type Field<Ctx, Src, Out, TArg extends object = {}> = {
   name: string;
   description?: string;
   type: OutputType<Ctx, Out>;
-  arguments: ArgMap<TArg>;
+  args: ArgMap<TArg>;
   deprecationReason?: string;
   resolve: (
     src: Src,
@@ -132,6 +123,15 @@ export type ObjectType<Ctx, Src> = {
   fieldsFn: () => Array<Field<Ctx, Src, any, any>>;
 };
 
+export type InputField<Src> = {
+  type: InputType<Src>;
+  description?: string;
+};
+
+export type InputFieldMap<T> = {
+  [K in keyof T]: InputField<T[K]>;
+};
+
 export type InputObject<Src> = {
   kind: 'InputObject';
   name: string;
@@ -154,6 +154,34 @@ export type Union<Ctx, Src> = {
   resolveType: (src: Src) => ObjectType<Ctx, Src>;
 };
 
+export type SubscriptionObject<Ctx> = {
+  kind: 'SubscriptionObject';
+  name: string;
+  fields: Array<SubscriptionField<Ctx, any, any>>;
+};
+
+export type SubscriptionField<Ctx, TArg, Out> = {
+  kind: 'SubscriptionField';
+  name: string;
+  description?: string;
+  type: OutputType<Ctx, Out>;
+  args: ArgMap<TArg>;
+  deprecationReason?: string;
+  subscribe: (
+    args: TOfArgMap<ArgMap<TArg>>,
+    ctx: Ctx,
+    info: graphql.GraphQLResolveInfo
+  ) => AsyncIterator<Out>;
+  resolve: (
+    payload: Out,
+    args: TOfArgMap<ArgMap<TArg>>,
+    ctx: Ctx,
+    info: graphql.GraphQLResolveInfo
+  ) => Out | Promise<Out>;
+};
+
 export type Schema<Ctx> = {
   query: ObjectType<Ctx, void>;
+  mutation?: ObjectType<Ctx, void>;
+  subscription?: SubscriptionObject<Ctx>;
 };

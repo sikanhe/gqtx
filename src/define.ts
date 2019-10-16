@@ -16,6 +16,8 @@ import {
   DefaultArgument,
   Argument,
   InputFieldMap,
+  SubscriptionField,
+  SubscriptionObject,
 } from './types';
 
 export const StringType = builtInScalar<string>(graphql.GraphQLString);
@@ -125,7 +127,7 @@ export function field<Ctx, Src, Arg, Out>(
     type,
     description,
     deprecationReason,
-    arguments: args,
+    args,
     resolve,
   };
 }
@@ -144,7 +146,7 @@ export function fieldFast<Ctx, Src extends object, K extends keyof Src>(
     type,
     description: opts && opts.description,
     deprecationReason: opts && opts.deprecationReason,
-    arguments: {},
+    args: {},
     resolve: (src: Src) => src[name],
   };
 }
@@ -305,5 +307,58 @@ export function mutationType<Ctx>({
     name,
     interfaces: [],
     fieldsFn: fields,
+  };
+}
+
+export function subscriptionField<Ctx, Out, Arg>(
+  name: string,
+  {
+    type,
+    args = {} as ArgMap<Arg>,
+    subscribe,
+    resolve,
+    description,
+    deprecationReason,
+  }: {
+    type: OutputType<Ctx, Out>;
+    args?: ArgMap<Arg>;
+    description?: string;
+    deprecationReason?: string;
+    subscribe: (
+      args: TOfArgMap<ArgMap<Arg>>,
+      ctx: Ctx,
+      info: graphql.GraphQLResolveInfo
+    ) => AsyncIterator<Out>;
+    resolve?: (
+      payload: Out,
+      args: TOfArgMap<ArgMap<Arg>>,
+      ctx: Ctx,
+      info: graphql.GraphQLResolveInfo
+    ) => Out | Promise<Out>;
+  }
+): SubscriptionField<Ctx, Arg, Out> {
+  return {
+    kind: 'SubscriptionField',
+    name,
+    type,
+    args: args,
+    subscribe,
+    resolve,
+    description,
+    deprecationReason,
+  };
+}
+
+export function subscriptionType<Ctx>({
+  name = 'Subscription',
+  fields,
+}: {
+  name?: string;
+  fields: Array<SubscriptionField<Ctx, any, any>>;
+}): SubscriptionObject<Ctx> {
+  return {
+    kind: 'SubscriptionObject',
+    name,
+    fields,
   };
 }

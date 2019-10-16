@@ -23,7 +23,9 @@ export default {
   ListInput: define.ListInput,
   field: define.field,
   fieldFast: define.fieldFast,
+  subscriptionField: define.subscriptionField,
   abstractField: define.abstractField,
   queryType: define.queryType,
-  mutationType: define.mutationType
+  mutationType: define.mutationType,
+  subscriptionType: define.subscriptionType
 };
