@@ -1,5 +1,8 @@
 import * as graphql from 'graphql';
 
+type PromiseOrValue<T> = Promise<T> | T;
+type Maybe<T> = T | null | undefined;
+
 export type OutputType<Ctx, Src> =
   | Scalar<Src>
   | Enum<Src>
@@ -121,7 +124,7 @@ export type ObjectType<Ctx, Src> = {
   deprecationReason?: string;
   interfaces: Array<Interface<Ctx, any>>;
   fieldsFn: () => Array<Field<Ctx, Src, any, any>>;
-  isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean
+  isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean | Promise<boolean>;
 };
 
 export type InputField<Src> = {
@@ -140,19 +143,25 @@ export type InputObject<Src> = {
   fieldsFn: () => InputFieldMap<Src>;
 };
 
+type ResolveType<Src, Ctx> = (
+  src: Src,
+  ctx: Ctx,
+  info: graphql.GraphQLResolveInfo
+) => PromiseOrValue<Maybe<ObjectType<Ctx, Src | null> | string>>;
+
 export type Interface<Ctx, Src> = {
   kind: 'Interface';
   name: string;
   description?: string;
   fieldsFn: () => Array<AbstractField<Ctx, any>>;
-  resolveType?: (src: Src) => ObjectType<Ctx, Src | null>;
+  resolveType?: ResolveType<Src, Ctx>;
 };
 
 export type Union<Ctx, Src> = {
   kind: 'Union';
   name: string;
   types: Array<ObjectType<Ctx, Src>>;
-  resolveType: (src: Src) => ObjectType<Ctx, Src>;
+  resolveType: ResolveType<Src, Ctx>;
 };
 
 export type SubscriptionObject<Ctx> = {
@@ -172,13 +181,13 @@ export type SubscriptionField<Ctx, TArg, Out> = {
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,
     info: graphql.GraphQLResolveInfo
-  ) => AsyncIterator<Out> | Promise<AsyncIterator<Out>>;
+  ) => PromiseOrValue<AsyncIterator<Out>>;
   resolve?: (
     payload: Out,
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,
     info: graphql.GraphQLResolveInfo
-  ) => Out | Promise<Out>;
+  ) => PromiseOrValue<Out>;
 };
 
 export type Schema<Ctx> = {

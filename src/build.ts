@@ -37,7 +37,7 @@ export function toGraphQLArgs<Ctx, T>(
     };
   });
 
-  return graphqlArgs
+  return graphqlArgs;
 }
 
 export function toGraphQLSubscriptionObject<Ctx>(
@@ -186,7 +186,11 @@ export function toGraphQOutputType<Ctx>(
       const union = new graphql.GraphQLUnionType({
         name: t.name,
         types: t.types.map(t => toGraphQOutputType(t, typeMap)) as any,
-        resolveType: (any: any) => typeMap.get(t.resolveType(any)) as any,
+        resolveType: async (src, ctx, info) => {
+          const resolved = await t.resolveType(src, ctx, info);
+          if (typeof resolved === 'string' || resolved == null) return resolved;
+          return typeMap.get(resolved) as any;
+        },
       });
 
       typeMap.set(t, union);

@@ -179,7 +179,7 @@ export function objectType<Src, Ctx = any>(
     description?: string;
     interfaces?: Array<Interface<Ctx, any>>;
     fields: (self: OutputType<Ctx, Src | null>) => Array<Field<Ctx, Src, any>>;
-    isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean
+    isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean;
   }
 ): ObjectType<Ctx, Src | null> {
   const obj: ObjectType<Ctx, Src | null> = {
