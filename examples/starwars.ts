@@ -152,7 +152,7 @@ const episodeEnum = t.enumType('Episode', {
 
 const characterInterface = t.interfaceType<ICharacter>('Character', {
   fields: self => [
-    t.abstractField('id', t.NonNull(t.String)),
+    t.abstractField('id', t.NonNull(t.IDString)),
     t.abstractField('name', t.NonNull(t.String)),
     t.abstractField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.abstractField('friends', t.NonNull(t.List(self))),
@@ -191,7 +191,7 @@ const droidType = t.objectType<Droid>('Droid', {
     t.fieldFast('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.fieldFast('primaryFunction', t.NonNull(t.String)),
     t.field('friends', {
-      type: t.List(characterInterface),
+      type: t.NonNull(t.List(characterInterface)),
       resolve: c => {
         return Promise.all(getFriends(c));
       },
@@ -210,19 +210,19 @@ const queryType = t.queryType({
     t.field('hero', {
       type: characterInterface,
       args: {
-        episode: { type: episodeEnum },
+        episode: t.defaultArg(episodeEnum, Episode.EMPIRE),
       },
       resolve: (_, { episode }) => getHero(episode),
     }),
     t.field('human', {
       type: humanType,
-      args: { id: { type: t.NonNullInput(t.String) } },
+      args: { id: t.arg(t.NonNullInput(t.ID)) },
       resolve: (_, { id }) => getHuman(id),
     }),
     t.field('droid', {
       type: droidType,
       args: {
-        id: { type: t.NonNullInput(t.String), description: 'id of the droid' },
+        id: t.arg(t.NonNullInput(t.String), 'ID of the droid'),
       },
       resolve: (_, { id }) => getDroid(id),
     }),

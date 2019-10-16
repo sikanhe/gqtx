@@ -13,6 +13,9 @@ import {
   TOfArgMap,
   Field,
   AbstractField,
+  DefaultArgument,
+  Argument,
+  InputFieldMap,
 } from './types';
 
 export const StringType = builtInScalar<string>(graphql.GraphQLString);
@@ -71,6 +74,27 @@ export function enumType<Src>(
     name,
     description,
     values,
+  };
+}
+
+export function arg<Src>(type: InputType<Src>, description?: string): Argument<Src> {
+  return {
+    kind: 'Argument',
+    type,
+    description,
+  };
+}
+
+export function defaultArg<Src>(
+  type: InputType<Src>,
+  defaultArg: Exclude<Src, null>,
+  description?: string
+): DefaultArgument<Exclude<Src, null>> {
+  return {
+    kind: 'DefaultArgument',
+    type: type as any,
+    description,
+    default: defaultArg,
   };
 }
 
@@ -173,10 +197,10 @@ export function inputObjectType<Src>(
     fields,
   }: {
     description?: string;
-    fields: (self: InputType<Src | null>) => ArgMap<Src>;
+    fields: (self: InputType<Src | null>) => InputFieldMap<Src>;
   }
 ): InputObject<Src | null> {
-  let inputObj: InputObject<Src> = {
+  let inputObj: InputObject<Src | null> = {
     kind: 'InputObject',
     name,
     description,
@@ -235,7 +259,7 @@ export function List<Ctx, Src>(ofType: OutputType<Ctx, Src>): OutputType<Ctx, Ar
 
 export function ListInput<Src>(ofType: InputType<Src>): InputType<Array<Src> | null> {
   return {
-    kind: 'List',
+    kind: 'ListInput',
     ofType: ofType as any,
   };
 }
@@ -249,7 +273,7 @@ export function NonNull<Ctx, Src>(ofType: OutputType<Ctx, Src | null>): OutputTy
 
 export function NonNullInput<Src>(ofType: InputType<Src | null>): InputType<Src> {
   return {
-    kind: 'NonNull',
+    kind: 'NonNullInput',
     ofType: ofType as any,
   };
 }

@@ -15,6 +15,8 @@ export default {
   inputObjectType: define.inputObjectType,
   unionType: define.unionType,
   interfaceType: define.interfaceType,
+  defaultArg: define.defaultArg,
+  arg: define.arg,
   NonNull: define.NonNull,
   NonNullInput: define.NonNullInput,
   List: define.List,

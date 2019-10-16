@@ -1,5 +1,5 @@
 import * as graphql from 'graphql';
-import { Schema, InputType, OutputType, AllType } from './types';
+import { Schema, InputType, OutputType, AllType, DefaultArgument, Argument } from './types';
 
 export function buildGraphQLSchema<Ctx>(schema: Schema<Ctx>): graphql.GraphQLSchema {
   return new graphql.GraphQLSchema({
@@ -21,9 +21,9 @@ export function toGraphQLInputType<Ctx>(
     case 'Scalar':
     case 'Enum':
       return toGraphQOutputType(t, typeMap) as graphql.GraphQLInputType;
-    case 'NonNull':
+    case 'NonNullInput':
       return new graphql.GraphQLNonNull(toGraphQLInputType(t.ofType, typeMap));
-    case 'List':
+    case 'ListInput':
       return new graphql.GraphQLList(toGraphQLInputType(t.ofType, typeMap));
     case 'InputObject':
       const fields = t.fieldsFn();
@@ -111,9 +111,12 @@ export function toGraphQOutputType<Ctx>(
             const graphqlArgs: graphql.GraphQLFieldConfigArgumentMap = {};
 
             Object.keys(field.arguments).forEach(k => {
+              const arg: DefaultArgument<any> | Argument<any> = (fieldArgs as any)[k];
+
               graphqlArgs[k] = {
-                type: toGraphQLInputType((fieldArgs as any)[k].type, typeMap),
-                description: (fieldArgs as any)[k].description,
+                type: toGraphQLInputType(arg.type, typeMap),
+                description: arg.description,
+                defaultValue: arg.kind === 'DefaultArgument' ? arg.default : undefined,
               };
             });
 
@@ -153,7 +156,7 @@ export function toGraphQOutputType<Ctx>(
             result[field.name] = {
               type: toGraphQOutputType(field.type, typeMap),
               description: field.description,
-              deprecationReason: field.deprecationReason
+              deprecationReason: field.deprecationReason,
             };
           });
 

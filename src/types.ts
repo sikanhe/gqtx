@@ -59,26 +59,51 @@ export type NonNull<Ctx, Src> = {
 };
 
 export type ListInput<Src> = {
-  kind: 'List';
+  kind: 'ListInput';
   ofType: InputType<Src>;
 };
 
 export type NonNullInput<Src> = {
-  kind: 'NonNull';
+  kind: 'NonNullInput';
   ofType: InputType<Src>;
 };
 
 export type Argument<Src> = {
+  kind: 'Argument',
+  type: InputType<Src>;
+  description?: string;
+};
+
+export type DefaultArgument<Src> = {
+  kind: 'DefaultArgument',
+  type: InputType<Src>;
+  description?: string;
+  default: Src;
+};
+
+export type InputField<Src> = {
   type: InputType<Src>;
   description?: string;
 };
 
 export type ArgMap<T> = {
-  [K in keyof T]: Argument<T[K]>;
+  [K in keyof T]: DefaultArgument<T[K]> | Argument<T[K]>;
+};
+
+export type InputFieldMap<T> = {
+  [K in keyof T]: InputField<T[K]>;
 };
 
 export type TOfArgMap<TArgMap> = {
-  [K in keyof TArgMap]: TArgMap[K] extends Argument<infer Src> ? Src : never;
+  [K in keyof TArgMap]: TArgMap[K] extends DefaultArgument<infer Src> | Argument<infer Src>
+    ? Src
+    : never;
+};
+
+export type TOfInputFieldMap<TInputFieldMap> = {
+  [K in keyof TInputFieldMap]: TInputFieldMap[K] extends InputField<infer Src>
+    ? Src
+    : never;
 };
 
 export type Field<Ctx, Src, Out, TArg extends object = {}> = {
@@ -117,7 +142,7 @@ export type InputObject<Src> = {
   kind: 'InputObject';
   name: string;
   description?: string;
-  fieldsFn: () => ArgMap<Src>;
+  fieldsFn: () => InputFieldMap<Src>;
 };
 
 export type Interface<Ctx, Src> = {
