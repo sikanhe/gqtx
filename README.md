@@ -42,8 +42,7 @@ const users: User[] = [
   { id: 2, role: Role.User, name: 'Nicole' },
 ];
 
-const RoleEnum = t.enumType({
-  name: 'Role',
+const RoleEnum = t.enumType('Role', {
   description: 'A user role',
   values: [
     { name: 'Admin', value: Role.Admin }, 
@@ -65,8 +64,7 @@ const UserType = t.objectType<User>('User', {
 
 const Query = t.queryType({
   fields: () => [
-    t.field({
-      name: 'userById',
+    t.field('userById', {
       type: UserType,
       args: {
         id: { type: t.NonNullInput(t.ID) },
