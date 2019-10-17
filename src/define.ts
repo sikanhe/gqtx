@@ -35,20 +35,19 @@ export function builtInScalar<Src>(builtInType: graphql.GraphQLScalarType): Scal
   };
 }
 
-export function scalarType<Src>(
-  name: string,
-  {
-    description,
-    serialize,
-    parseValue,
-    parseLiteral,
-  }: {
-    description?: string;
-    serialize: (src: Src) => any | null;
-    parseValue?: (value: JSON) => Src | null;
-    parseLiteral?: (value: graphql.ValueNode) => Src | null;
-  }
-): Scalar<Src | null> {
+export function scalarType<Src>({
+  name,
+  description,
+  serialize,
+  parseValue,
+  parseLiteral,
+}: {
+  name: string;
+  description?: string;
+  serialize: (src: Src) => any | null;
+  parseValue?: (value: JSON) => Src | null;
+  parseLiteral?: (value: graphql.ValueNode) => Src | null;
+}): Scalar<Src | null> {
   return {
     kind: 'Scalar',
     graphqlTypeConfig: {
@@ -61,16 +60,15 @@ export function scalarType<Src>(
   };
 }
 
-export function enumType<Src>(
-  name: string,
-  {
-    description,
-    values,
-  }: {
-    description?: string;
-    values: Array<EnumValue<Src>>;
-  }
-): Enum<Src | null> {
+export function enumType<Src>({
+  name,
+  description,
+  values,
+}: {
+  name: string;
+  description?: string;
+  values: Array<EnumValue<Src>>;
+}): Enum<Src | null> {
   return {
     kind: 'Enum',
     name,
@@ -132,7 +130,7 @@ export function field<Ctx, Src, Arg, Out>(
   };
 }
 
-export function fieldFast<Ctx, Src extends object, K extends keyof Src>(
+export function defaultField<Ctx, Src extends object, K extends keyof Src>(
   name: K,
   type: OutputType<Ctx, Src[K]>,
   opts?: {
@@ -168,20 +166,19 @@ export function abstractField<Ctx, Out>(
   };
 }
 
-export function objectType<Src, Ctx = any>(
-  name: string,
-  {
-    description,
-    interfaces = [],
-    fields,
-    isTypeOf,
-  }: {
-    description?: string;
-    interfaces?: Array<Interface<Ctx, any>>;
-    fields: (self: OutputType<Ctx, Src | null>) => Array<Field<Ctx, Src, any>>;
-    isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean;
-  }
-): ObjectType<Ctx, Src | null> {
+export function objectType<Src, Ctx = any>({
+  name,
+  description,
+  interfaces = [],
+  fields,
+  isTypeOf,
+}: {
+  name: string;
+  description?: string;
+  interfaces?: Array<Interface<Ctx, any>>;
+  fields: (self: OutputType<Ctx, Src | null>) => Array<Field<Ctx, Src, any>>;
+  isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean;
+}): ObjectType<Ctx, Src | null> {
   const obj: ObjectType<Ctx, Src | null> = {
     kind: 'ObjectType',
     name,
@@ -195,16 +192,15 @@ export function objectType<Src, Ctx = any>(
   return obj;
 }
 
-export function inputObjectType<Src>(
-  name: string,
-  {
-    description,
-    fields,
-  }: {
-    description?: string;
-    fields: (self: InputType<Src | null>) => InputFieldMap<Src>;
-  }
-): InputObject<Src | null> {
+export function inputObjectType<Src>({
+  name,
+  description,
+  fields,
+}: {
+  name: string;
+  description?: string;
+  fields: (self: InputType<Src | null>) => InputFieldMap<Src>;
+}): InputObject<Src | null> {
   let inputObj: InputObject<Src | null> = {
     kind: 'InputObject',
     name,
@@ -216,16 +212,15 @@ export function inputObjectType<Src>(
   return inputObj;
 }
 
-export function unionType<Src, Ctx = any>(
-  name: string,
-  {
-    types,
-    resolveType,
-  }: {
-    types: Array<ObjectType<Ctx, any>>;
-    resolveType: (src: Src) => ObjectType<any, any>;
-  }
-): Union<Ctx, Src | null> {
+export function unionType<Src, Ctx = any>({
+  name,
+  types,
+  resolveType,
+}: {
+  name: string;
+  types: Array<ObjectType<Ctx, any>>;
+  resolveType: (src: Src) => ObjectType<any, any>;
+}): Union<Ctx, Src | null> {
   return {
     kind: 'Union',
     name,
@@ -234,16 +229,15 @@ export function unionType<Src, Ctx = any>(
   } as Union<Ctx, Src | null>;
 }
 
-export function interfaceType<Src, Ctx = any>(
-  name: string,
-  {
-    description,
-    fields,
-  }: {
-    description?: string;
-    fields: (self: Interface<Ctx, Src | null>) => Array<AbstractField<Ctx, any>>;
-  }
-): Interface<Ctx, Src | null> {
+export function interfaceType<Src, Ctx = any>({
+  name,
+  description,
+  fields,
+}: {
+  name: string;
+  description?: string;
+  fields: (self: Interface<Ctx, Src | null>) => Array<AbstractField<Ctx, any>>;
+}): Interface<Ctx, Src | null> {
   const obj: Interface<Ctx, Src | null> = {
     kind: 'Interface',
     name,
@@ -288,13 +282,13 @@ export function queryType<Ctx>({
   fields,
 }: {
   name?: string;
-  fields: () => Array<Field<Ctx, void, any>>;
+  fields: Array<Field<Ctx, void, any>>;
 }): ObjectType<Ctx, void> {
   return {
     kind: 'ObjectType',
     name,
     interfaces: [],
-    fieldsFn: fields,
+    fieldsFn: () => fields,
   };
 }
 

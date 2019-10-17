@@ -133,7 +133,8 @@ export function getDroid(id: string): Droid {
   return droidData[id];
 }
 
-const episodeEnum = t.enumType('Episode', {
+const episodeEnum = t.enumType({
+  name: 'Episode',
   description: 'One of the films in the Star Wars Trilogy',
   values: [
     { name: 'NEWHOPE', value: Episode.NEWHOPE },
@@ -142,7 +143,8 @@ const episodeEnum = t.enumType('Episode', {
   ],
 });
 
-const characterInterface = t.interfaceType<ICharacter>('Character', {
+const characterInterface = t.interfaceType<ICharacter>({
+  name: 'Character',
   fields: self => [
     t.abstractField('id', t.NonNull(t.IDString)),
     t.abstractField('name', t.NonNull(t.String)),
@@ -151,15 +153,16 @@ const characterInterface = t.interfaceType<ICharacter>('Character', {
   ],
 });
 
-const humanType = t.objectType<Human>('Human', {
+const humanType = t.objectType<Human>({
+  name: 'Human',
   description: 'A humanoid creature in the Star Wars universe.',
   interfaces: [characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Human',
   fields: () => [
-    t.fieldFast('id', t.NonNull(t.ID)),
-    t.fieldFast('name', t.NonNull(t.String)),
-    t.fieldFast('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.fieldFast('homePlanet', t.String),
+    t.defaultField('id', t.NonNull(t.ID)),
+    t.defaultField('name', t.NonNull(t.String)),
+    t.defaultField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
+    t.defaultField('homePlanet', t.String),
     t.field('friends', {
       type: t.NonNull(t.List(characterInterface)),
       resolve: c => {
@@ -175,15 +178,16 @@ const humanType = t.objectType<Human>('Human', {
   ],
 });
 
-const droidType = t.objectType<Droid>('Droid', {
+const droidType = t.objectType<Droid>({
+  name: 'Droid',
   description: 'A mechanical creature in the Star Wars universe.',
   interfaces: [characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Droid',
   fields: () => [
-    t.fieldFast('id', t.NonNull(t.IDString)),
-    t.fieldFast('name', t.NonNull(t.String)),
-    t.fieldFast('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.fieldFast('primaryFunction', t.NonNull(t.String)),
+    t.defaultField('id', t.NonNull(t.IDString)),
+    t.defaultField('name', t.NonNull(t.String)),
+    t.defaultField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
+    t.defaultField('primaryFunction', t.NonNull(t.String)),
     t.field('friends', {
       type: t.NonNull(t.List(characterInterface)),
       resolve: c => {
@@ -200,7 +204,7 @@ const droidType = t.objectType<Droid>('Droid', {
 });
 
 const queryType = t.queryType({
-  fields: () => [
+  fields: [
     t.field('hero', {
       type: characterInterface,
       args: {

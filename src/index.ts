@@ -22,7 +22,7 @@ export default {
   List: define.List,
   ListInput: define.ListInput,
   field: define.field,
-  fieldFast: define.fieldFast,
+  defaultField: define.defaultField,
   subscriptionField: define.subscriptionField,
   abstractField: define.abstractField,
   queryType: define.queryType,
