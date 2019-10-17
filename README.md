@@ -6,7 +6,7 @@
 
 ## Type-safety without manual work
 
-`gqtx` is a thing layer of redirection for writing a type-safe graphql serverin TypeScript. It provides you with a set of helper functions to create an intermediate representation of a GraphQL schema, and then converts that schema to a raw `graphql-js` schema. So you get to use everything from the reference implementation of GraphQL, but safer.
+`gqtx` is a thin layer of redirection for writing a type-safe GraphQL server in TypeScript. It provides you with a set of helper functions to create an intermediate representation of a GraphQL schema, and then converts that schema to a raw `graphql-js` schema. So you get to use everything from the reference implementation of GraphQL, but safer.
 
 If a schema compiles, the following holds:
 
