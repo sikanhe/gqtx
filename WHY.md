@@ -16,4 +16,6 @@ Second, it requires a lot of fluff to make it work - Setting up `.graphql` file 
 
 For a new team adopting GraphQL, you would have to teach them how to write SDL and use the codegen, on top of understanding how graphql works. This is a steeper hill to climb than necessary.  
 
+More on this topic: https://www.prisma.io/blog/the-problems-of-schema-first-graphql-development-x1mn4cb0tyl3/ 
+
 *Can we get the same type safety guarantees without the cruft? It turns out we can.*
