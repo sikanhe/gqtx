@@ -17,7 +17,7 @@ If a schema compiles, the following holds:
 - The arguments of a field will not be abstract types (Interface, Union)
 - The context argument for all resolver functions in a schema agree.
 
-Most importantly, we achieve all this without having to:
+Most importantly, we achieve all this *without* having to:
 
 - Set up code generation tools
 - Write SDL and having your schema patially defined in code and in a DSL file
