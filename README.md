@@ -2,7 +2,9 @@
 
 ## Getting Started
 
-`(yarn add | npm install) gqtx`
+<p align="center">
+<code>yarn add gqtx</code>
+</p>
 
 ## Type-safety without manual work
 
