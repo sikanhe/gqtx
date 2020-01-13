@@ -8,7 +8,7 @@
 
 ## Type-safety without manual work
 
-`gqtx` is a thin layer on top of `graphql-js` for writing a type-safe GraphQL server in TypeScript. It provides you with a set of helper functions to create an intermediate representation of a GraphQL schema, and then converts that schema to a raw `graphql-js` schema. So you get to use everything from the reference implementation of GraphQL, but with way more typesafety. 
+`gqtx` is a thin layer on top of `graphql-js` for writing a type-safe GraphQL server in TypeScript. It provides you with a set of helper functions to create an intermediate representation of a GraphQL schema, and then converts that schema to a raw `graphql-js` schema. So you get to use everything from the reference implementation of GraphQL, but with way more type safety. 
 
 If a schema compiles, the following holds:
 
@@ -22,7 +22,7 @@ If a schema compiles, the following holds:
 Most importantly, we achieve all this *without* having to:
 
 - Set up code generation tools
-- Write SDL and having your schema patially defined in code and in a DSL file
+- Write SDL and having your schema partially defined in code and in a DSL file
 - Require special compiler magic such as `reflect-metadata` and decorators
 
 ### What does it look like?
@@ -58,7 +58,7 @@ const UserType = t.objectType<User>({
   fields: () => [
     t.defaultField('id', t.NonNull(t.ID)),
     t.defaultField('role', t.NonNull(RoleEnum)),
-    // `defaultField` is the safe vesion of a default resovler
+    // `defaultField` is the safe version of a default resovler
     // field. In this case, field 'name' must exist on `User`
     // and its type must be `string`
     t.defaultField('name', t.NonNull(t.String)),
@@ -87,7 +87,7 @@ const schema = buildGraphQLSchema({
 });
 ```
 
-#### Use your favorate server option to serve the schema!
+#### Use your favorite server option to serve the schema!
 
 ```ts
 import express from 'express';
