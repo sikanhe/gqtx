@@ -277,13 +277,13 @@ export function NonNullInput<Src>(ofType: InputType<Src | null>): InputType<Src>
   };
 }
 
-export function queryType<Ctx>({
+export function queryType<Ctx, Src>({
   name = 'Query',
   fields,
 }: {
   name?: string;
-  fields: Array<Field<Ctx, void, any>>;
-}): ObjectType<Ctx, void> {
+  fields: Array<Field<Ctx, Src, any>>;
+}): ObjectType<Ctx, Src> {
   return {
     kind: 'ObjectType',
     name,
@@ -292,13 +292,13 @@ export function queryType<Ctx>({
   };
 }
 
-export function mutationType<Ctx>({
+export function mutationType<Ctx, Src>({
   name = 'Mutation',
   fields,
 }: {
   name?: string;
-  fields: () => Array<Field<Ctx, void, any>>;
-}): ObjectType<Ctx, void> {
+  fields: () => Array<Field<Ctx, Src, any>>;
+}): ObjectType<Ctx, Src> {
   return {
     kind: 'ObjectType',
     name,
