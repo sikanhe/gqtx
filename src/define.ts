@@ -346,13 +346,13 @@ export function subscriptionField<Ctx, Out, Arg>(
   };
 }
 
-export function subscriptionType<Ctx>({
+export function subscriptionType<Ctx, Src>({
   name = 'Subscription',
   fields,
 }: {
   name?: string;
-  fields: Array<SubscriptionField<Ctx, any, any>>;
-}): SubscriptionObject<Ctx> {
+  fields: Array<SubscriptionField<Ctx, Src, any>>;
+}): SubscriptionObject<Ctx, Src> {
   return {
     kind: 'SubscriptionObject',
     name,
