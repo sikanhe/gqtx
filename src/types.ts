@@ -164,10 +164,10 @@ export type Union<Ctx, Src> = {
   resolveType: ResolveType<Src, Ctx>;
 };
 
-export type SubscriptionObject<Ctx> = {
+export type SubscriptionObject<Ctx, Src> = {
   kind: 'SubscriptionObject';
   name: string;
-  fields: Array<SubscriptionField<Ctx, any, any>>;
+  fields: Array<SubscriptionField<Ctx, Src, any>>;
 };
 
 export type SubscriptionField<Ctx, TArg, Out> = {
@@ -190,8 +190,8 @@ export type SubscriptionField<Ctx, TArg, Out> = {
   ) => PromiseOrValue<Out>;
 };
 
-export type Schema<Ctx> = {
-  query: ObjectType<Ctx, void>;
-  mutation?: ObjectType<Ctx, void>;
-  subscription?: SubscriptionObject<Ctx>;
+export type Schema<Ctx, Src> = {
+  query: ObjectType<Ctx, Src>;
+  mutation?: ObjectType<Ctx, Src>;
+  subscription?: SubscriptionObject<Ctx, Src>;
 };
