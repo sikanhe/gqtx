@@ -164,13 +164,13 @@ export type Union<Ctx, Src> = {
   resolveType: ResolveType<Src, Ctx>;
 };
 
-export type SubscriptionObject<Ctx, TRootSource> = {
+export type SubscriptionObject<Ctx, RootSrc> = {
   kind: "SubscriptionObject";
   name: string;
-  fields: Array<SubscriptionField<Ctx, TRootSource, any, any>>;
+  fields: Array<SubscriptionField<Ctx, RootSrc, any, any>>;
 };
 
-export type SubscriptionField<Ctx, TRootSource, TArg, Out> = {
+export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
   kind: "SubscriptionField";
   name: string;
   description?: string;
@@ -178,7 +178,7 @@ export type SubscriptionField<Ctx, TRootSource, TArg, Out> = {
   args: ArgMap<TArg>;
   deprecationReason?: string;
   subscribe: (
-    source: TRootSource,
+    source: RootSrc,
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,
     info: graphql.GraphQLResolveInfo
@@ -191,8 +191,8 @@ export type SubscriptionField<Ctx, TRootSource, TArg, Out> = {
   ) => PromiseOrValue<Out>;
 };
 
-export type Schema<Ctx, TRootSource> = {
-  query: ObjectType<Ctx, TRootSource>;
-  mutation?: ObjectType<Ctx, TRootSource>;
-  subscription?: SubscriptionObject<Ctx, TRootSource>;
+export type Schema<Ctx, RootSrc> = {
+  query: ObjectType<Ctx, RootSrc>;
+  mutation?: ObjectType<Ctx, RootSrc>;
+  subscription?: SubscriptionObject<Ctx, RootSrc>;
 };
