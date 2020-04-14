@@ -203,14 +203,14 @@ const droidType = t.objectType<Droid>({
   ],
 });
 
-const queryType = t.queryType({
+const queryType = t.queryType<{}, string>({
   fields: [
     t.field('hero', {
       type: characterInterface,
       args: {
         episode: t.defaultArg(episodeEnum, Episode.EMPIRE),
       },
-      resolve: (_, { episode }) => getHero(episode),
+      resolve: (root: string, { episode }, ctx, info) => getHero(episode),
     }),
     t.field('human', {
       type: humanType,

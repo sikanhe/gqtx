@@ -25,7 +25,7 @@ export type InputType<Src> =
 interface ListInputType<Src> extends ListInput<InputType<Src>> {}
 interface NonNullInputType<Src> extends NonNullInput<InputType<Src>> {}
 
-export type AllType<Ctx> = OutputType<Ctx, any> | InputType<any>;
+export type AllType<Ctx> = OutputType<Ctx, unknown> | InputType<unknown>;
 
 export type Scalar<Src> =
   | {
@@ -122,9 +122,13 @@ export type ObjectType<Ctx, Src> = {
   name: string;
   description?: string;
   deprecationReason?: string;
-  interfaces: Array<Interface<Ctx, any>>;
-  fieldsFn: () => Array<Field<Ctx, Src, any, any>>;
-  isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean | Promise<boolean>;
+  interfaces: Array<Interface<Ctx, unknown>>;
+  fieldsFn: () => Array<Field<Ctx, Src, unknown, any>>;
+  isTypeOf?: (
+    src: unknown,
+    ctx: Ctx,
+    info: graphql.GraphQLResolveInfo
+  ) => boolean | Promise<boolean>;
 };
 
 export type InputField<Src> = {
@@ -153,7 +157,7 @@ export type Interface<Ctx, Src> = {
   kind: 'Interface';
   name: string;
   description?: string;
-  fieldsFn: () => Array<AbstractField<Ctx, any>>;
+  fieldsFn: () => Array<AbstractField<Ctx, unknown>>;
   resolveType?: ResolveType<Src, Ctx>;
 };
 
@@ -167,7 +171,7 @@ export type Union<Ctx, Src> = {
 export type SubscriptionObject<Ctx, RootSrc> = {
   kind: 'SubscriptionObject';
   name: string;
-  fields: Array<SubscriptionField<Ctx, RootSrc, any, any>>;
+  fields: Array<SubscriptionField<Ctx, RootSrc, unknown, unknown>>;
 };
 
 export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
@@ -191,7 +195,7 @@ export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
   ) => PromiseOrValue<Out>;
 };
 
-export type Schema<Ctx, RootSrc = void> = {
+export type Schema<Ctx, RootSrc = undefined> = {
   query: ObjectType<Ctx, RootSrc>;
   mutation?: ObjectType<Ctx, RootSrc>;
   subscription?: SubscriptionObject<Ctx, RootSrc>;
