@@ -277,13 +277,13 @@ export function NonNullInput<Src>(ofType: InputType<Src | null>): InputType<Src>
   };
 }
 
-export function queryType<Ctx>({
+export function queryType<Ctx, RootSrc>({
   name = 'Query',
   fields,
 }: {
   name?: string;
-  fields: Array<Field<Ctx, void, any>>;
-}): ObjectType<Ctx, void> {
+  fields: Array<Field<Ctx, RootSrc, any>>;
+}): ObjectType<Ctx, RootSrc> {
   return {
     kind: 'ObjectType',
     name,
@@ -292,13 +292,13 @@ export function queryType<Ctx>({
   };
 }
 
-export function mutationType<Ctx>({
+export function mutationType<Ctx, RootSrc>({
   name = 'Mutation',
   fields,
 }: {
   name?: string;
-  fields: () => Array<Field<Ctx, void, any>>;
-}): ObjectType<Ctx, void> {
+  fields: () => Array<Field<Ctx, RootSrc, any>>;
+}): ObjectType<Ctx, RootSrc> {
   return {
     kind: 'ObjectType',
     name,
@@ -307,7 +307,7 @@ export function mutationType<Ctx>({
   };
 }
 
-export function subscriptionField<Ctx, Out, Arg>(
+export function subscriptionField<Ctx, RootSrc, Out, Arg>(
   name: string,
   {
     type,
@@ -322,23 +322,24 @@ export function subscriptionField<Ctx, Out, Arg>(
     description?: string;
     deprecationReason?: string;
     subscribe: (
+      src: RootSrc,
       args: TOfArgMap<ArgMap<Arg>>,
       ctx: Ctx,
       info: graphql.GraphQLResolveInfo
     ) => AsyncIterator<Out> | Promise<AsyncIterator<Out>>;
     resolve?: (
-      payload: Out,
+      src: RootSrc,
       args: TOfArgMap<ArgMap<Arg>>,
       ctx: Ctx,
       info: graphql.GraphQLResolveInfo
     ) => Out | Promise<Out>;
   }
-): SubscriptionField<Ctx, Arg, Out> {
+): SubscriptionField<Ctx, RootSrc, Arg, Out> {
   return {
     kind: 'SubscriptionField',
     name,
     type,
-    args: args,
+    args,
     subscribe,
     resolve,
     description,
@@ -346,13 +347,13 @@ export function subscriptionField<Ctx, Out, Arg>(
   };
 }
 
-export function subscriptionType<Ctx>({
+export function subscriptionType<Ctx, Src>({
   name = 'Subscription',
   fields,
 }: {
   name?: string;
-  fields: Array<SubscriptionField<Ctx, any, any>>;
-}): SubscriptionObject<Ctx> {
+  fields: Array<SubscriptionField<Ctx, Src, unknown, unknown>>;
+}): SubscriptionObject<Ctx, Src> {
   return {
     kind: 'SubscriptionObject',
     name,
