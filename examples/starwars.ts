@@ -113,7 +113,7 @@ function getCharacter(id: string) {
 }
 
 export function getFriends(character: ICharacter): Array<Promise<ICharacter>> {
-  return character.friends.map(id => getCharacter(id));
+  return character.friends.map((id) => getCharacter(id));
 }
 
 export function getHero(episode: Episode | null): ICharacter {
@@ -145,7 +145,7 @@ const episodeEnum = t.enumType({
 
 const characterInterface = t.interfaceType<ICharacter>({
   name: 'Character',
-  fields: self => [
+  fields: (self) => [
     t.abstractField('id', t.NonNull(t.IDString)),
     t.abstractField('name', t.NonNull(t.String)),
     t.abstractField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
@@ -165,7 +165,7 @@ const humanType = t.objectType<Human>({
     t.defaultField('homePlanet', t.String),
     t.field('friends', {
       type: t.NonNull(t.List(characterInterface)),
-      resolve: c => {
+      resolve: (c) => {
         return Promise.all(getFriends(c));
       },
     }),
@@ -190,7 +190,7 @@ const droidType = t.objectType<Droid>({
     t.defaultField('primaryFunction', t.NonNull(t.String)),
     t.field('friends', {
       type: t.NonNull(t.List(characterInterface)),
-      resolve: c => {
+      resolve: (c) => {
         return Promise.all(getFriends(c));
       },
     }),
@@ -203,14 +203,14 @@ const droidType = t.objectType<Droid>({
   ],
 });
 
-const queryType = t.queryType<{}, string>({
+const queryType = t.queryType({
   fields: [
     t.field('hero', {
       type: characterInterface,
       args: {
         episode: t.defaultArg(episodeEnum, Episode.EMPIRE),
       },
-      resolve: (root: string, { episode }, ctx, info) => getHero(episode),
+      resolve: (_, { episode }) => getHero(episode),
     }),
     t.field('human', {
       type: humanType,
