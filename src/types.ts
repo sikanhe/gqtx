@@ -191,7 +191,7 @@ export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
   ) => PromiseOrValue<Out>;
 };
 
-export type Schema<Ctx, RootSrc> = {
+export type Schema<Ctx, RootSrc = void> = {
   query: ObjectType<Ctx, RootSrc>;
   mutation?: ObjectType<Ctx, RootSrc>;
   subscription?: SubscriptionObject<Ctx, RootSrc>;
