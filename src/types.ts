@@ -184,7 +184,7 @@ export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
     info: graphql.GraphQLResolveInfo
   ) => PromiseOrValue<AsyncIterator<Out>>;
   resolve?: (
-    payload: Out,
+    source: RootSrc,
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,
     info: graphql.GraphQLResolveInfo
