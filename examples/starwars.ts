@@ -1,6 +1,6 @@
 import { createTypesFactory, buildGraphQLSchema } from '../dist';
 
-const t = createTypesFactory();
+const t = createTypesFactory<{ contextContent: string }>();
 
 const enum Episode {
   NEWHOPE = 4,
@@ -225,6 +225,10 @@ const queryType = t.queryType({
         id: t.arg(t.NonNullInput(t.String), 'ID of the droid'),
       },
       resolve: (_, { id }) => getDroid(id),
+    }),
+    t.field('contextContent', {
+      type: t.String,
+      resolve: (_, _args, ctx) => ctx.contextContent,
     }),
   ],
 });
