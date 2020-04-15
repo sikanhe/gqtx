@@ -1,4 +1,6 @@
-import t, { buildGraphQLSchema } from '../dist';
+import { createTypesFactory, buildGraphQLSchema } from '../dist';
+
+const t = createTypesFactory();
 
 const enum Episode {
   NEWHOPE = 4,
