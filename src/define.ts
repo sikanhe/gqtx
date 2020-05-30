@@ -27,6 +27,8 @@ function builtInScalar<Src>(builtInType: graphql.GraphQLScalarType): Scalar<Src 
   };
 }
 
+type ObjectSrcType<T> = T extends ObjectType<any, infer Src> ? Src : never;
+
 export function createTypesFactory<Ctx = undefined>() {
   return {
     String: builtInScalar<string>(graphql.GraphQLString),
@@ -205,20 +207,20 @@ export function createTypesFactory<Ctx = undefined>() {
       inputObj.fieldsFn = () => fields(inputObj);
       return inputObj;
     },
-    unionType<Src>({
+    unionType<Type extends ObjectType<Ctx, any>, Src extends Exclude<ObjectSrcType<Type>, null>>({
       name,
       types,
       resolveType,
     }: {
       name: string;
-      types: Array<ObjectType<Ctx, any>>;
-      resolveType: (src: Src) => ObjectType<any, any>;
-    }): Union<Ctx, Src | null> {
+      types: Array<Type>;
+      resolveType: (src: Src) => Type extends ObjectType<Ctx, infer ResolvedSrc> ? [Type, Exclude<ResolvedSrc, null>] : never
+    }): Union<Ctx, ObjectSrcType<Type> | null> {
       return {
         kind: 'Union',
         name,
         types,
-        resolveType,
+        resolveType: (src: Src) => resolveType(src)[0],
       } as Union<Ctx, Src | null>;
     },
     interfaceType<Src>({

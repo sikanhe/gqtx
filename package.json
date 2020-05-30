@@ -22,12 +22,15 @@
     "express-graphql": "^0.9.0",
     "graphql": "^14.5.8",
     "ts-node": "^8.4.1",
-    "typescript": "^3.6.4"
+    "typescript": "^3.9.3"
   },
   "dependencies": {
     "graphql": "^14.5.8"
   },
   "scripts": {
-    "prepare": "tsc"
+    "prepare": "yarn build",
+    "build": "tsc",
+    "test": "tsc --project test/tsconfig.json",
+    "build:examples": "tsc --project examples/tsconfig.json"
   }
 }

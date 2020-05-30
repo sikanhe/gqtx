@@ -1,8 +1,8 @@
 {
-  "files": ["./star-wars.ts"],
+  "files": ["./type-test.ts"],
   "compilerOptions": {
+    "noEmit": true,
     "target": "es2019",
-    "outDir": "dist",
     "module": "commonjs", 
     "jsx": "react",              
     "declaration": true,
