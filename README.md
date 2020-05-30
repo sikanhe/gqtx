@@ -51,7 +51,7 @@ type AppContext = {
   users: User[]
 }
 
-// We can set the app context type once, and it will 
+// We can set the app context type once, and it will
 // be automatically inferred for all our resolvers! :)
 const t = createTypesFactory<AppContext>();
 
@@ -67,7 +67,7 @@ const UserType = t.objectType<User>({
   fields: () => [
     t.defaultField('id', t.NonNull(t.ID)),
     t.defaultField('role', t.NonNull(RoleEnum)),
-    // `defaultField` is the safe version of a default resovler
+    // `defaultField` is the safe version of a default resolver
     // field. In this case, field 'name' must exist on `User`
     // and its type must be `string`
     t.defaultField('name', t.NonNull(t.String)),
@@ -79,7 +79,7 @@ const Query = t.queryType({
     t.field('userById', {
       type: UserType,
       args: {
-        id: { type: t.NonNullInput(t.ID) },
+        id: t.arg(t.NonNullInput(t.IDString)),
       },
       resolve: (_, args, ctx) => {
         // `args` is automatically inferred as { id: string }
