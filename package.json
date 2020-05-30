@@ -45,6 +45,7 @@
   "scripts": {
     "build:cjs": "MODE=cjs rollup -c",
     "build:esm": "rollup -c",
-    "build": "yarn build:cjs && yarn build:esm"
+    "build": "yarn build:cjs && yarn build:esm",
+    "test": "riteway --require ts-node/register/transpile-only src/**/*.test.ts"
   }
 }
