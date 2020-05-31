@@ -195,4 +195,5 @@ export type Schema<Ctx, RootSrc = undefined> = {
   query: ObjectType<Ctx, RootSrc>;
   mutation?: ObjectType<Ctx, RootSrc>;
   subscription?: SubscriptionObject<Ctx, RootSrc>;
+  types?: ObjectType<Ctx, any>[]
 };
