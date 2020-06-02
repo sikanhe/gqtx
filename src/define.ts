@@ -33,9 +33,7 @@ export function createTypesFactory<Ctx = undefined>() {
     Int: builtInScalar<number>(graphql.GraphQLInt),
     Float: builtInScalar<number>(graphql.GraphQLFloat),
     Boolean: builtInScalar<boolean>(graphql.GraphQLBoolean),
-    ID: builtInScalar<any>(graphql.GraphQLID),
-    IDString: builtInScalar<string>(graphql.GraphQLID),
-    IDInt: builtInScalar<number>(graphql.GraphQLID),
+    ID: builtInScalar<string>(graphql.GraphQLID),
     scalarType<Src>({
       name,
       description,
