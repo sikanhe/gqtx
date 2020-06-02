@@ -15,15 +15,15 @@ export function buildGraphQLSchema<Ctx, RootSrc>(
 ): graphql.GraphQLSchema {
   const typeMap = new Map();
   return new graphql.GraphQLSchema({
-    query: toGraphQOutputType<Ctx, RootSrc>(schema.query, typeMap) as graphql.GraphQLObjectType,
+    query: toGraphQLOutputType<Ctx, RootSrc>(schema.query, typeMap) as graphql.GraphQLObjectType,
     mutation:
       schema.mutation &&
-      (toGraphQOutputType<Ctx, RootSrc>(schema.mutation, typeMap) as graphql.GraphQLObjectType<
+      (toGraphQLOutputType<Ctx, RootSrc>(schema.mutation, typeMap) as graphql.GraphQLObjectType<
         RootSrc,
         Ctx
       >),
     subscription: schema.subscription && toGraphQLSubscriptionObject(schema.subscription, typeMap),
-    types: schema.types && schema.types.map((type) => toGraphQOutputType(type, typeMap) as graphql.GraphQLObjectType<any, any>)
+    types: schema.types && schema.types.map((type) => toGraphQLOutputType(type, typeMap) as graphql.GraphQLObjectType<any, any>)
   });
 }
 
@@ -57,7 +57,7 @@ export function toGraphQLSubscriptionObject<Ctx, RootSrc>(
 
       subscriptionObj.fields.forEach((field) => {
         gqlFieldConfig[field.name] = {
-          type: toGraphQOutputType(field.type, typeMap),
+          type: toGraphQLOutputType(field.type, typeMap),
           description: field.description,
           subscribe: field.subscribe,
           resolve: field.resolve,
@@ -84,7 +84,7 @@ export function toGraphQLInputType<Ctx>(
   switch (t.kind) {
     case 'Scalar':
     case 'Enum':
-      return toGraphQOutputType(t, typeMap) as graphql.GraphQLInputType;
+      return toGraphQLOutputType(t, typeMap) as graphql.GraphQLInputType;
     case 'NonNullInput':
       return new graphql.GraphQLNonNull(toGraphQLInputType(t.ofType, typeMap));
     case 'ListInput':
@@ -117,7 +117,7 @@ export function toGraphQLInputType<Ctx>(
   }
 }
 
-export function toGraphQOutputType<Ctx, Src>(
+export function toGraphQLOutputType<Ctx, Src>(
   t: OutputType<Ctx, any>,
   typeMap: Map<AllType<Ctx>, graphql.GraphQLType>
 ): graphql.GraphQLOutputType {
@@ -156,13 +156,13 @@ export function toGraphQOutputType<Ctx, Src>(
       typeMap.set(t, enumT);
       return enumT;
     case 'NonNull':
-      return new graphql.GraphQLNonNull(toGraphQOutputType(t.ofType, typeMap));
+      return new graphql.GraphQLNonNull(toGraphQLOutputType(t.ofType, typeMap));
     case 'List':
-      return new graphql.GraphQLList(toGraphQOutputType(t.ofType, typeMap));
+      return new graphql.GraphQLList(toGraphQLOutputType(t.ofType, typeMap));
     case 'ObjectType':
       const obj = new graphql.GraphQLObjectType({
         name: t.name,
-        interfaces: t.interfaces.map((intf) => toGraphQOutputType(intf, typeMap)) as any,
+        interfaces: t.interfaces.map((intf) => toGraphQLOutputType(intf, typeMap)) as any,
         isTypeOf: t.isTypeOf,
         fields: () => {
           const fields = t.fieldsFn();
@@ -170,7 +170,7 @@ export function toGraphQOutputType<Ctx, Src>(
 
           fields.forEach((field) => {
             gqlFieldConfig[field.name] = {
-              type: toGraphQOutputType(field.type, typeMap),
+              type: toGraphQLOutputType(field.type, typeMap),
               description: field.description,
               resolve: field.resolve,
               args: toGraphQLArgs(field.args, typeMap),
@@ -188,7 +188,7 @@ export function toGraphQOutputType<Ctx, Src>(
     case 'Union':
       const union = new graphql.GraphQLUnionType({
         name: t.name,
-        types: t.types.map((t) => toGraphQOutputType(t, typeMap)) as any,
+        types: t.types.map((t) => toGraphQLOutputType(t, typeMap)) as any,
         resolveType: async (src, ctx, info) => {
           const resolved = await t.resolveType(src, ctx, info);
           if (typeof resolved === 'string' || resolved == null) return resolved;
@@ -207,7 +207,7 @@ export function toGraphQOutputType<Ctx, Src>(
 
           fields.forEach((field) => {
             result[field.name] = {
-              type: toGraphQOutputType(field.type, typeMap),
+              type: toGraphQLOutputType(field.type, typeMap),
               description: field.description,
               deprecationReason: field.deprecationReason,
             };
