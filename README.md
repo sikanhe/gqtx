@@ -79,7 +79,7 @@ const Query = t.queryType({
     t.field('userById', {
       type: UserType,
       args: {
-        id: t.arg(t.NonNullInput(t.IDString)),
+        id: t.arg(t.NonNullInput(t.ID)),
       },
       resolve: (_, args, ctx) => {
         // `args` is automatically inferred as { id: string }

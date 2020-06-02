@@ -1,4 +1,4 @@
-import { createTypesFactory, buildGraphQLSchema } from '../dist';
+import { createTypesFactory, buildGraphQLSchema } from '../src';
 
 const t = createTypesFactory<{ contextContent: string }>();
 
@@ -16,21 +16,13 @@ type ICharacter = {
   appearsIn: Array<Episode>;
 };
 
-type Human = {
+type Human = ICharacter & {
   type: 'Human';
-  id: string;
-  name: string;
-  friends: Array<string>;
-  appearsIn: Array<Episode>;
   homePlanet: string | null;
 };
 
-type Droid = {
+type Droid = ICharacter & {
   type: 'Droid';
-  id: string;
-  name: string;
-  friends: Array<string>;
-  appearsIn: Array<Episode>;
   primaryFunction: string;
 };
 
@@ -148,7 +140,7 @@ const episodeEnum = t.enumType({
 const characterInterface = t.interfaceType<ICharacter>({
   name: 'Character',
   fields: (self) => [
-    t.abstractField('id', t.NonNull(t.IDString)),
+    t.abstractField('id', t.NonNull(t.ID)),
     t.abstractField('name', t.NonNull(t.String)),
     t.abstractField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.abstractField('friends', t.NonNull(t.List(self))),
@@ -186,7 +178,7 @@ const droidType = t.objectType<Droid>({
   interfaces: [characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Droid',
   fields: () => [
-    t.defaultField('id', t.NonNull(t.IDString)),
+    t.defaultField('id', t.NonNull(t.ID)),
     t.defaultField('name', t.NonNull(t.String)),
     t.defaultField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.defaultField('primaryFunction', t.NonNull(t.String)),
