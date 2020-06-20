@@ -153,6 +153,7 @@ export type Interface<Ctx, Src> = {
   kind: 'Interface';
   name: string;
   description?: string;
+  interfaces: Array<Interface<Ctx, any>>;
   fieldsFn: () => Array<AbstractField<Ctx, any>>;
   resolveType?: ResolveType<Src, Ctx>;
 };
