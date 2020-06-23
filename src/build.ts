@@ -215,6 +215,7 @@ export function toGraphQLOutputType<Ctx, Src>(
 
           return result;
         },
+        interfaces: t.interfaces.map((intf) => toGraphQLOutputType(intf, typeMap)) as any,
       });
 
       typeMap.set(t, intf);

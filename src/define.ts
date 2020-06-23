@@ -222,16 +222,19 @@ export function createTypesFactory<Ctx = undefined>() {
     interfaceType<Src>({
       name,
       description,
+      interfaces = [],
       fields,
     }: {
       name: string;
       description?: string;
+      interfaces?: Array<Interface<Ctx, any>>;
       fields: (self: Interface<Ctx, Src | null>) => Array<AbstractField<Ctx, any>>;
     }): Interface<Ctx, Src | null> {
       const obj: Interface<Ctx, Src | null> = {
         kind: 'Interface',
         name,
         description,
+        interfaces,
         fieldsFn: undefined as any,
       };
 
