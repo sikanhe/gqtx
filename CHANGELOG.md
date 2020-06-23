@@ -2,7 +2,7 @@
 - The package now uses peer dependency 
 - Updated to work with Graphql-js v15. Allows interfaces to implement other interfaces  (https://github.com/sikanhe/gqtx/pull/20)
 - Simplified the ID scaler type (https://github.com/sikanhe/gqtx/pull/13)
-- Support for addind additional types not traversable from the root (https://github.com/sikanhe/gqtx/pull/16)
+- Support for adding additional types not reachable from the root (https://github.com/sikanhe/gqtx/pull/16)
 
 # 0.6.0
 
