@@ -23,7 +23,8 @@ export function buildGraphQLSchema<Ctx, RootSrc>(
         Ctx
       >),
     subscription: schema.subscription && toGraphQLSubscriptionObject(schema.subscription, typeMap),
-    types: schema.types && schema.types.map((type) => toGraphQLOutputType(type, typeMap) as graphql.GraphQLObjectType<any, any>)
+    types: schema.types && schema.types.map((type) => toGraphQLOutputType(type, typeMap) as graphql.GraphQLObjectType<any, any>),
+    directives: schema.directives
   });
 }
 

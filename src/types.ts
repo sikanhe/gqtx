@@ -197,4 +197,5 @@ export type Schema<Ctx, RootSrc = undefined> = {
   mutation?: ObjectType<Ctx, RootSrc>;
   subscription?: SubscriptionObject<Ctx, RootSrc>;
   types?: ObjectType<Ctx, any>[]
+  directives?: graphql.GraphQLDirective[]
 };
