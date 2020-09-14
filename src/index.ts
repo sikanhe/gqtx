@@ -1,2 +1,2 @@
 export { createTypesFactory } from './define';
-export { buildGraphQLSchema, toGraphQLInputType, toGraphQLOutputType as toGraphQOutputType } from './build';
+export { buildGraphQLSchema, toGraphQLInputType, toGraphQLOutputType } from './build';
