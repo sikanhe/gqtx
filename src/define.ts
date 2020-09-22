@@ -20,6 +20,180 @@ import {
   SubscriptionObject,
 } from './types';
 
+export type Factory<Ctx> = {
+  String: Scalar<string | null>;
+  Int: Scalar<number | null>;
+  Float: Scalar<number | null>;
+  Boolean: Scalar<boolean | null>;
+  ID: Scalar<string | null>;
+  scalarType<Src>({
+    name,
+    description,
+    serialize,
+    parseValue,
+    parseLiteral,
+  }: {
+    name: string;
+    description?: string | undefined;
+    serialize: (src: Src) => any;
+    parseValue?: ((value: JSON) => Src | null) | undefined;
+    parseLiteral?: ((value: graphql.ValueNode) => Src | null) | undefined;
+  }): Scalar<Src | null>;
+  enumType<Src>({
+    name,
+    description,
+    values,
+  }: {
+    name: string;
+    description?: string | undefined;
+    values: EnumValue<Src>[];
+  }): Enum<Src | null>;
+  arg<Src>(type: InputType<Src>, description?: string | undefined): Argument<Src>;
+  defaultArg<Src>(
+    type: InputType<Src>,
+    defaultArg: Exclude<Src, null>,
+    description?: string | undefined
+  ): DefaultArgument<Exclude<Src, null>>;
+  field<Src, Arg, Out>(
+    name: string,
+    {
+      type,
+      args,
+      resolve,
+      description,
+      deprecationReason,
+    }: {
+      type: OutputType<Ctx, Out>;
+      args?: ArgMap<Arg> | undefined;
+      description?: string | undefined;
+      deprecationReason?: string | undefined;
+      resolve: (
+        src: Src,
+        args: TOfArgMap<ArgMap<Arg>>,
+        ctx: Ctx,
+        info: graphql.GraphQLResolveInfo
+      ) => Out | Promise<Out>;
+    }
+  ): Field<Ctx, Src, any, any>;
+  defaultField<Src extends object, K extends keyof Src>(
+    name: K,
+    type: OutputType<Ctx, Src[K]>,
+    opts?:
+      | {
+          description?: string | undefined;
+          deprecationReason?: string | undefined;
+        }
+      | undefined
+  ): Field<Ctx, Src, any, any>;
+  abstractField<Out_1>(
+    name: string,
+    type: OutputType<Ctx, Out_1>,
+    opts?:
+      | {
+          description?: string | undefined;
+          deprecationReason?: string | undefined;
+        }
+      | undefined
+  ): AbstractField<Ctx, Out_1>;
+  objectType<Src, Ctx = any>({
+    name,
+    description,
+    interfaces,
+    fields,
+    isTypeOf,
+  }: {
+    name: string;
+    description?: string | undefined;
+    interfaces?: Interface<Ctx, any>[] | undefined;
+    fields: (self: OutputType<Ctx, Src | null>) => Field<Ctx, Src, any, {}>[];
+    isTypeOf?: ((src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean) | undefined;
+  }): ObjectType<Ctx, Src | null>;
+  inputObjectType<Src>({
+    name,
+    description,
+    fields,
+  }: {
+    name: string;
+    description?: string | undefined;
+    fields: (self: InputType<Src | null>) => InputFieldMap<Src>;
+  }): InputObject<Src | null>;
+  unionType<Src>({
+    name,
+    types,
+    resolveType,
+  }: {
+    name: string;
+    types: ObjectType<Ctx, any>[];
+    resolveType: (src: Src) => ObjectType<any, any>;
+  }): Union<Ctx, Src | null>;
+  interfaceType<Src>({
+    name,
+    description,
+    interfaces,
+    fields,
+  }: {
+    name: string;
+    description?: string | undefined;
+    interfaces?: Interface<Ctx, any>[] | undefined;
+    fields: (self: Interface<Ctx, Src | null>) => AbstractField<Ctx, any>[];
+  }): Interface<Ctx, Src | null>;
+  List<Src>(ofType: OutputType<Ctx, Src>): OutputType<Ctx, Src[] | null>;
+  ListInput<Src>(ofType: InputType<Src>): InputType<Src[] | null>;
+  NonNull<Src>(ofType: OutputType<Ctx, Src | null>): OutputType<Ctx, Src>;
+  NonNullInput<Src>(ofType: InputType<Src | null>): InputType<Src>;
+  queryType<RootSrc>({
+    name,
+    fields,
+  }: {
+    name?: string | undefined;
+    fields: Field<Ctx, RootSrc, any, {}>[];
+  }): ObjectType<Ctx, RootSrc>;
+  mutationType<RootSrc>({
+    name,
+    fields,
+  }: {
+    name?: string | undefined;
+    fields: () => Field<Ctx, RootSrc, any, {}>[];
+  }): ObjectType<Ctx, RootSrc>;
+  subscriptionField<RootSrc, Out_2, Arg_1>(
+    name: string,
+    {
+      type,
+      args,
+      subscribe,
+      resolve,
+      description,
+      deprecationReason,
+    }: {
+      type: OutputType<Ctx, Out_2>;
+      args?: ArgMap<Arg_1> | undefined;
+      description?: string | undefined;
+      deprecationReason?: string | undefined;
+      subscribe: (
+        src: RootSrc,
+        args: TOfArgMap<ArgMap<Arg_1>>,
+        ctx: Ctx,
+        info: graphql.GraphQLResolveInfo
+      ) => AsyncIterator<Out_2, any, undefined> | Promise<AsyncIterator<Out_2, any, undefined>>;
+      resolve?:
+        | ((
+            src: RootSrc,
+            args: TOfArgMap<ArgMap<Arg_1>>,
+            ctx: Ctx,
+            info: graphql.GraphQLResolveInfo
+          ) => Out_2 | Promise<Out_2>)
+        | undefined;
+    }
+  ): SubscriptionField<Ctx, RootSrc, Arg_1, Out_2>;
+  subscriptionType<Src>({
+    name,
+    fields,
+  }: {
+    name?: string | undefined;
+    fields: SubscriptionField<Ctx, Src, unknown, unknown>[];
+  }): SubscriptionObject<Ctx, Src>;
+};
+
 function builtInScalar<Src>(builtInType: graphql.GraphQLScalarType): Scalar<Src | null> {
   return {
     kind: 'Scalar',
@@ -27,7 +201,7 @@ function builtInScalar<Src>(builtInType: graphql.GraphQLScalarType): Scalar<Src 
   };
 }
 
-export function createTypesFactory<Ctx = undefined>() {
+export function createTypesFactory<Ctx = undefined>(): Factory<Ctx> {
   return {
     String: builtInScalar<string>(graphql.GraphQLString),
     Int: builtInScalar<number>(graphql.GraphQLInt),

@@ -1,6 +1,11 @@
-import { createTypesFactory, buildGraphQLSchema } from '../src';
+import { createTypesFactory, createRelayHelpers, buildGraphQLSchema } from '../src';
+import { Connection, ConnectionArguments } from '../src/relay';
+import { Interface } from '../src/types';
 
-const t = createTypesFactory<{ contextContent: string }>();
+type Context = { contextContent: string };
+
+const t = createTypesFactory<Context>();
+const relay = createRelayHelpers(t);
 
 const enum Episode {
   NEWHOPE = 4,
@@ -137,15 +142,37 @@ const episodeEnum = t.enumType({
   ],
 });
 
-const characterInterface = t.interfaceType<ICharacter>({
+const characterInterface: Interface<Context, ICharacter | null> = t.interfaceType<ICharacter>({
   name: 'Character',
-  fields: (self) => [
+  fields: () => [
     t.abstractField('id', t.NonNull(t.ID)),
     t.abstractField('name', t.NonNull(t.String)),
     t.abstractField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.abstractField('friends', t.NonNull(t.List(self))),
+    t.abstractField('friends', characterConnectionType),
   ],
 });
+
+const { connectionType: characterConnectionType } = relay.connectionDefinitions({
+  nodeType: characterInterface,
+});
+
+const createConnectionFromCharacterArray = (
+  array: ICharacter[],
+  args: ConnectionArguments
+): Connection<ICharacter> => {
+  return {
+    edges: array.map((char) => ({
+      cursor: char.id,
+      node: char,
+    })),
+    pageInfo: {
+      endCursor: array[array.length - 1].id,
+      hasNextPage: args.first ? array.length >= args.first : false,
+      hasPreviousPage: args.last ? array.length >= args.last : false,
+      startCursor: array[0].id,
+    },
+  };
+};
 
 const humanType = t.objectType<Human>({
   name: 'Human',
@@ -158,9 +185,11 @@ const humanType = t.objectType<Human>({
     t.defaultField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.defaultField('homePlanet', t.String),
     t.field('friends', {
-      type: t.NonNull(t.List(characterInterface)),
-      resolve: (c) => {
-        return Promise.all(getFriends(c));
+      type: characterConnectionType,
+      args: relay.connectionArgs,
+      resolve: async (c, args) => {
+        const friends = await Promise.all(getFriends(c));
+        return createConnectionFromCharacterArray(friends, args);
       },
     }),
     t.field('secretBackStory', {
@@ -183,9 +212,11 @@ const droidType = t.objectType<Droid>({
     t.defaultField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.defaultField('primaryFunction', t.NonNull(t.String)),
     t.field('friends', {
-      type: t.NonNull(t.List(characterInterface)),
-      resolve: (c) => {
-        return Promise.all(getFriends(c));
+      type: characterConnectionType,
+      args: relay.connectionArgs,
+      resolve: async (c, args) => {
+        const friends = await Promise.all(getFriends(c));
+        return createConnectionFromCharacterArray(friends, args);
       },
     }),
     t.field('secretBackStory', {
