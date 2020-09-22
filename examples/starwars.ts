@@ -1,5 +1,5 @@
 import { createTypesFactory, createRelayHelpers, buildGraphQLSchema } from '../src';
-import { Connection, ConnectionArguments } from '../src/relay';
+import { Connection, ConnectionArguments, Edge } from '../src/relay';
 import { Interface } from '../src/types';
 
 type Context = { contextContent: string };
@@ -152,8 +152,24 @@ const characterInterface: Interface<Context, ICharacter | null> = t.interfaceTyp
   ],
 });
 
-const { connectionType: characterConnectionType } = relay.connectionDefinitions({
+const { connectionType: characterConnectionType } = relay.connectionDefinitions<ICharacter>({
   nodeType: characterInterface,
+  edgeFields: () => [
+    t.field('friendshipTime', {
+      type: t.String,
+      resolve: (_edge: Edge<ICharacter>) => {
+        return 'Yesterday';
+      },
+    }),
+  ],
+  connectionFields: () => [
+    t.field('totalCount', {
+      type: t.Int,
+      resolve: () => {
+        return Object.keys(humanData).length + Object.keys(droidData).length;
+      },
+    }),
+  ],
 });
 
 const createConnectionFromCharacterArray = (
