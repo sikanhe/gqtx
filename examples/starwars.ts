@@ -132,6 +132,8 @@ export function getDroid(id: string): Droid {
   return droidData[id];
 }
 
+const { nodeInterface, nodeField } = relay.nodeDefinitions((id) => getCharacter(id));
+
 const episodeEnum = t.enumType({
   name: 'Episode',
   description: 'One of the films in the Star Wars Trilogy',
@@ -144,6 +146,7 @@ const episodeEnum = t.enumType({
 
 const characterInterface: Interface<Context, ICharacter | null> = t.interfaceType<ICharacter>({
   name: 'Character',
+  interfaces: [],
   fields: () => [
     t.abstractField('id', t.NonNull(t.ID)),
     t.abstractField('name', t.NonNull(t.String)),
@@ -176,8 +179,34 @@ const createConnectionFromCharacterArray = (
   array: ICharacter[],
   args: ConnectionArguments
 ): Connection<ICharacter> => {
+  let sliceStart = 0;
+  let sliceEnd = array.length;
+
+  if (args.after) {
+    const idx = array.findIndex((c) => c.id === args.after);
+    if (idx > -1) {
+      sliceStart = idx;
+    }
+  }
+
+  if (args.first) {
+    sliceEnd = Math.min(sliceStart + args.first, array.length);
+  }
+
+  if (args.before) {
+    sliceStart = array.length;
+    const idx = array.findIndex((c) => c.id === args.before);
+    if (sliceEnd > -1) {
+      sliceEnd = idx;
+    }
+  }
+
+  if (args.last) {
+    sliceStart = Math.max(sliceEnd - args.last, 0);
+  }
+
   return {
-    edges: array.map((char) => ({
+    edges: array.slice(sliceStart, sliceEnd).map((char) => ({
       cursor: char.id,
       node: char,
     })),
@@ -193,7 +222,7 @@ const createConnectionFromCharacterArray = (
 const humanType = t.objectType<Human>({
   name: 'Human',
   description: 'A humanoid creature in the Star Wars universe.',
-  interfaces: [characterInterface],
+  interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Human',
   fields: () => [
     t.defaultField('id', t.NonNull(t.ID)),
@@ -220,7 +249,7 @@ const humanType = t.objectType<Human>({
 const droidType = t.objectType<Droid>({
   name: 'Droid',
   description: 'A mechanical creature in the Star Wars universe.',
-  interfaces: [characterInterface],
+  interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Droid',
   fields: () => [
     t.defaultField('id', t.NonNull(t.ID)),
@@ -246,6 +275,7 @@ const droidType = t.objectType<Droid>({
 
 const queryType = t.queryType({
   fields: [
+    nodeField,
     t.field('hero', {
       type: characterInterface,
       args: {

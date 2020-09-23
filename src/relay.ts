@@ -1,5 +1,9 @@
 import { ObjectType, Field, Interface, Argument, TOfArgMap } from './types';
 import { Factory } from './define';
+import { GraphQLResolveInfo } from 'graphql';
+
+// Adapted from
+// https://github.com/graphql/graphql-relay-js/blob/master/src/connection/__tests__/connection.js
 
 export type ConnectionConfig<Ctx, T> = {
   name?: string;
@@ -45,6 +49,30 @@ export type RelayConnectionDefinitions<Ctx, T> = {
 };
 
 export function createRelayHelpers<Ctx>(t: Factory<Ctx>) {
+  function nodeDefinitions<Src>(
+    idFetcher: (id: string, context: Ctx, info: GraphQLResolveInfo) => Promise<Src> | Src
+  ) {
+    const nodeInterface = t.interfaceType({
+      name: 'Node',
+      description: 'An object with an ID',
+      fields: () => [
+        t.abstractField('id', t.NonNull(t.ID), {
+          description: 'The id of the object.',
+        }),
+      ],
+    });
+
+    const nodeField = t.field('node', {
+      type: nodeInterface,
+      args: {
+        id: t.arg(t.NonNullInput(t.ID), 'The ID of an object'),
+      },
+      resolve: (_src, { id }, context, info) => idFetcher(id, context, info),
+    });
+
+    return { nodeInterface, nodeField };
+  }
+
   const forwardConnectionArgs = {
     after: t.arg(t.String),
     first: t.arg(t.Int),
@@ -125,6 +153,7 @@ export function createRelayHelpers<Ctx>(t: Factory<Ctx>) {
   }
 
   return {
+    nodeDefinitions,
     forwardConnectionArgs,
     backwardConnectionArgs,
     connectionArgs,
