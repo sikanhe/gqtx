@@ -1,6 +1,11 @@
-import { createTypesFactory, buildGraphQLSchema } from '../src';
+import { createTypesFactory, createRelayHelpers, buildGraphQLSchema } from '../src';
+import { Connection, ConnectionArguments, Edge } from '../src/relay';
+import { Interface } from '../src/types';
 
-const t = createTypesFactory<{ contextContent: string }>();
+type Context = { contextContent: string };
+
+const t = createTypesFactory<Context>();
+const relay = createRelayHelpers(t);
 
 const enum Episode {
   NEWHOPE = 4,
@@ -127,6 +132,8 @@ export function getDroid(id: string): Droid {
   return droidData[id];
 }
 
+const { nodeInterface, nodeField } = relay.nodeDefinitions((id) => getCharacter(id));
+
 const episodeEnum = t.enumType({
   name: 'Episode',
   description: 'One of the films in the Star Wars Trilogy',
@@ -137,20 +144,85 @@ const episodeEnum = t.enumType({
   ],
 });
 
-const characterInterface = t.interfaceType<ICharacter>({
+const characterInterface: Interface<Context, ICharacter | null> = t.interfaceType<ICharacter>({
   name: 'Character',
-  fields: (self) => [
+  interfaces: [],
+  fields: () => [
     t.abstractField('id', t.NonNull(t.ID)),
     t.abstractField('name', t.NonNull(t.String)),
     t.abstractField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.abstractField('friends', t.NonNull(t.List(self))),
+    t.abstractField('friends', characterConnectionType),
   ],
 });
+
+const { connectionType: characterConnectionType } = relay.connectionDefinitions<ICharacter>({
+  nodeType: characterInterface,
+  edgeFields: () => [
+    t.field('friendshipTime', {
+      type: t.String,
+      resolve: (_edge: Edge<ICharacter>) => {
+        return 'Yesterday';
+      },
+    }),
+  ],
+  connectionFields: () => [
+    t.field('totalCount', {
+      type: t.Int,
+      resolve: () => {
+        return Object.keys(humanData).length + Object.keys(droidData).length;
+      },
+    }),
+  ],
+});
+
+const createConnectionFromCharacterArray = (
+  array: ICharacter[],
+  args: ConnectionArguments
+): Connection<ICharacter> => {
+  let sliceStart = 0;
+  let sliceEnd = array.length;
+
+  if (args.after) {
+    const idx = array.findIndex((c) => c.id === args.after);
+    if (idx > -1) {
+      sliceStart = idx;
+    }
+  }
+
+  if (args.first) {
+    sliceEnd = Math.min(sliceStart + args.first, array.length);
+  }
+
+  if (args.before) {
+    sliceStart = array.length;
+    const idx = array.findIndex((c) => c.id === args.before);
+    if (sliceEnd > -1) {
+      sliceEnd = idx;
+    }
+  }
+
+  if (args.last) {
+    sliceStart = Math.max(sliceEnd - args.last, 0);
+  }
+
+  return {
+    edges: array.slice(sliceStart, sliceEnd).map((char) => ({
+      cursor: char.id,
+      node: char,
+    })),
+    pageInfo: {
+      endCursor: array[array.length - 1].id,
+      hasNextPage: args.first ? array.length >= args.first : false,
+      hasPreviousPage: args.last ? array.length >= args.last : false,
+      startCursor: array[0].id,
+    },
+  };
+};
 
 const humanType = t.objectType<Human>({
   name: 'Human',
   description: 'A humanoid creature in the Star Wars universe.',
-  interfaces: [characterInterface],
+  interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Human',
   fields: () => [
     t.defaultField('id', t.NonNull(t.ID)),
@@ -158,9 +230,11 @@ const humanType = t.objectType<Human>({
     t.defaultField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.defaultField('homePlanet', t.String),
     t.field('friends', {
-      type: t.NonNull(t.List(characterInterface)),
-      resolve: (c) => {
-        return Promise.all(getFriends(c));
+      type: characterConnectionType,
+      args: relay.connectionArgs,
+      resolve: async (c, args) => {
+        const friends = await Promise.all(getFriends(c));
+        return createConnectionFromCharacterArray(friends, args);
       },
     }),
     t.field('secretBackStory', {
@@ -175,7 +249,7 @@ const humanType = t.objectType<Human>({
 const droidType = t.objectType<Droid>({
   name: 'Droid',
   description: 'A mechanical creature in the Star Wars universe.',
-  interfaces: [characterInterface],
+  interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Droid',
   fields: () => [
     t.defaultField('id', t.NonNull(t.ID)),
@@ -183,9 +257,11 @@ const droidType = t.objectType<Droid>({
     t.defaultField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
     t.defaultField('primaryFunction', t.NonNull(t.String)),
     t.field('friends', {
-      type: t.NonNull(t.List(characterInterface)),
-      resolve: (c) => {
-        return Promise.all(getFriends(c));
+      type: characterConnectionType,
+      args: relay.connectionArgs,
+      resolve: async (c, args) => {
+        const friends = await Promise.all(getFriends(c));
+        return createConnectionFromCharacterArray(friends, args);
       },
     }),
     t.field('secretBackStory', {
@@ -199,6 +275,7 @@ const droidType = t.objectType<Droid>({
 
 const queryType = t.queryType({
   fields: [
+    nodeField,
     t.field('hero', {
       type: characterInterface,
       args: {
