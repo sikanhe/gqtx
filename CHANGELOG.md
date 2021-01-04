@@ -1,6 +1,6 @@
-# next
-
+# 0.8.0
 - Allow passing directives for the GraphQL schema to the `buildGraphQLSchema` function.
+- Added Relay helper types and functions
 
 # 0.7.0
 - The package now uses peer dependency 
