@@ -107,6 +107,7 @@ export type Field<Ctx, Src, Out, TArg extends object = {}> = {
     ctx: Ctx,
     info: graphql.GraphQLResolveInfo
   ) => Out | Promise<Out>;
+  extensions?: Record<string, any>;
 };
 
 export type AbstractField<Ctx, Out> = {

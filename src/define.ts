@@ -62,6 +62,7 @@ export type Factory<Ctx> = {
       resolve,
       description,
       deprecationReason,
+      extensions
     }: {
       type: OutputType<Ctx, Out>;
       args?: ArgMap<Arg> | undefined;
@@ -73,6 +74,7 @@ export type Factory<Ctx> = {
         ctx: Ctx,
         info: graphql.GraphQLResolveInfo
       ) => Out | Promise<Out>;
+      extensions?: Record<string, any>;
     }
   ): Field<Ctx, Src, any, any>;
   defaultField<Src extends object, K extends keyof Src>(
@@ -276,6 +278,7 @@ export function createTypesFactory<Ctx = undefined>(): Factory<Ctx> {
         resolve,
         description,
         deprecationReason,
+        extensions
       }: {
         type: OutputType<Ctx, Out>;
         args?: ArgMap<Arg>;
@@ -287,6 +290,7 @@ export function createTypesFactory<Ctx = undefined>(): Factory<Ctx> {
           ctx: Ctx,
           info: graphql.GraphQLResolveInfo
         ) => Out | Promise<Out>;
+        extensions?: Record<string, any>
       }
     ): Field<Ctx, Src, any, any> {
       return {
@@ -297,6 +301,7 @@ export function createTypesFactory<Ctx = undefined>(): Factory<Ctx> {
         deprecationReason,
         args,
         resolve,
+        extensions
       };
     },
     defaultField<Src extends object, K extends keyof Src>(
