@@ -88,10 +88,14 @@ export type ArgMap<T> = {
   [K in keyof T]: DefaultArgument<T[K]> | Argument<T[K]>;
 };
 
+export type ArgMapValue<TArg> = TArg extends DefaultArgument<infer Src>
+? Src
+  : TArg extends Argument<infer Src>
+  ? Src extends null ? Maybe<Src> : Src
+: never
+
 export type TOfArgMap<TArgMap> = {
-  [K in keyof TArgMap]: TArgMap[K] extends DefaultArgument<infer Src> | Argument<infer Src>
-    ? Src
-    : never;
+  [K in keyof TArgMap]: ArgMapValue<TArgMap[K]>
 };
 
 export type Field<Ctx, Src, Out, TArg extends object = {}> = {
