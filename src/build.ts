@@ -182,6 +182,7 @@ export function toGraphQLOutputType<Ctx, Src>(
 
           return gqlFieldConfig;
         },
+        extensions: t.extensions,
       });
 
       typeMap.set(t, obj);

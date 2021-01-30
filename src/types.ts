@@ -126,6 +126,7 @@ export type ObjectType<Ctx, Src> = {
   interfaces: Array<Interface<Ctx, any>>;
   fieldsFn: () => Array<Field<Ctx, Src, any, any>>;
   isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean | Promise<boolean>;
+  extensions?: Record<string, any>;
 };
 
 export type InputField<Src> = {
