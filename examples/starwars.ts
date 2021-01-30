@@ -1,6 +1,7 @@
-import { createTypesFactory, createRelayHelpers, buildGraphQLSchema } from '../src';
-import { Connection, ConnectionArguments, Edge } from '../src/relay';
-import { Interface } from '../src/types';
+import type { Interface } from '../src';
+import type { Connection, ConnectionArguments, Edge } from '../src/relay';
+import { createTypesFactory, buildGraphQLSchema } from '../src';
+import { createRelayHelpers } from '../src/relay';
 
 type Context = { contextContent: string };
 
