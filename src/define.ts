@@ -20,7 +20,18 @@ import {
   SubscriptionObject,
 } from './types';
 
-export type Factory<Ctx> = {
+
+type ExtensionsMap = {
+  field?: {
+    [key: string]: any
+  },
+  objectType?: {
+    [key: string]: any
+  }
+}
+
+
+export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
   String: Scalar<string | null>;
   Int: Scalar<number | null>;
   Float: Scalar<number | null>;
@@ -62,6 +73,7 @@ export type Factory<Ctx> = {
       resolve,
       description,
       deprecationReason,
+      extensions
     }: {
       type: OutputType<Ctx, Out>;
       args?: ArgMap<Arg> | undefined;
@@ -73,6 +85,7 @@ export type Factory<Ctx> = {
         ctx: Ctx,
         info: graphql.GraphQLResolveInfo
       ) => Out | Promise<Out>;
+      extensions?: TExtensionsMap['field'];
     }
   ): Field<Ctx, Src, any, any>;
   defaultField<Src extends object, K extends keyof Src>(
@@ -101,12 +114,14 @@ export type Factory<Ctx> = {
     interfaces,
     fields,
     isTypeOf,
+    extensions,
   }: {
     name: string;
     description?: string | undefined;
     interfaces?: Interface<Ctx, any>[] | undefined;
     fields: (self: OutputType<Ctx, Src | null>) => Field<Ctx, Src, any, {}>[];
     isTypeOf?: ((src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean) | undefined;
+    extensions?: TExtensionsMap['objectType'];
   }): ObjectType<Ctx, Src | null>;
   inputObjectType<Src>({
     name,
@@ -201,7 +216,7 @@ function builtInScalar<Src>(builtInType: graphql.GraphQLScalarType): Scalar<Src 
   };
 }
 
-export function createTypesFactory<Ctx = undefined>(): Factory<Ctx> {
+export function createTypesFactory<Ctx = undefined, TExtensions extends ExtensionsMap = {}>(): Factory<Ctx, TExtensions> {
   return {
     String: builtInScalar<string>(graphql.GraphQLString),
     Int: builtInScalar<number>(graphql.GraphQLInt),
@@ -276,6 +291,7 @@ export function createTypesFactory<Ctx = undefined>(): Factory<Ctx> {
         resolve,
         description,
         deprecationReason,
+        extensions
       }: {
         type: OutputType<Ctx, Out>;
         args?: ArgMap<Arg>;
@@ -287,6 +303,7 @@ export function createTypesFactory<Ctx = undefined>(): Factory<Ctx> {
           ctx: Ctx,
           info: graphql.GraphQLResolveInfo
         ) => Out | Promise<Out>;
+        extensions?: TExtensions['field'] extends undefined ? Record<string, any> : TExtensions['field']
       }
     ): Field<Ctx, Src, any, any> {
       return {
@@ -297,6 +314,7 @@ export function createTypesFactory<Ctx = undefined>(): Factory<Ctx> {
         deprecationReason,
         args,
         resolve,
+        extensions
       };
     },
     defaultField<Src extends object, K extends keyof Src>(
@@ -339,12 +357,14 @@ export function createTypesFactory<Ctx = undefined>(): Factory<Ctx> {
       interfaces = [],
       fields,
       isTypeOf,
+      extensions,
     }: {
       name: string;
       description?: string;
       interfaces?: Array<Interface<Ctx, any>>;
       fields: (self: OutputType<Ctx, Src | null>) => Array<Field<Ctx, Src, any>>;
       isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean;
+      extensions?: TExtensions['objectType'] extends undefined ? Record<string, any> : TExtensions['objectType'];
     }): ObjectType<Ctx, Src | null> {
       const obj: ObjectType<Ctx, Src | null> = {
         kind: 'ObjectType',
@@ -353,6 +373,7 @@ export function createTypesFactory<Ctx = undefined>(): Factory<Ctx> {
         interfaces,
         fieldsFn: undefined as any,
         isTypeOf,
+        extensions,
       };
 
       obj.fieldsFn = () => fields(obj) as any;

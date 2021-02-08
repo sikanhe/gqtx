@@ -176,11 +176,13 @@ export function toGraphQLOutputType<Ctx, Src>(
               resolve: field.resolve,
               args: toGraphQLArgs(field.args, typeMap),
               deprecationReason: field.deprecationReason,
+              extensions: field.extensions
             } as graphql.GraphQLFieldConfig<unknown, Ctx, any>;
           });
 
           return gqlFieldConfig;
         },
+        extensions: t.extensions,
       });
 
       typeMap.set(t, obj);
