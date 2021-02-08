@@ -36,14 +36,14 @@ enum Role {
 }
 
 type User = {
-  id: number;
+  id: string;
   role: Role;
   name: string;
 };
 
 const users: User[] = [
-  { id: 1, role: Role.Admin, name: 'Sikan' },
-  { id: 2, role: Role.User, name: 'Nicole' },
+  { id: "1", role: Role.Admin, name: 'Sikan' },
+  { id: "2", role: Role.User, name: 'Nicole' },
 ];
 
 type AppContext = {
