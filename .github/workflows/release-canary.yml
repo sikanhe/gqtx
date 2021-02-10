@@ -1,0 +1,29 @@
+name: Publish release
+on:
+  push:
+jobs:
+  publish-canary:
+    name: Publish Canary
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v2
+      - name: Cache node_modules
+        id: cache-modules
+        uses: actions/cache@v1
+        with:
+          path: node_modules
+          key: 14.x-${{ runner.OS }}-build-${{ hashFiles('yarn.lock') }}
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "14.x"
+          registry-url: "https://registry.npmjs.org"
+      - name: Install dependencies
+        if: steps.cache-modules.outputs.cache-hit != 'true'
+        run: yarn
+      - name: Set version
+        run: yarn version --prerelease --preid ${GITHUB_SHA::8}
+      - name: Publish
+        run: yarn publish --tag canary
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
