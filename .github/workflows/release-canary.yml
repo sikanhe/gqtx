@@ -1,11 +1,11 @@
-name: Publish release
+name: Publish Canary Release
 on:
   push:
 jobs:
   publish-canary:
     name: Publish Canary
     runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event.push.repository.full_name == github.repository
     steps:
       - uses: actions/checkout@v2
       - name: Cache node_modules
