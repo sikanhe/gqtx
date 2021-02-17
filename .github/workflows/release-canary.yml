@@ -5,7 +5,7 @@ jobs:
   publish-canary:
     name: Publish Canary
     runs-on: ubuntu-latest
-    if: github.event.push.repository.full_name == github.repository
+    if: github.repository == 'sikanhe/gqtx'
     steps:
       - uses: actions/checkout@v2
       - name: Cache node_modules
