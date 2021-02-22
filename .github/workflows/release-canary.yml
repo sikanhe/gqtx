@@ -21,6 +21,8 @@ jobs:
       - name: Install dependencies
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: yarn
+      - name: Compile TypeScript
+        run: yarn tsc
       - name: Configure Git Credentials
         run: |
           git config --global user.email "github-action@users.noreply.github.com"
