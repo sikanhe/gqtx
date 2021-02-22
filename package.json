@@ -1,8 +1,22 @@
 {
   "name": "gqtx",
   "version": "0.8.0",
-  "main": "dist/index.js",
+  "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./relay": {
+      "import": "./dist/relay.js",
+      "require": "./dist/cjs/relay.js"
+    },
+    "./package.json": "./package.json",
+    "./": "./"
+  },
   "files": [
     "/dist"
   ],
@@ -17,17 +31,23 @@
     "graphql-server"
   ],
   "devDependencies": {
+    "@rollup/plugin-typescript": "^8.2.0",
     "@types/express": "^4.17.1",
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
     "graphql": "^15.1.0",
+    "rollup": "^2.39.0",
     "ts-node": "^8.4.1",
-    "typescript": "^3.6.4"
+    "tslib": "^2.1.0",
+    "typescript": "^4.1.5"
   },
   "peerDependencies": {
     "graphql": "^15.1.0"
   },
   "scripts": {
-    "prepare": "tsc"
+    "prepare": "yarn build",
+    "build:cjs": "MODE=cjs rollup -c",
+    "build:esm": "rollup -c",
+    "build": "yarn build:cjs && yarn build:esm"
   }
 }
