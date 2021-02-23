@@ -122,4 +122,4 @@ app.listen(4000);
 - We created an intermediate representation of a GraphQL schema via the helper functions exported by this library.
 - Then, we converted the schema to a real graphql-js schema by calling `buildGraphQLSchema` at server startup time.
 - Used existing express middleware `express-graphql` to server our schema with `graphiql` explorer
-- That's it! We get a fully typesafe server with almost zero type annotation needed
+- That's it! We get a fully type-safe server with almost zero type annotation needed

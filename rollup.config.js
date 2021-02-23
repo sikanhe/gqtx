@@ -6,7 +6,7 @@ const isCJSBuild = process.env.MODE === "cjs"
 const commonjsPkgJSONPlugin = () => {
   return {
     name: 'commonjsPkgJSONPlugin',
-    write: async  () => {
+    writeBundle: async  () => {
       await fs.writeFile("dist/cjs/package.json", JSON.stringify({
         "type": "commonjs"
       }))
