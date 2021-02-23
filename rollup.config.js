@@ -7,9 +7,13 @@ const commonjsPkgJSONPlugin = () => {
   return {
     name: 'commonjsPkgJSONPlugin',
     writeBundle: async  () => {
-      await fs.writeFile("dist/cjs/package.json", JSON.stringify({
-        "type": "commonjs"
-      }))
+      if (isCJSBuild === true) {
+        await fs.writeFile("dist/cjs/package.json", JSON.stringify({
+          "type": "commonjs"
+        }))
+      } else {
+        await fs.copyFile("package.json", "dist/package.json")
+      }
     }
   }
 }
@@ -22,6 +26,6 @@ export default {
       format: isCJSBuild ? 'cjs' : 'esm'
     }
   ],
-  plugins: [ts({ tsconfig: isCJSBuild ? "tsconfig.cjs.json" : "tsconfig.json" }), isCJSBuild ? commonjsPkgJSONPlugin() : undefined].filter(Boolean),
+  plugins: [ts({ tsconfig: isCJSBuild ? "tsconfig.cjs.json" : "tsconfig.json" }), commonjsPkgJSONPlugin()],
   external: ["graphql"]
 }

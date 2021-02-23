@@ -2,24 +2,21 @@
   "name": "gqtx",
   "version": "0.8.0",
   "type": "module",
-  "main": "dist/cjs/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "cjs/index.js",
+  "module": "index.js",
+  "types": "index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/cjs/index.js"
+      "import": "./index.js",
+      "require": "./cjs/index.js"
     },
     "./relay": {
-      "import": "./dist/relay.js",
-      "require": "./dist/cjs/relay.js"
+      "import": "./relay.js",
+      "require": "./cjs/relay.js"
     },
     "./package.json": "./package.json",
     "./": "./"
   },
-  "files": [
-    "/dist"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/sikanhe/gqtx"
@@ -45,7 +42,6 @@
     "graphql": "^15.1.0"
   },
   "scripts": {
-    "prepare": "yarn build",
     "build:cjs": "MODE=cjs rollup -c",
     "build:esm": "rollup -c",
     "build": "yarn build:cjs && yarn build:esm"
