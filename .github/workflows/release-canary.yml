@@ -21,15 +21,16 @@ jobs:
       - name: Install dependencies
         if: steps.cache-modules.outputs.cache-hit != 'true'
         run: yarn
-      - name: Compile TypeScript
-        run: yarn tsc
+      - name: Build
+        run: yarn build
       - name: Configure Git Credentials
         run: |
           git config --global user.email "github-action@users.noreply.github.com"
           git config --global user.name "Github Action"
-      - name: Set version
-        run: yarn version --prerelease --preid ${GITHUB_SHA::8}
       - name: Publish
-        run: yarn publish --tag canary
+        run: |
+          cd dist
+          yarn version --no-git-tag-version --prerelease --preid ${GITHUB_SHA::8}
+          yarn publish --tag canary
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

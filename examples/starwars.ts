@@ -2,6 +2,8 @@ import type { Interface } from '../src';
 import type { Connection, ConnectionArguments, Edge } from '../src/relay';
 import { createTypesFactory, buildGraphQLSchema } from '../src';
 import { createRelayHelpers } from '../src/relay';
+import express = require('express');
+import graphqlHTTP = require('express-graphql');
 
 type Context = { contextContent: string };
 
@@ -307,9 +309,6 @@ const schema = {
   query: queryType,
 };
 
-import express from 'express';
-import graphqlHTTP from 'express-graphql';
-
 const app = express();
 
 app.use(
@@ -320,4 +319,6 @@ app.use(
   })
 );
 
-app.listen(4000);
+app.listen(4000, () => {
+  console.log(`Listening on http://localhost:4000/graphql`)
+});
