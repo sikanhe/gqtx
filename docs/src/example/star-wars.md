@@ -1,9 +1,15 @@
-import type { Interface } from '../src';
-import type { Connection, ConnectionArguments, Edge } from '../src/relay';
-import { createTypesFactory, buildGraphQLSchema } from '../src';
-import { createRelayHelpers } from '../src/relay';
-import express = require('express');
-import graphqlHTTP = require('express-graphql');
+---
+title: Star Wars
+---
+
+```ts title="schema.ts"
+import type { Interface } from 'gqtx';
+import type { Connection, ConnectionArguments, Edge } from 'gqtx/relay';
+
+import express from 'express';
+import graphqlHTTP from 'express-graphql';
+import { createRelayHelpers } from 'gqtx/relay';
+import { createTypesFactory, buildGraphQLSchema } from 'gqtx';
 
 type Context = { contextContent: string };
 
@@ -68,7 +74,6 @@ const leia: Human = {
   friends: ['1000', '1002', '2000', '2001'],
   appearsIn: [4, 5, 6],
   homePlanet: 'Alderaan',
-  // __typename: 'Human',
 };
 
 const tarkin: Human = {
@@ -322,3 +327,4 @@ app.use(
 app.listen(4000, () => {
   console.log(`Listening on http://localhost:4000/graphql`)
 });
+```

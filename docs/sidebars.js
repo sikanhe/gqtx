@@ -4,5 +4,8 @@ module.exports = {
       'introduction',
       'why',
     ],
+    'Examples': [
+      'example/star-wars',
+    ],
   },
 };
