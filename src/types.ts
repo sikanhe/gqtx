@@ -30,7 +30,7 @@ export type AllType<Ctx> = OutputType<Ctx, any> | InputType<any>;
 export type Scalar<Src> =
   | {
       kind: 'Scalar';
-      graphqlTypeConfig: graphql.GraphQLScalarTypeConfig<Src, JSON>;
+      graphqlTypeConfig: graphql.GraphQLScalarTypeConfig<Src, unknown>;
     }
   | {
       kind: 'Scalar';
