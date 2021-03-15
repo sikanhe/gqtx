@@ -47,7 +47,7 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
     name: string;
     description?: string | undefined;
     serialize: (src: Src) => any;
-    parseValue?: ((value: JSON) => Src | null) | undefined;
+    parseValue?: ((value: unknown) => Src | null) | undefined;
     parseLiteral?: ((value: graphql.ValueNode) => Src | null) | undefined;
   }): Scalar<Src | null>;
   enumType<Src>({
@@ -233,7 +233,7 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
       name: string;
       description?: string;
       serialize: (src: Src) => any | null;
-      parseValue?: (value: JSON) => Src | null;
+      parseValue?: (value: unknown) => Src | null;
       parseLiteral?: (value: graphql.ValueNode) => Src | null;
     }): Scalar<Src | null> {
       return {
