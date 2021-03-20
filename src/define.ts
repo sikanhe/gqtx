@@ -65,17 +65,11 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
     defaultArg: Exclude<Src, null>,
     description?: string | undefined
   ): DefaultArgument<Exclude<Src, null>>;
-  field<Src, Arg, Out>(
+
+  field<Src extends { [key: string]: unknown }, Arg, Out>(
     name: string,
-    {
-      type,
-      args,
-      resolve,
-      description,
-      deprecationReason,
-      extensions
-    }: {
-      type: OutputType<Ctx, Out>;
+    type: OutputType<Ctx, Out>,
+    options?: {
       args?: ArgMap<Arg> | undefined;
       description?: string | undefined;
       deprecationReason?: string | undefined;
@@ -88,16 +82,7 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
       extensions?: TExtensionsMap['field'];
     }
   ): Field<Ctx, Src, any, any>;
-  defaultField<Src extends object, K extends keyof Src>(
-    name: K,
-    type: OutputType<Ctx, Src[K]>,
-    opts?:
-      | {
-          description?: string | undefined;
-          deprecationReason?: string | undefined;
-        }
-      | undefined
-  ): Field<Ctx, Src, any, any>;
+
   abstractField<Out_1>(
     name: string,
     type: OutputType<Ctx, Out_1>,
@@ -283,58 +268,18 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
         default: defaultArg,
       };
     },
-    field<Src, Arg, Out>(
-      name: string,
-      {
-        type,
-        args = {} as ArgMap<Arg>,
-        resolve,
-        description,
-        deprecationReason,
-        extensions
-      }: {
-        type: OutputType<Ctx, Out>;
-        args?: ArgMap<Arg>;
-        description?: string;
-        deprecationReason?: string;
-        resolve: (
-          src: Src,
-          args: TOfArgMap<ArgMap<Arg>>,
-          ctx: Ctx,
-          info: graphql.GraphQLResolveInfo
-        ) => Out | Promise<Out>;
-        extensions?: TExtensions['field'] extends undefined ? Record<string, any> : TExtensions['field']
-      }
-    ): Field<Ctx, Src, any, any> {
-      return {
-        kind: 'Field',
-        name,
-        type,
-        description,
-        deprecationReason,
-        args,
-        resolve,
-        extensions
-      };
-    },
-    defaultField<Src extends object, K extends keyof Src>(
-      name: K,
-      type: OutputType<Ctx, Src[K]>,
-      opts?: {
-        description?: string;
-        deprecationReason?: string;
-      }
-    ): Field<Ctx, Src, any, any> {
-      return {
-        kind: 'Field',
-        name: String(name),
-        type,
-        description: opts && opts.description,
-        deprecationReason: opts && opts.deprecationReason,
-        args: {},
-        resolve: (src: Src) => src[name],
-      };
-    },
+
+    field: (name, type, options) => ({
+      kind: 'Field',
+      name,
+      type,
+      ...options,
+      args: options?.args ?? {},
+      resolve: typeof options?.resolve !== 'undefined'
+        ? options.resolve
+        : (src) => src[name]
+    }),
+
     abstractField<Out>(
       name: string,
       type: OutputType<Ctx, Out>,
