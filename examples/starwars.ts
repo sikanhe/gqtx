@@ -161,16 +161,14 @@ const characterInterface: Interface<Context, ICharacter | null> = t.interfaceTyp
 const { connectionType: characterConnectionType } = relay.connectionDefinitions<ICharacter>({
   nodeType: characterInterface,
   edgeFields: () => [
-    t.field('friendshipTime', {
-      type: t.String,
+    t.field('friendshipTime', t.String, {
       resolve: (_edge: Edge<ICharacter>) => {
         return 'Yesterday';
       },
     }),
   ],
   connectionFields: () => [
-    t.field('totalCount', {
-      type: t.Int,
+    t.field('totalCount', t.Int, {
       resolve: () => {
         return Object.keys(humanData).length + Object.keys(droidData).length;
       },
@@ -228,20 +226,18 @@ const humanType = t.objectType<Human>({
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Human',
   fields: () => [
-    t.defaultField('id', t.NonNull(t.ID)),
-    t.defaultField('name', t.NonNull(t.String)),
-    t.defaultField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.defaultField('homePlanet', t.String),
-    t.field('friends', {
-      type: characterConnectionType,
+    t.field('id', t.NonNull(t.ID)),
+    t.field('name', t.NonNull(t.String)),
+    t.field('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
+    t.field('homePlanet', t.String),
+    t.field('friends', characterConnectionType, {
       args: relay.connectionArgs,
       resolve: async (c, args) => {
         const friends = await Promise.all(getFriends(c));
         return createConnectionFromCharacterArray(friends, args);
       },
     }),
-    t.field('secretBackStory', {
-      type: t.String,
+    t.field('secretBackStory', t.String, {
       resolve: () => {
         throw new Error('secretBackstory is secret');
       },
@@ -255,20 +251,18 @@ const droidType = t.objectType<Droid>({
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Droid',
   fields: () => [
-    t.defaultField('id', t.NonNull(t.ID)),
-    t.defaultField('name', t.NonNull(t.String)),
-    t.defaultField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.defaultField('primaryFunction', t.NonNull(t.String)),
-    t.field('friends', {
-      type: characterConnectionType,
+    t.field('id', t.NonNull(t.ID)),
+    t.field('name', t.NonNull(t.String)),
+    t.field('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
+    t.field('primaryFunction', t.NonNull(t.String)),
+    t.field('friends', characterConnectionType, {
       args: relay.connectionArgs,
       resolve: async (c, args) => {
         const friends = await Promise.all(getFriends(c));
         return createConnectionFromCharacterArray(friends, args);
       },
     }),
-    t.field('secretBackStory', {
-      type: t.String,
+    t.field('secretBackStory', t.String, {
       resolve: () => {
         throw new Error('secretBackstory is secret');
       },
@@ -279,27 +273,23 @@ const droidType = t.objectType<Droid>({
 const queryType = t.queryType({
   fields: [
     nodeField,
-    t.field('hero', {
-      type: characterInterface,
+    t.field('hero', characterInterface, {
       args: {
         episode: t.defaultArg(episodeEnum, Episode.EMPIRE),
       },
       resolve: (_, { episode }) => getHero(episode),
     }),
-    t.field('human', {
-      type: humanType,
+    t.field('human', humanType, {
       args: { id: t.arg(t.NonNullInput(t.ID)) },
       resolve: (_, { id }) => getHuman(id),
     }),
-    t.field('droid', {
-      type: droidType,
+    t.field('droid', droidType, {
       args: {
         id: t.arg(t.NonNullInput(t.String), 'ID of the droid'),
       },
       resolve: (_, { id }) => getDroid(id),
     }),
-    t.field('contextContent', {
-      type: t.String,
+    t.field('contextContent', t.String, {
       resolve: (_, _args, ctx) => ctx.contextContent,
     }),
   ],
