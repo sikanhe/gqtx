@@ -44,6 +44,7 @@
   "scripts": {
     "build:cjs": "MODE=cjs rollup -c",
     "build:esm": "rollup -c",
-    "build": "yarn build:cjs && yarn build:esm"
+    "build": "yarn build:cjs && yarn build:esm",
+    "test": "yarn build:cjs && node test/simple.js"
   }
 }
