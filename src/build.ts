@@ -110,6 +110,7 @@ export function toGraphQLInputType<Ctx>(
 
       const obj = new graphql.GraphQLInputObjectType({
         name: t.name,
+        description: t.description,
         fields: graphqlFields,
       });
 
@@ -163,6 +164,7 @@ export function toGraphQLOutputType<Ctx, Src>(
     case 'ObjectType':
       const obj = new graphql.GraphQLObjectType({
         name: t.name,
+        description: t.description,
         interfaces: t.interfaces.map((intf) => toGraphQLOutputType(intf, typeMap)) as any,
         isTypeOf: t.isTypeOf,
         fields: () => {
@@ -191,6 +193,7 @@ export function toGraphQLOutputType<Ctx, Src>(
     case 'Union':
       const union = new graphql.GraphQLUnionType({
         name: t.name,
+        description: t.description,
         types: t.types.map((t) => toGraphQLOutputType(t, typeMap)) as any,
         resolveType: async (src, ctx, info) => {
           const resolved = await t.resolveType(src, ctx, info);
@@ -204,6 +207,7 @@ export function toGraphQLOutputType<Ctx, Src>(
     case 'Interface':
       const intf = new graphql.GraphQLInterfaceType({
         name: t.name,
+        description: t.description,
         fields: () => {
           const fields = t.fieldsFn();
           const result: graphql.GraphQLFieldConfigMap<Src, Ctx> = {};

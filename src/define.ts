@@ -134,10 +134,12 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
   }): InputObject<Src | null>;
   unionType<Src>({
     name,
+    description,
     types,
     resolveType,
   }: {
     name: string;
+    description?: string |undefined;
     types: ObjectType<Ctx, any>[];
     resolveType: (src: Src) => ObjectType<any, any>;
   }): Union<Ctx, Src | null>;
@@ -400,16 +402,19 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
     },
     unionType<Src>({
       name,
+      description,
       types,
       resolveType,
     }: {
       name: string;
+      description?: string;
       types: Array<ObjectType<Ctx, any>>;
       resolveType: (src: Src) => ObjectType<any, any>;
     }): Union<Ctx, Src | null> {
       return {
         kind: 'Union',
         name,
+        description,
         types,
         resolveType,
       } as Union<Ctx, Src | null>;

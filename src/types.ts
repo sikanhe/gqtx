@@ -167,6 +167,7 @@ export type Interface<Ctx, Src> = {
 export type Union<Ctx, Src> = {
   kind: 'Union';
   name: string;
+  description?: string;
   types: Array<ObjectType<Ctx, Src>>;
   resolveType: ResolveType<Src, Ctx>;
 };
