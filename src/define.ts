@@ -66,21 +66,31 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
     description?: string | undefined
   ): DefaultArgument<Exclude<Src, null>>;
 
-  field<Src extends { [key: string]: unknown }, Arg, Out>(
-    name: string,
+  field<TKey extends string, Src extends Record<TKey, unknown>, Arg, Out>(
+    name: TKey,
     type: OutputType<Ctx, Out>,
     options?: {
       args?: ArgMap<Arg> | undefined;
       description?: string | undefined;
       deprecationReason?: string | undefined;
-      resolve: (
-        src: Src,
-        args: TOfArgMap<ArgMap<Arg>>,
-        ctx: Ctx,
-        info: graphql.GraphQLResolveInfo
-      ) => Out | Promise<Out>;
       extensions?: TExtensionsMap['field'];
-    }
+    } & (
+      Src[TKey] extends Out ? {
+        resolve?: (
+          src: Src,
+          args: TOfArgMap<ArgMap<Arg>>,
+          ctx: Ctx,
+          info: graphql.GraphQLResolveInfo
+        ) => Out | Promise<Out>;
+      } : {
+        resolve: (
+          src: Src,
+          args: TOfArgMap<ArgMap<Arg>>,
+          ctx: Ctx,
+          info: graphql.GraphQLResolveInfo
+        ) => Out | Promise<Out>;
+      }
+    )
   ): Field<Ctx, Src, any, any>;
 
   abstractField<Out_1>(
@@ -278,7 +288,7 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
       type,
       ...options,
       args: options?.args ?? {},
-      resolve: typeof options?.resolve !== 'undefined'
+      resolve: typeof options?.resolve === 'function'
         ? options.resolve
         : (src) => src[name]
     }),
