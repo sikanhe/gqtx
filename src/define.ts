@@ -30,6 +30,23 @@ type ExtensionsMap = {
   }
 }
 
+type ResolvePartialMandatory<Src, Arg, Ctx, Out> = {
+  resolve: (
+    src: Src,
+    args: TOfArgMap<ArgMap<Arg>>,
+    ctx: Ctx,
+    info: graphql.GraphQLResolveInfo
+  ) => Out | Promise<Out>;
+}
+
+type ResolvePartialOptional<Src, Arg, Ctx, Out> = {
+  resolve?: (
+    src: Src,
+    args: TOfArgMap<ArgMap<Arg>>,
+    ctx: Ctx,
+    info: graphql.GraphQLResolveInfo
+  ) => Out | Promise<Out>;
+}
 
 export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
   String: Scalar<string | null>;
@@ -66,30 +83,19 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
     description?: string | undefined
   ): DefaultArgument<Exclude<Src, null>>;
 
-  field<TKey extends string, Src extends Record<TKey, unknown>, Arg, Out>(
+  field<TKey extends string, Src extends Record<string | number | symbol, unknown>, Arg, Out>(opts: {
     name: TKey,
     type: OutputType<Ctx, Out>,
-    options?: {
-      args?: ArgMap<Arg> | undefined;
-      description?: string | undefined;
-      deprecationReason?: string | undefined;
-      extensions?: TExtensionsMap['field'];
-    } & (
-      Src[TKey] extends Out ? {
-        resolve?: (
-          src: Src,
-          args: TOfArgMap<ArgMap<Arg>>,
-          ctx: Ctx,
-          info: graphql.GraphQLResolveInfo
-        ) => Out | Promise<Out>;
-      } : {
-        resolve: (
-          src: Src,
-          args: TOfArgMap<ArgMap<Arg>>,
-          ctx: Ctx,
-          info: graphql.GraphQLResolveInfo
-        ) => Out | Promise<Out>;
-      }
+    args?: ArgMap<Arg> | undefined;
+    description?: string | undefined;
+    deprecationReason?: string | undefined;
+    extensions?: TExtensionsMap['field'];
+  } & (
+    TKey extends keyof Src ?
+      Src[TKey] extends Out ?
+        ResolvePartialOptional<Src, Arg, Ctx, Out> 
+        : ResolvePartialMandatory<Src, Arg, Ctx, Out>
+      : ResolvePartialMandatory<Src, Arg, Ctx, Out>
     )
   ): Field<Ctx, Src, any, any>;
 
@@ -282,15 +288,15 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
       };
     },
 
-    field: (name, type, options) => ({
+    field: ({ name, type, resolve, args, ...options }) => ({
       kind: 'Field',
       name,
       type,
+      args: args ?? {},
+      resolve: typeof resolve === 'function'
+        ? resolve
+        : (src) => src[name],
       ...options,
-      args: options?.args ?? {},
-      resolve: typeof options?.resolve === 'function'
-        ? options.resolve
-        : (src) => src[name]
     }),
 
     abstractField<Out>(

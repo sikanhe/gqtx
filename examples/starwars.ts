@@ -161,14 +161,16 @@ const characterInterface: Interface<Context, ICharacter | null> = t.interfaceTyp
 const { connectionType: characterConnectionType } = relay.connectionDefinitions<ICharacter>({
   nodeType: characterInterface,
   edgeFields: () => [
-    t.field('friendshipTime', t.String, {
+    t.field({
+      name: 'friendshipTime',
+      type: t.String,
       resolve: (_edge: Edge<ICharacter>) => {
         return 'Yesterday';
       },
     }),
   ],
   connectionFields: () => [
-    t.field('totalCount', t.Int, {
+    t.field({ name:'totalCount', type: t.Int,
       resolve: () => {
         return Object.keys(humanData).length + Object.keys(droidData).length;
       },
@@ -226,18 +228,34 @@ const humanType = t.objectType<Human>({
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Human',
   fields: () => [
-    t.field('id', t.NonNull(t.ID)),
-    t.field('name', t.NonNull(t.String)),
-    t.field('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.field('homePlanet', t.String),
-    t.field('friends', characterConnectionType, {
+    t.field({
+      name: 'id',
+      type: t.NonNull(t.ID)
+    }),
+    t.field({
+      name: 'name',
+      type: t.NonNull(t.String)
+    }),
+    t.field({
+      name: 'appearsIn',
+      type: t.NonNull(t.List(t.NonNull(episodeEnum)))
+    }),
+    t.field({
+      name: 'homePlanet',
+      type: t.String
+    }),
+    t.field({
+      name: 'friends',
+      type: characterConnectionType,
       args: relay.connectionArgs,
       resolve: async (c, args) => {
         const friends = await Promise.all(getFriends(c));
         return createConnectionFromCharacterArray(friends, args);
       },
     }),
-    t.field('secretBackStory', t.String, {
+    t.field({
+      name: 'secretBackStory',
+      type: t.String,
       resolve: () => {
         throw new Error('secretBackstory is secret');
       },
@@ -251,18 +269,34 @@ const droidType = t.objectType<Droid>({
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Droid',
   fields: () => [
-    t.field('id', t.NonNull(t.ID)),
-    t.field('name', t.NonNull(t.String)),
-    t.field('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.field('primaryFunction', t.NonNull(t.String)),
-    t.field('friends', characterConnectionType, {
+    t.field({
+      name: 'id',
+      type: t.NonNull(t.ID)
+    }),
+    t.field({
+      name: 'name',
+      type: t.NonNull(t.String)
+    }),
+    t.field({
+      name: 'appearsIn',
+      type: t.NonNull(t.List(t.NonNull(episodeEnum)))
+    }),
+    t.field({
+      name: 'primaryFunction',
+      type: t.NonNull(t.String)
+    }),
+    t.field({
+      name: 'friends',
+      type: characterConnectionType,
       args: relay.connectionArgs,
       resolve: async (c, args) => {
         const friends = await Promise.all(getFriends(c));
         return createConnectionFromCharacterArray(friends, args);
       },
     }),
-    t.field('secretBackStory', t.String, {
+    t.field({
+      name: 'secretBackStory',
+      type: t.String,
       resolve: () => {
         throw new Error('secretBackstory is secret');
       },
@@ -273,23 +307,31 @@ const droidType = t.objectType<Droid>({
 const queryType = t.queryType({
   fields: [
     nodeField,
-    t.field('hero', characterInterface, {
+    t.field({
+      name: 'hero',
+      type: characterInterface,
       args: {
         episode: t.defaultArg(episodeEnum, Episode.EMPIRE),
       },
       resolve: (_, { episode }) => getHero(episode),
     }),
-    t.field('human', humanType, {
+    t.field({
+      name: 'human',
+      type: humanType, 
       args: { id: t.arg(t.NonNullInput(t.ID)) },
       resolve: (_, { id }) => getHuman(id),
     }),
-    t.field('droid', droidType, {
+    t.field({
+      name: 'droid',
+      type:  droidType, 
       args: {
         id: t.arg(t.NonNullInput(t.String), 'ID of the droid'),
       },
       resolve: (_, { id }) => getDroid(id),
     }),
-    t.field('contextContent', t.String, {
+    t.field({
+      name: 'contextContent',
+      type: t.String, 
       resolve: (_, _args, ctx) => ctx.contextContent,
     }),
   ],
