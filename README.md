@@ -28,7 +28,7 @@ Most importantly, we achieve all this _without_ having to:
 ### What does it look like?
 
 ```ts
-import { createTypesFactory, buildGraphQLSchema } from 'gqtx';
+import { createTypesFactory, buildGraphQLSchema } from "gqtx";
 
 enum Role {
   Admin,
@@ -42,41 +42,42 @@ type User = {
 };
 
 const users: User[] = [
-  { id: "1", role: Role.Admin, name: 'Sikan' },
-  { id: "2", role: Role.User, name: 'Nicole' },
+  { id: "1", role: Role.Admin, name: "Sikan" },
+  { id: "2", role: Role.User, name: "Nicole" },
 ];
 
 type AppContext = {
-  viewerId: 1,
-  users: User[]
-}
+  viewerId: 1;
+  users: User[];
+};
 
 // We can set the app context type once, and it will
 // be automatically inferred for all our resolvers! :)
 const t = createTypesFactory<AppContext>();
 
 const RoleEnum = t.enumType({
-  name: 'Role',
-  description: 'A user role',
-  values: [{ name: 'Admin', value: Role.Admin }, { name: 'User', value: Role.User }],
+  name: "Role",
+  description: "A user role",
+  values: [
+    { name: "Admin", value: Role.Admin },
+    { name: "User", value: Role.User },
+  ],
 });
 
 const UserType = t.objectType<User>({
-  name: 'User',
-  description: 'A User',
+  name: "User",
+  description: "A User",
   fields: () => [
-    t.defaultField('id', t.NonNull(t.ID)),
-    t.defaultField('role', t.NonNull(RoleEnum)),
-    // `defaultField` is the safe version of a default resolver
-    // field. In this case, field 'name' must exist on `User`
-    // and its type must be `string`
-    t.defaultField('name', t.NonNull(t.String)),
+    t.field({ name: "id", type: t.NonNull(t.ID) }),
+    t.field({ name: "role", type: t.NonNull(RoleEnum) }),
+    t.field({ name: "name", type: t.NonNull(t.String) }),
   ],
 });
 
 const Query = t.queryType({
   fields: [
-    t.field('userById', {
+    t.field({
+      name: "userById",
       type: UserType,
       args: {
         id: t.arg(t.NonNullInput(t.ID)),
@@ -85,11 +86,11 @@ const Query = t.queryType({
         // `args` is automatically inferred as { id: string }
         // `ctx` is also automatically inferred as AppContext
         //  All with no extra work!
-        const user = ctx.users.find(u => u.id === args.id);
+        const user = ctx.users.find((u) => u.id === args.id);
         // Also ensures we return an `User | null` type :)
         return user || null;
       },
-    })
+    }),
   ],
 });
 
@@ -101,13 +102,13 @@ const schema = buildGraphQLSchema({
 #### Use your favorite server option to serve the schema!
 
 ```ts
-import express from 'express';
-import graphqlHTTP from 'express-graphql';
+import express from "express";
+import graphqlHTTP from "express-graphql";
 
 const app = express();
 
 app.use(
-  '/graphql',
+  "/graphql",
   graphqlHTTP({
     schema,
     graphiql: true,
