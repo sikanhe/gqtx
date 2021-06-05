@@ -1,3 +1,6 @@
 {
-  "extends": "../tsconfig.cjs.json"
+  "extends": "../tsconfig.cjs.json",
+  "compilerOptions": {
+    "module": "commonjs"
+  }
 }
