@@ -1,18 +1,43 @@
-import assert from "assert";
+import * as assert from "assert";
 import { printSchema } from "graphql";
-import { createTypesFactory, buildGraphQLSchema } from "../dist/cjs/index.js";
-import { createRelayHelpers } from "../dist/cjs/relay.js";
+import { createTypesFactory, buildGraphQLSchema, Interface } from "../src/index";
+import { createRelayHelpers } from "../src/relay";
 
-const t = createTypesFactory();
+type Context = {
+  contextContent: string
+}
+
+const t = createTypesFactory<Context>();
 const relay = createRelayHelpers(t);
 
-const Episode = {
-  NEWHOPE: 4,
-  EMPIRE: 5,
-  JEDI: 6,
+enum Episode {
+  NEWHOPE = 4,
+  EMPIRE = 5,
+  JEDI = 6,
 };
 
-const luke = {
+type Human = {
+  type: 'Human'
+  id: string;
+  name: string;
+  appearsIn: Array<Episode>;
+  homePlanet: string | null
+  friends: Array<string>
+}
+
+
+type Droid = {
+  type: 'Droid'
+  id: string;
+  name: string;
+  appearsIn: Array<Episode>,
+  primaryFunction: string;
+  friends: Array<string>
+}
+
+type Character = Human | Droid
+
+const luke: Human = {
   type: "Human",
   id: "1000",
   name: "Luke Skywalker",
@@ -21,7 +46,7 @@ const luke = {
   homePlanet: "Tatooine",
 };
 
-const vader = {
+const vader: Human = {
   type: "Human",
   id: "1001",
   name: "Darth Vader",
@@ -30,7 +55,7 @@ const vader = {
   homePlanet: "Tatooine",
 };
 
-const han = {
+const han: Human  = {
   type: "Human",
   id: "1002",
   name: "Han Solo",
@@ -39,17 +64,16 @@ const han = {
   homePlanet: null,
 };
 
-const leia = {
+const leia: Human  = {
   type: "Human",
   id: "1003",
   name: "Leia Organa",
   friends: ["1000", "1002", "2000", "2001"],
   appearsIn: [4, 5, 6],
   homePlanet: "Alderaan",
-  // __typename: 'Human',
 };
 
-const tarkin = {
+const tarkin: Human  = {
   type: "Human",
   id: "1004",
   name: "Wilhuff Tarkin",
@@ -58,15 +82,15 @@ const tarkin = {
   homePlanet: null,
 };
 
-const humanData = {
-  1000: luke,
-  1001: vader,
-  1002: han,
-  1003: leia,
-  1004: tarkin,
+const humanData: Record<string, Human> = {
+  "1000": luke,
+  "1001": vader,
+  "1002": han,
+  "1003": leia,
+  "1004": tarkin,
 };
 
-const threepio = {
+const threepio: Droid = {
   type: "Droid",
   id: "2000",
   name: "C-3PO",
@@ -75,7 +99,7 @@ const threepio = {
   primaryFunction: "Protocol",
 };
 
-const artoo = {
+const artoo: Droid = {
   type: "Droid",
   id: "2001",
   name: "R2-D2",
@@ -84,19 +108,19 @@ const artoo = {
   primaryFunction: "Astromech",
 };
 
-const droidData = {
-  2000: threepio,
-  2001: artoo,
+const droidData: Record<string, Droid> = {
+  "2000": threepio,
+  "2001": artoo,
 };
-function getCharacter(id) {
-  return Promise.resolve(humanData[id] || droidData[id]);
+function getCharacter(id: string): null | Character {
+  return humanData[id] ?? droidData[id] ?? null
 }
 
-export function getFriends(character) {
+export function getFriends(character: Character): Array<Character | null> {
   return character.friends.map((id) => getCharacter(id));
 }
 
-export function getHero(episode) {
+export function getHero(episode: Episode) {
   if (episode === 5) {
     // Luke is the hero of Episode V.
     return luke;
@@ -105,12 +129,12 @@ export function getHero(episode) {
   return artoo;
 }
 
-export function getHuman(id) {
-  return humanData[id];
+export function getHuman(id: string): Human | null {
+  return humanData[id] ?? null;
 }
 
-export function getDroid(id) {
-  return droidData[id];
+export function getDroid(id: string): Droid | null {
+  return droidData[id] ?? null;
 }
 
 const { nodeInterface, nodeField } = relay.nodeDefinitions((id) =>
@@ -127,7 +151,8 @@ const episodeEnum = t.enumType({
   ],
 });
 
-const characterInterface = t.interfaceType({
+
+const characterInterface: Interface<Context, Character | null> = t.interfaceType<Character>({
   name: "Character",
   interfaces: [],
   fields: () => [
@@ -143,11 +168,12 @@ const characterInterface = t.interfaceType({
   ],
 });
 
-const { connectionType: characterConnectionType } = relay.connectionDefinitions(
+const { connectionType: characterConnectionType } = relay.connectionDefinitions<Character>(
   {
     nodeType: characterInterface,
     edgeFields: () => [
-      t.field("friendshipTime", {
+      t.field( {
+        name: "friendshipTime",
         type: t.String,
         resolve: (_edge) => {
           return "Yesterday";
@@ -155,7 +181,8 @@ const { connectionType: characterConnectionType } = relay.connectionDefinitions(
       }),
     ],
     connectionFields: () => [
-      t.field("totalCount", {
+      t.field({
+        name: "totalCount", 
         type: t.Int,
         resolve: () => {
           return Object.keys(humanData).length + Object.keys(droidData).length;
@@ -165,12 +192,12 @@ const { connectionType: characterConnectionType } = relay.connectionDefinitions(
   }
 );
 
-const createConnectionFromCharacterArray = (array, args) => {
+const createConnectionFromCharacterArray = (array: Array<Character>, args: any) => {
   let sliceStart = 0;
   let sliceEnd = array.length;
 
   if (args.after) {
-    const idx = array.findIndex((c) => c.id === args.after);
+    const idx = array.findIndex((c) => c?.id === args.after);
     if (idx > -1) {
       sliceStart = idx;
     }
@@ -206,25 +233,30 @@ const createConnectionFromCharacterArray = (array, args) => {
   };
 };
 
-const humanType = t.objectType({
+function isSome<T>(input: T): input is Exclude<T, null | undefined> {
+  return input != null
+}
+
+const humanType = t.objectType<Human>({
   name: "Human",
   description: "A humanoid creature in the Star Wars universe.",
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing) => thing.type === "Human",
   fields: () => [
-    t.defaultField("id", t.NonNull(t.ID)),
-    t.defaultField("name", t.NonNull(t.String)),
-    t.defaultField("appearsIn", t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.defaultField("homePlanet", t.String),
-    t.field("friends", {
+    t.field({ name: "id", type: t.NonNull(t.ID) }),
+    t.field({ name: "name", type: t.NonNull(t.String) }),
+    t.field({ name: "appearsIn", type:  t.NonNull(t.List(t.NonNull(episodeEnum))) }),
+    t.field({ name: "homePlanet", type: t.String } ),
+    t.field({ name: "friends" ,
       type: characterConnectionType,
       args: relay.connectionArgs,
       resolve: async (c, args) => {
         const friends = await Promise.all(getFriends(c));
-        return createConnectionFromCharacterArray(friends, args);
+        return createConnectionFromCharacterArray(friends.filter(isSome), args);
       },
     }),
-    t.field("secretBackStory", {
+    t.field( {
+      name: "secretBackStory",
       type: t.String,
       resolve: () => {
         throw new Error("secretBackstory is secret");
@@ -233,25 +265,26 @@ const humanType = t.objectType({
   ],
 });
 
-const droidType = t.objectType({
+const droidType = t.objectType<Droid>({
   name: "Droid",
   description: "A mechanical creature in the Star Wars universe.",
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing) => thing.type === "Droid",
   fields: () => [
-    t.defaultField("id", t.NonNull(t.ID)),
-    t.defaultField("name", t.NonNull(t.String)),
-    t.defaultField("appearsIn", t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.defaultField("primaryFunction", t.NonNull(t.String)),
-    t.field("friends", {
+    t.field({ name: "id", type: t.NonNull(t.ID) }),
+    t.field({ name: "name", type: t.NonNull(t.String)}),
+    t.field({ name: "appearsIn",type:  t.NonNull(t.List(t.NonNull(episodeEnum))) }),
+    t.field({ name: "primaryFunction",type:  t.NonNull(t.String) }),
+    t.field({ name: "friends",
       type: characterConnectionType,
       args: relay.connectionArgs,
       resolve: async (c, args) => {
         const friends = await Promise.all(getFriends(c));
-        return createConnectionFromCharacterArray(friends, args);
+        return createConnectionFromCharacterArray(friends.filter(isSome), args);
       },
     }),
-    t.field("secretBackStory", {
+    t.field( {
+      name: "secretBackStory",
       type: t.String,
       resolve: () => {
         throw new Error("secretBackstory is secret");
@@ -260,10 +293,15 @@ const droidType = t.objectType({
   ],
 });
 
-const searchResultType = t.unionType({
+const searchResultType = t.unionType<Droid | Human>({
   name: "SearchResult",
   description: "Either droid or human",
-  resolveType: (src) => src.type,
+  resolveType: (src) => {
+    switch (src.type) {
+      case "Droid": return droidType
+      case "Human": return humanType
+    }
+  },
   types: [humanType, droidType],
 });
 
@@ -276,32 +314,37 @@ const humanInputType = t.inputObjectType({
 });
 
 const queryType = t.queryType({
-  fields: [
+  fields: () => [
     nodeField,
-    t.field("hero", {
+    t.field({
+      name: "hero",
       type: characterInterface,
       args: {
         episode: t.defaultArg(episodeEnum, Episode.EMPIRE),
       },
       resolve: (_, { episode }) => getHero(episode),
     }),
-    t.field("human", {
+    t.field({
+      name: "human", 
       type: humanType,
       args: { id: t.arg(t.NonNullInput(t.ID)) },
       resolve: (_, { id }) => getHuman(id),
     }),
-    t.field("droid", {
+    t.field({
+      name: "droid", 
       type: droidType,
       args: {
         id: t.arg(t.NonNullInput(t.String), "ID of the droid"),
       },
       resolve: (_, { id }) => getDroid(id),
     }),
-    t.field("contextContent", {
+    t.field( {
+      name: "contextContent",
       type: t.String,
       resolve: (_, _args, ctx) => ctx.contextContent,
     }),
-    t.field("search", {
+    t.field( {
+      name: "search",
       type: t.List(searchResultType),
       args: {
         human: t.arg(humanInputType),
