@@ -69,7 +69,7 @@ export function toGraphQLSubscriptionObject<Ctx, RootSrc>(
     fields: () => {
       const gqlFieldConfig: graphql.GraphQLFieldConfigMap<RootSrc, Ctx> = {};
 
-      subscriptionObj.fields.forEach((field) => {
+      subscriptionObj.fields().forEach((field) => {
         gqlFieldConfig[field.name] = {
           type: toGraphQLOutputType(field.type, typeMap),
           description: field.description,

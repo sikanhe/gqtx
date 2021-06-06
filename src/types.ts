@@ -182,7 +182,7 @@ export type Union<Ctx, Src> = {
 export type SubscriptionObject<Ctx, RootSrc> = {
   kind: "SubscriptionObject";
   name: string;
-  fields: Array<SubscriptionField<Ctx, RootSrc, any, any>>;
+  fields: () => Array<SubscriptionField<Ctx, RootSrc, any, any>>;
 };
 
 export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
