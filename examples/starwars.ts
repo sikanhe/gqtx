@@ -311,7 +311,7 @@ const droidType = t.objectType<Droid>({
 });
 
 const queryType = t.queryType({
-  fields: [
+  fields: () => [
     nodeField,
     t.field({
       name: "hero",

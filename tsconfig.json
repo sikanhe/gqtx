@@ -3,7 +3,6 @@
     "target": "ES2019",
     "module": "ESNext",
     "moduleResolution": "node",
-    "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
     /* Strict Type-Checking Options */
