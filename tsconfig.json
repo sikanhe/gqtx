@@ -8,9 +8,6 @@
     "declaration": true,
     /* Strict Type-Checking Options */
     "strict": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
     /* Additional Checks */
     "noUnusedLocals": true,
     "noUnusedParameters": true,

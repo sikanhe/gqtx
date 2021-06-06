@@ -118,6 +118,19 @@ app.use(
 app.listen(4000);
 ```
 
+## `gqtx` works best with TypeScript `strict` mode
+
+We recommend using [TypeScript strict mode](https://www.typescriptlang.org/tsconfig#strict) in order to have the best developer experience.
+
+**tsconfig.json**
+```diff
+{
+  "compilerOptions": {
++    "strict": true
+  }
+}
+```
+
 ## To Recap
 
 - We created an intermediate representation of a GraphQL schema via the helper functions exported by this library.
