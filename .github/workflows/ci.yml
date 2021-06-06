@@ -24,3 +24,5 @@ jobs:
         run: yarn build
       - name: Test
         run: yarn test
+      - name: Test TypeScript API
+        run: yarn test:api

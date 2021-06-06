@@ -51,6 +51,7 @@
     "build:cjs": "cross-env MODE=cjs rollup -c",
     "build:esm": "rollup -c",
     "build": "yarn build:cjs && yarn build:esm",
-    "test": "jest"
+    "test": "jest",
+    "test:api": "tsc --project ./test-api/tsconfig.json"
   }
 }

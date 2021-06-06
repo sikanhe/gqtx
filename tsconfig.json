@@ -3,6 +3,7 @@
     "target": "ES2019",
     "module": "ESNext",
     "moduleResolution": "node",
+    "rootDir": "src",
     "outDir": "dist",
     "declaration": true,
     /* Strict Type-Checking Options */
@@ -14,7 +15,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true
   },
   "files": ["./src/index.ts", "./src/relay.ts"]
 }

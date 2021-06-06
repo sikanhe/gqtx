@@ -3,6 +3,6 @@
   "files": ["./starwars.ts"],
   "compilerOptions": {
     "target": "ES2019",
-    "module": "commonjs",
+    "module": "commonjs"
   }
 }
