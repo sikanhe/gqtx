@@ -105,7 +105,7 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
       | {
           description?: string | undefined;
           deprecationReason?: string | undefined;
-          args?: ArgMap<any> | undefined;
+          args?: ArgMap<unknown> | undefined;
         }
       | undefined
   ): AbstractField<Ctx, Out_1>;
