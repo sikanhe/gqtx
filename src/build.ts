@@ -217,6 +217,7 @@ export function toGraphQLOutputType<Ctx, Src>(
               type: toGraphQLOutputType(field.type, typeMap),
               description: field.description,
               deprecationReason: field.deprecationReason,
+              args: field.args && toGraphQLArgs(field.args, typeMap)
             };
           });
 

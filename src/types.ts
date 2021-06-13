@@ -119,6 +119,7 @@ export type AbstractField<Ctx, Out> = {
   name: string;
   description?: string;
   deprecationReason?: string;
+  args?: ArgMap<unknown>;
   type: OutputType<Ctx, Out>;
 };
 

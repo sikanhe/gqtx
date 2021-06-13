@@ -1,4 +1,4 @@
-import assert from "assert/strict";
+import assert from "assert";
 import { printSchema } from "graphql";
 import { createTypesFactory, buildGraphQLSchema } from "../dist/cjs/index.js";
 import { createRelayHelpers } from "../dist/cjs/relay.js";
@@ -134,7 +134,12 @@ const characterInterface = t.interfaceType({
     t.abstractField("id", t.NonNull(t.ID)),
     t.abstractField("name", t.NonNull(t.String)),
     t.abstractField("appearsIn", t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.abstractField("friends", characterConnectionType),
+    t.abstractField("friends", characterConnectionType, {
+      args: {
+        first: t.arg(t.Int),
+        after: t.arg(t.String),
+      },
+    }),
   ],
 });
 
@@ -337,7 +342,7 @@ interface Character {
   id: ID!
   name: String!
   appearsIn: [Episode!]!
-  friends: CharacterConnection
+  friends(first: Int, after: String): CharacterConnection
 }
 
 """One of the films in the Star Wars Trilogy"""
