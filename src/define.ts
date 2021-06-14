@@ -105,6 +105,7 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
       | {
           description?: string | undefined;
           deprecationReason?: string | undefined;
+          args?: ArgMap<unknown> | undefined;
         }
       | undefined
   ): AbstractField<Ctx, Out_1>;
@@ -343,6 +344,7 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
       opts?: {
         description?: string;
         deprecationReason?: string;
+        args?: ArgMap<unknown>;
       }
     ): AbstractField<Ctx, Out> {
       return {
@@ -350,6 +352,7 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
         name,
         description: opts && opts.description,
         deprecationReason: opts && opts.deprecationReason,
+        args: opts && opts.args,
         type,
       };
     },
