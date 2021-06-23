@@ -62,7 +62,9 @@ export function createRelayHelpers<Ctx, ExtensionsMap>(
       name: "Node",
       description: "An object with an ID",
       fields: () => [
-        t.abstractField("id", t.NonNull(t.ID), {
+        t.abstractField({
+          name: "id",
+          type: t.NonNull(t.ID),
           description: "The id of the object.",
         }),
       ],

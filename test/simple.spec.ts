@@ -159,10 +159,15 @@ test("can build a schema", () => {
       name: "Character",
       interfaces: [],
       fields: () => [
-        t.abstractField("id", t.NonNull(t.ID)),
-        t.abstractField("name", t.NonNull(t.String)),
-        t.abstractField("appearsIn", t.NonNull(t.List(t.NonNull(episodeEnum)))),
-        t.abstractField("friends", characterConnectionType, {
+        t.abstractField({ name: "id", type: t.NonNull(t.ID) }),
+        t.abstractField({ name: "name", type: t.NonNull(t.String) }),
+        t.abstractField({
+          name: "appearsIn",
+          type: t.NonNull(t.List(t.NonNull(episodeEnum))),
+        }),
+        t.abstractField({
+          name: "friends",
+          type: characterConnectionType,
           args: {
             first: t.arg(t.Int),
             after: t.arg(t.String),
@@ -387,103 +392,103 @@ test("can build a schema", () => {
   const printed = printSchema(schema);
 
   expect(printed).toMatchInlineSnapshot(`
-    "type Query {
-      node(
-        \\"\\"\\"The ID of an object\\"\\"\\"
-        id: ID!
-      ): Node
-      hero(episode: Episode = EMPIRE): Character
-      human(id: ID!): Human
-      droid(
-        \\"\\"\\"ID of the droid\\"\\"\\"
-        id: String!
-      ): Droid
-      contextContent: String
-      search(human: HumanInput): [SearchResult]
-    }
+"type Query {
+  node(
+    \\"\\"\\"The ID of an object\\"\\"\\"
+    id: ID!
+  ): Node
+  hero(episode: Episode = EMPIRE): Character
+  human(id: ID!): Human
+  droid(
+    \\"\\"\\"ID of the droid\\"\\"\\"
+    id: String!
+  ): Droid
+  contextContent: String
+  search(human: HumanInput): [SearchResult]
+}
 
-    \\"\\"\\"An object with an ID\\"\\"\\"
-    interface Node {
-      \\"\\"\\"The id of the object.\\"\\"\\"
-      id: ID!
-    }
+\\"\\"\\"An object with an ID\\"\\"\\"
+interface Node {
+  \\"\\"\\"The id of the object.\\"\\"\\"
+  id: ID!
+}
 
-    interface Character {
-      id: ID!
-      name: String!
-      appearsIn: [Episode!]!
-      friends: CharacterConnection
-    }
+interface Character {
+  id: ID!
+  name: String!
+  appearsIn: [Episode!]!
+  friends(first: Int, after: String): CharacterConnection
+}
 
-    \\"\\"\\"One of the films in the Star Wars Trilogy\\"\\"\\"
-    enum Episode {
-      NEWHOPE
-      EMPIRE
-      JEDI
-    }
+\\"\\"\\"One of the films in the Star Wars Trilogy\\"\\"\\"
+enum Episode {
+  NEWHOPE
+  EMPIRE
+  JEDI
+}
 
-    \\"\\"\\"A connection to a list of items.\\"\\"\\"
-    type CharacterConnection {
-      \\"\\"\\"Information to aid in pagination.\\"\\"\\"
-      pageInfo: PageInfo!
+\\"\\"\\"A connection to a list of items.\\"\\"\\"
+type CharacterConnection {
+  \\"\\"\\"Information to aid in pagination.\\"\\"\\"
+  pageInfo: PageInfo!
 
-      \\"\\"\\"A list of edges.\\"\\"\\"
-      edges: [CharacterEdge]
-      totalCount: Int
-    }
+  \\"\\"\\"A list of edges.\\"\\"\\"
+  edges: [CharacterEdge]
+  totalCount: Int
+}
 
-    \\"\\"\\"Information about pagination in a connection.\\"\\"\\"
-    type PageInfo {
-      \\"\\"\\"When paginating forwards, are there more items?\\"\\"\\"
-      hasNextPage: Boolean!
+\\"\\"\\"Information about pagination in a connection.\\"\\"\\"
+type PageInfo {
+  \\"\\"\\"When paginating forwards, are there more items?\\"\\"\\"
+  hasNextPage: Boolean!
 
-      \\"\\"\\"When paginating backwards, are there more items?\\"\\"\\"
-      hasPreviousPage: Boolean!
+  \\"\\"\\"When paginating backwards, are there more items?\\"\\"\\"
+  hasPreviousPage: Boolean!
 
-      \\"\\"\\"When paginating backwards, the cursor to continue.\\"\\"\\"
-      startCursor: String
+  \\"\\"\\"When paginating backwards, the cursor to continue.\\"\\"\\"
+  startCursor: String
 
-      \\"\\"\\"When paginating forwards, the cursor to continue.\\"\\"\\"
-      endCursor: String
-    }
+  \\"\\"\\"When paginating forwards, the cursor to continue.\\"\\"\\"
+  endCursor: String
+}
 
-    \\"\\"\\"An edge in a connection.\\"\\"\\"
-    type CharacterEdge {
-      \\"\\"\\"The item at the end of the edge\\"\\"\\"
-      node: Character!
+\\"\\"\\"An edge in a connection.\\"\\"\\"
+type CharacterEdge {
+  \\"\\"\\"The item at the end of the edge\\"\\"\\"
+  node: Character!
 
-      \\"\\"\\"A cursor for use in pagination\\"\\"\\"
-      cursor: String!
-      friendshipTime: String
-    }
+  \\"\\"\\"A cursor for use in pagination\\"\\"\\"
+  cursor: String!
+  friendshipTime: String
+}
 
-    \\"\\"\\"A humanoid creature in the Star Wars universe.\\"\\"\\"
-    type Human implements Node & Character {
-      id: ID!
-      name: String!
-      appearsIn: [Episode!]!
-      homePlanet: String
-      friends(after: String, first: Int, before: String, last: Int): CharacterConnection
-      secretBackStory: String
-    }
+\\"\\"\\"A humanoid creature in the Star Wars universe.\\"\\"\\"
+type Human implements Node & Character {
+  id: ID!
+  name: String!
+  appearsIn: [Episode!]!
+  homePlanet: String
+  friends(after: String, first: Int, before: String, last: Int): CharacterConnection
+  secretBackStory: String
+}
 
-    \\"\\"\\"A mechanical creature in the Star Wars universe.\\"\\"\\"
-    type Droid implements Node & Character {
-      id: ID!
-      name: String!
-      appearsIn: [Episode!]!
-      primaryFunction: String!
-      friends(after: String, first: Int, before: String, last: Int): CharacterConnection
-      secretBackStory: String
-    }
+\\"\\"\\"A mechanical creature in the Star Wars universe.\\"\\"\\"
+type Droid implements Node & Character {
+  id: ID!
+  name: String!
+  appearsIn: [Episode!]!
+  primaryFunction: String!
+  friends(after: String, first: Int, before: String, last: Int): CharacterConnection
+  secretBackStory: String
+}
 
-    \\"\\"\\"Either droid or human\\"\\"\\"
-    union SearchResult = Human | Droid
+\\"\\"\\"Either droid or human\\"\\"\\"
+union SearchResult = Human | Droid
 
-    \\"\\"\\"I just want to test input types\\"\\"\\"
-    input HumanInput {
-      unused: String!
-    }
-    "
-  `);
+\\"\\"\\"I just want to test input types\\"\\"\\"
+input HumanInput {
+  unused: String!
+}
+"
+`);
 });

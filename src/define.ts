@@ -105,17 +105,13 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
       : ResolvePartialMandatory<Src, Arg, Ctx, Out>)
   ): Field<Ctx, Src, any, any>;
 
-  abstractField<Out_1>(
-    name: string,
-    type: OutputType<Ctx, Out_1>,
-    opts?:
-      | {
-          description?: string | undefined;
-          deprecationReason?: string | undefined;
-          args?: ArgMap<unknown> | undefined;
-        }
-      | undefined
-  ): AbstractField<Ctx, Out_1>;
+  abstractField<Out_1>(opts: {
+    name: string;
+    type: OutputType<Ctx, Out_1>;
+    description?: string | undefined;
+    deprecationReason?: string | undefined;
+    args?: ArgMap<unknown> | undefined;
+  }): AbstractField<Ctx, Out_1>;
   objectType<Src, Ctx = any>({
     name,
     description,
@@ -312,22 +308,21 @@ export function createTypesFactory<
       ...options,
     }),
 
-    abstractField<Out>(
-      name: string,
-      type: OutputType<Ctx, Out>,
-      opts?: {
-        description?: string;
-        deprecationReason?: string;
-        args?: ArgMap<unknown>;
-      }
-    ): AbstractField<Ctx, Out> {
+    abstractField<Out>(opts: {
+      name: string;
+      type: OutputType<Ctx, Out>;
+
+      description?: string;
+      deprecationReason?: string;
+      args?: ArgMap<unknown>;
+    }): AbstractField<Ctx, Out> {
       return {
         kind: "AbstractField",
-        name,
-        description: opts && opts.description,
-        deprecationReason: opts && opts.deprecationReason,
-        args: opts && opts.args,
-        type,
+        name: opts.name,
+        description: opts.description,
+        deprecationReason: opts.deprecationReason,
+        args: opts.args,
+        type: opts.type,
       };
     },
     objectType<Src, Ctx = any>({
