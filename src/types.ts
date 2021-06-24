@@ -107,7 +107,7 @@ export type Field<Ctx, Src, Out, TArg extends object = {}> = {
   type: OutputType<Ctx, Out>;
   args: ArgMap<TArg>;
   deprecationReason?: string;
-  resolve: (
+  resolve?: (
     src: Src,
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,

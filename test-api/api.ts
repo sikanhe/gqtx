@@ -48,6 +48,50 @@ import * as api from "../src";
 }
 
 {
+  // correctly infer list types
+
+  const t = api.createTypesFactory<unknown>();
+
+  type Human = {
+    id: string;
+    age: number;
+    friendIds: Array<string>;
+  };
+
+  const GraphQLHuman = t.objectType<Human>({
+    name: "Human",
+    fields: () => [
+      t.field({
+        name: "id",
+        type: t.String,
+      }),
+    ],
+  });
+
+  t.objectType<Array<Human>>({
+    name: "HumanConnection",
+    fields: () => [
+      t.field({
+        name: "edges",
+        type: t.List(t.NonNull(GraphQLHuman)),
+        resolve: (value) => value,
+      }),
+    ],
+  });
+
+  t.objectType<Array<Human>>({
+    name: "HumanConnection",
+    fields: () => [
+      t.field({
+        name: "edges",
+        type: t.NonNull(t.List(t.NonNull(GraphQLHuman))),
+        resolve: (value) => value,
+      }),
+    ],
+  });
+}
+
+{
   // self-referencing object type (noImplicitAny)
 
   type User = {

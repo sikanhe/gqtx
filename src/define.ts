@@ -86,12 +86,7 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
     description?: string | undefined
   ): DefaultArgument<Exclude<Src, null>>;
 
-  field<
-    TKey extends string,
-    Src extends Record<string | number | symbol, unknown>,
-    Arg,
-    Out
-  >(
+  field<TKey extends string, Src, Arg, Out>(
     opts: {
       name: TKey;
       type: OutputType<Ctx, Out>;
@@ -293,7 +288,8 @@ export function createTypesFactory<
       name,
       type,
       args: args ?? {},
-      resolve: typeof resolve === "function" ? resolve : (src) => src[name],
+      // if no resolver is defined we fallback to the default GraphQL resolver which is (src) => src[fieldName]
+      resolve: typeof resolve === "function" ? resolve : undefined,
       ...options,
     }),
 
