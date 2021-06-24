@@ -1,6 +1,6 @@
 import * as graphql from "graphql";
 
-type PromiseOrValue<T> = Promise<T> | T;
+export type PromiseOrValue<T> = Promise<T> | T;
 type Maybe<T> = T | null | undefined;
 
 export type OutputType<Ctx, Src> =
@@ -197,9 +197,9 @@ export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,
     info: graphql.GraphQLResolveInfo
-  ) => PromiseOrValue<AsyncIterator<Out>>;
-  resolve?: (
-    source: RootSrc,
+  ) => PromiseOrValue<AsyncIterableIterator<Out>>;
+  resolve: (
+    source: Out,
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,
     info: graphql.GraphQLResolveInfo

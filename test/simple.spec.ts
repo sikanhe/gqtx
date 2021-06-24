@@ -1,4 +1,4 @@
-import { printSchema } from "graphql";
+import { parse, printSchema, subscribe } from "graphql";
 import {
   createTypesFactory,
   buildGraphQLSchema,
@@ -492,3 +492,80 @@ input HumanInput {
 "
 `);
 });
+
+test("Subscription work properly", async () => {
+  const t = createTypesFactory<unknown>();
+
+  const GraphQLSubscriptionObjectType = t.subscriptionType({
+    name: "Subscription",
+    fields: () => [
+      t.subscriptionField({
+        name: "greetings",
+        type: t.NonNull(t.String),
+        subscribe: async function* () {
+          for (const greeting of ["hi", "ola", "sup", "hello"]) {
+            yield greeting;
+          }
+        },
+      }),
+    ],
+  });
+
+  const schema = buildGraphQLSchema({
+    query: t.queryType({
+      name: "Query",
+      fields: () => [
+        t.field({ name: "_", type: t.Boolean, resolve: () => null }),
+      ],
+    }),
+    subscription: GraphQLSubscriptionObjectType,
+  });
+
+  const result = await subscribe({
+    schema,
+    document: parse(/* GraphQL */ `
+      subscription {
+        greetings
+      }
+    `),
+  });
+  assertAsyncIterable(result);
+
+  const values: Array<any> = [];
+  for await (const value of result) {
+    values.push(value);
+  }
+  expect(values).toMatchInlineSnapshot(`
+Array [
+  Object {
+    "data": Object {
+      "greetings": "hi",
+    },
+  },
+  Object {
+    "data": Object {
+      "greetings": "ola",
+    },
+  },
+  Object {
+    "data": Object {
+      "greetings": "sup",
+    },
+  },
+  Object {
+    "data": Object {
+      "greetings": "hello",
+    },
+  },
+]
+`);
+});
+
+function assertAsyncIterable(
+  input: object
+): asserts input is AsyncIterableIterator<any> {
+  if (Symbol.asyncIterator in input) {
+    return;
+  }
+  throw new Error("Expected AsyncIterable.");
+}

@@ -107,3 +107,35 @@ import * as api from "../src";
       ],
     });
 }
+
+{
+  // Subscription API Test
+  type Context = unknown;
+  const t = api.createTypesFactory<Context>();
+
+  t.subscriptionField({
+    name: "foo",
+    type: t.Boolean,
+    subscribe: async function* () {
+      yield true;
+    },
+  });
+
+  t.subscriptionField({
+    name: "foo",
+    type: t.Boolean,
+    // @ts-expect-error: subscribe must return number not object with number property
+    subscribe: async function* () {
+      yield { foo: true };
+    },
+  });
+
+  t.subscriptionField({
+    name: "foo",
+    type: t.Boolean,
+    // @ts-expect-error: subscribe must return number not object with string property
+    subscribe: async function* () {
+      yield { foo: "true" };
+    },
+  });
+}
