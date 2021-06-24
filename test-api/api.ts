@@ -183,3 +183,37 @@ import * as api from "../src";
     },
   });
 }
+
+{
+  // arguments
+
+  const t = api.createTypesFactory<unknown>();
+
+  t.field({
+    name: "foo",
+    type: t.Boolean,
+    args: {
+      foo: t.arg(t.Boolean),
+    },
+    // args.foo should be boolean | null | undefined
+    resolve: (_, args) => {
+      if (args.foo === undefined) {
+        // ok, no argument was passed
+        const _value: undefined = args.foo;
+        console.log(_value);
+      }
+      if (args.foo === true) {
+        // ok, boolean argument was passed
+        const _value: boolean = args.foo;
+        console.log(_value);
+      }
+      if (args.foo === null) {
+        // ok, null was passed as argument
+        const _value: null = args.foo;
+        console.log(_value);
+      }
+
+      return true;
+    },
+  });
+}
