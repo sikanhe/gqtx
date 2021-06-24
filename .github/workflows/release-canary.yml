@@ -28,9 +28,20 @@ jobs:
           git config --global user.email "github-action@users.noreply.github.com"
           git config --global user.name "Github Action"
       - name: Publish
+        id: publish-step
         run: |
           cd dist
           yarn version --no-git-tag-version --prerelease --preid ${GITHUB_SHA::8}
           yarn publish --tag canary
+          PACKAGE_VERSION=$(node -e "console.log(require('./package.json').version)")
+          echo "::set-output name=PACKAGE_VERSION::$PACKAGE_VERSION"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Create commit comment
+        uses: peter-evans/commit-comment@v1
+        with:
+          body: |
+            The changes have been published to npm.
+            ```bash
+            yarn add -E gqtx@${{ steps.publish-step.outputs.PACKAGE_VERSION }}
+            ```
