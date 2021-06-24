@@ -119,7 +119,9 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
     name: string;
     description?: string | undefined;
     interfaces?: Interface<Ctx, any>[] | undefined;
-    fields: (self: OutputType<Ctx, Src | null>) => Field<Ctx, Src, any, {}>[];
+    fields: (
+      self: OutputType<Ctx, Src | null>
+    ) => [Field<Ctx, Src, any, {}>, ...Field<Ctx, Src, any, {}>[]];
     isTypeOf?:
       | ((src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean)
       | undefined;
@@ -165,14 +167,20 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
     fields,
   }: {
     name?: string | undefined;
-    fields: () => Field<Ctx, RootSrc, any, {}>[];
+    fields: () => [
+      Field<Ctx, RootSrc, any, {}>,
+      ...Field<Ctx, RootSrc, any, {}>[]
+    ];
   }): ObjectType<Ctx, RootSrc>;
   mutationType<RootSrc>({
     name,
     fields,
   }: {
     name?: string | undefined;
-    fields: () => Field<Ctx, RootSrc, any, {}>[];
+    fields: () => [
+      Field<Ctx, RootSrc, any, {}>,
+      ...Field<Ctx, RootSrc, any, {}>[]
+    ];
   }): ObjectType<Ctx, RootSrc>;
   subscriptionField<RootSrc, Out_2, Arg_1>({
     name,
@@ -199,7 +207,10 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
     fields,
   }: {
     name?: string | undefined;
-    fields: () => SubscriptionField<Ctx, Src, any, any>[];
+    fields: () => [
+      SubscriptionField<Ctx, Src, any, any>,
+      ...SubscriptionField<Ctx, Src, any, any>[]
+    ];
   }): SubscriptionObject<Ctx, Src>;
 };
 

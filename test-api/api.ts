@@ -217,3 +217,33 @@ import * as api from "../src";
     },
   });
 }
+
+{
+  // require at least one field
+
+  const t = api.createTypesFactory<unknown>();
+
+  t.objectType({
+    name: "Foo",
+    // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
+    fields: () => [],
+  });
+
+  t.mutationType({
+    name: "Foo",
+    // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
+    fields: () => [],
+  });
+
+  t.queryType({
+    name: "Foo",
+    // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
+    fields: () => [],
+  });
+
+  t.subscriptionType({
+    name: "Foo",
+    // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
+    fields: () => [],
+  });
+}
