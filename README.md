@@ -28,7 +28,7 @@ Most importantly, we achieve all this _without_ having to:
 ### What does it look like?
 
 ```ts
-import { createTypesFactory, buildGraphQLSchema } from "gqtx";
+import { createTypesFactory, buildGraphQLSchema } from 'gqtx';
 
 enum Role {
   Admin,
@@ -42,8 +42,8 @@ type User = {
 };
 
 const users: User[] = [
-  { id: "1", role: Role.Admin, name: "Sikan" },
-  { id: "2", role: Role.User, name: "Nicole" },
+  { id: '1', role: Role.Admin, name: 'Sikan' },
+  { id: '2', role: Role.User, name: 'Nicole' },
 ];
 
 type AppContext = {
@@ -56,28 +56,28 @@ type AppContext = {
 const t = createTypesFactory<AppContext>();
 
 const RoleEnum = t.enumType({
-  name: "Role",
-  description: "A user role",
+  name: 'Role',
+  description: 'A user role',
   values: [
-    { name: "Admin", value: Role.Admin },
-    { name: "User", value: Role.User },
+    { name: 'Admin', value: Role.Admin },
+    { name: 'User', value: Role.User },
   ],
 });
 
 const UserType = t.objectType<User>({
-  name: "User",
-  description: "A User",
+  name: 'User',
+  description: 'A User',
   fields: () => [
-    t.field({ name: "id", type: t.NonNull(t.ID) }),
-    t.field({ name: "role", type: t.NonNull(RoleEnum) }),
-    t.field({ name: "name", type: t.NonNull(t.String) }),
+    t.field({ name: 'id', type: t.NonNull(t.ID) }),
+    t.field({ name: 'role', type: t.NonNull(RoleEnum) }),
+    t.field({ name: 'name', type: t.NonNull(t.String) }),
   ],
 });
 
 const Query = t.queryType({
   fields: [
     t.field({
-      name: "userById",
+      name: 'userById',
       type: UserType,
       args: {
         id: t.arg(t.NonNullInput(t.ID)),
@@ -102,13 +102,13 @@ const schema = buildGraphQLSchema({
 #### Use your favorite server option to serve the schema!
 
 ```ts
-import express from "express";
-import graphqlHTTP from "express-graphql";
+import express from 'express';
+import graphqlHTTP from 'express-graphql';
 
 const app = express();
 
 app.use(
-  "/graphql",
+  '/graphql',
   graphqlHTTP({
     schema,
     graphiql: true,
@@ -123,6 +123,7 @@ app.listen(4000);
 We recommend using [TypeScript strict mode](https://www.typescriptlang.org/tsconfig#strict) in order to have the best developer experience.
 
 **tsconfig.json**
+
 ```diff
 {
   "compilerOptions": {

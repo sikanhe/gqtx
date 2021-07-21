@@ -1,9 +1,9 @@
-import type { Interface } from "../src";
-import type { Connection, ConnectionArguments, Edge } from "../src/relay";
-import { createTypesFactory, buildGraphQLSchema } from "../src";
-import { createRelayHelpers } from "../src/relay";
-import express = require("express");
-import graphqlHTTP = require("express-graphql");
+import type { Interface } from '../src';
+import type { Connection, ConnectionArguments, Edge } from '../src/relay';
+import { createTypesFactory, buildGraphQLSchema } from '../src';
+import { createRelayHelpers } from '../src/relay';
+import express = require('express');
+import graphqlHTTP = require('express-graphql');
 
 type Context = { contextContent: string };
 
@@ -17,7 +17,7 @@ const enum Episode {
 }
 
 type ICharacter = {
-  type: "Human" | "Droid";
+  type: 'Human' | 'Droid';
   id: string;
   name: string;
   friends: Array<string>;
@@ -25,90 +25,90 @@ type ICharacter = {
 };
 
 type Human = ICharacter & {
-  type: "Human";
+  type: 'Human';
   homePlanet: string | null;
 };
 
 type Droid = ICharacter & {
-  type: "Droid";
+  type: 'Droid';
   primaryFunction: string;
 };
 
 const luke: Human = {
-  type: "Human",
-  id: "1000",
-  name: "Luke Skywalker",
-  friends: ["1002", "1003", "2000", "2001"],
+  type: 'Human',
+  id: '1000',
+  name: 'Luke Skywalker',
+  friends: ['1002', '1003', '2000', '2001'],
   appearsIn: [4, 5, 6],
-  homePlanet: "Tatooine",
+  homePlanet: 'Tatooine',
 };
 
 const vader: Human = {
-  type: "Human",
-  id: "1001",
-  name: "Darth Vader",
-  friends: ["1004"],
+  type: 'Human',
+  id: '1001',
+  name: 'Darth Vader',
+  friends: ['1004'],
   appearsIn: [4, 5, 6],
-  homePlanet: "Tatooine",
+  homePlanet: 'Tatooine',
 };
 
 const han: Human = {
-  type: "Human",
-  id: "1002",
-  name: "Han Solo",
-  friends: ["1000", "1003", "2001"],
+  type: 'Human',
+  id: '1002',
+  name: 'Han Solo',
+  friends: ['1000', '1003', '2001'],
   appearsIn: [4, 5, 6],
   homePlanet: null,
 };
 
 const leia: Human = {
-  type: "Human",
-  id: "1003",
-  name: "Leia Organa",
-  friends: ["1000", "1002", "2000", "2001"],
+  type: 'Human',
+  id: '1003',
+  name: 'Leia Organa',
+  friends: ['1000', '1002', '2000', '2001'],
   appearsIn: [4, 5, 6],
-  homePlanet: "Alderaan",
+  homePlanet: 'Alderaan',
   // __typename: 'Human',
 };
 
 const tarkin: Human = {
-  type: "Human",
-  id: "1004",
-  name: "Wilhuff Tarkin",
-  friends: ["1001"],
+  type: 'Human',
+  id: '1004',
+  name: 'Wilhuff Tarkin',
+  friends: ['1001'],
   appearsIn: [4],
   homePlanet: null,
 };
 
 const humanData: Record<string, Human> = {
-  "1000": luke,
-  "1001": vader,
-  "1002": han,
-  "1003": leia,
-  "1004": tarkin,
+  '1000': luke,
+  '1001': vader,
+  '1002': han,
+  '1003': leia,
+  '1004': tarkin,
 };
 
 const threepio: Droid = {
-  type: "Droid",
-  id: "2000",
-  name: "C-3PO",
-  friends: ["1000", "1002", "1003", "2001"],
+  type: 'Droid',
+  id: '2000',
+  name: 'C-3PO',
+  friends: ['1000', '1002', '1003', '2001'],
   appearsIn: [4, 5, 6],
-  primaryFunction: "Protocol",
+  primaryFunction: 'Protocol',
 };
 
 const artoo: Droid = {
-  type: "Droid",
-  id: "2001",
-  name: "R2-D2",
-  friends: ["1000", "1002", "1003"],
+  type: 'Droid',
+  id: '2001',
+  name: 'R2-D2',
+  friends: ['1000', '1002', '1003'],
   appearsIn: [4, 5, 6],
-  primaryFunction: "Astromech",
+  primaryFunction: 'Astromech',
 };
 
 const droidData: Record<string, Droid> = {
-  "2000": threepio,
-  "2001": artoo,
+  '2000': threepio,
+  '2001': artoo,
 };
 function getCharacter(id: string) {
   return Promise.resolve(humanData[id] || droidData[id]);
@@ -140,24 +140,24 @@ const { nodeInterface, nodeField } = relay.nodeDefinitions((id) =>
 );
 
 const episodeEnum = t.enumType({
-  name: "Episode",
-  description: "One of the films in the Star Wars Trilogy",
+  name: 'Episode',
+  description: 'One of the films in the Star Wars Trilogy',
   values: [
-    { name: "NEWHOPE", value: Episode.NEWHOPE },
-    { name: "EMPIRE", value: Episode.EMPIRE },
-    { name: "JEDI", value: Episode.JEDI },
+    { name: 'NEWHOPE', value: Episode.NEWHOPE },
+    { name: 'EMPIRE', value: Episode.EMPIRE },
+    { name: 'JEDI', value: Episode.JEDI },
   ],
 });
 
 const characterInterface: Interface<Context, ICharacter | null> =
   t.interfaceType<ICharacter>({
-    name: "Character",
+    name: 'Character',
     interfaces: [],
     fields: () => [
-      t.abstractField("id", t.NonNull(t.ID)),
-      t.abstractField("name", t.NonNull(t.String)),
-      t.abstractField("appearsIn", t.NonNull(t.List(t.NonNull(episodeEnum)))),
-      t.abstractField("friends", characterConnectionType),
+      t.abstractField('id', t.NonNull(t.ID)),
+      t.abstractField('name', t.NonNull(t.String)),
+      t.abstractField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
+      t.abstractField('friends', characterConnectionType),
     ],
   });
 
@@ -166,16 +166,16 @@ const { connectionType: characterConnectionType } =
     nodeType: characterInterface,
     edgeFields: () => [
       t.field({
-        name: "friendshipTime",
+        name: 'friendshipTime',
         type: t.String,
         resolve: (_edge: Edge<ICharacter>) => {
-          return "Yesterday";
+          return 'Yesterday';
         },
       }),
     ],
     connectionFields: () => [
       t.field({
-        name: "totalCount",
+        name: 'totalCount',
         type: t.Int,
         resolve: () => {
           return Object.keys(humanData).length + Object.keys(droidData).length;
@@ -229,29 +229,29 @@ const createConnectionFromCharacterArray = (
 };
 
 const humanType = t.objectType<Human>({
-  name: "Human",
-  description: "A humanoid creature in the Star Wars universe.",
+  name: 'Human',
+  description: 'A humanoid creature in the Star Wars universe.',
   interfaces: [nodeInterface, characterInterface],
-  isTypeOf: (thing: ICharacter) => thing.type === "Human",
+  isTypeOf: (thing: ICharacter) => thing.type === 'Human',
   fields: () => [
     t.field({
-      name: "id",
+      name: 'id',
       type: t.NonNull(t.ID),
     }),
     t.field({
-      name: "name",
+      name: 'name',
       type: t.NonNull(t.String),
     }),
     t.field({
-      name: "appearsIn",
+      name: 'appearsIn',
       type: t.NonNull(t.List(t.NonNull(episodeEnum))),
     }),
     t.field({
-      name: "homePlanet",
+      name: 'homePlanet',
       type: t.String,
     }),
     t.field({
-      name: "friends",
+      name: 'friends',
       type: characterConnectionType,
       args: relay.connectionArgs,
       resolve: async (c, args) => {
@@ -260,39 +260,39 @@ const humanType = t.objectType<Human>({
       },
     }),
     t.field({
-      name: "secretBackStory",
+      name: 'secretBackStory',
       type: t.String,
       resolve: () => {
-        throw new Error("secretBackstory is secret");
+        throw new Error('secretBackstory is secret');
       },
     }),
   ],
 });
 
 const droidType = t.objectType<Droid>({
-  name: "Droid",
-  description: "A mechanical creature in the Star Wars universe.",
+  name: 'Droid',
+  description: 'A mechanical creature in the Star Wars universe.',
   interfaces: [nodeInterface, characterInterface],
-  isTypeOf: (thing: ICharacter) => thing.type === "Droid",
+  isTypeOf: (thing: ICharacter) => thing.type === 'Droid',
   fields: () => [
     t.field({
-      name: "id",
+      name: 'id',
       type: t.NonNull(t.ID),
     }),
     t.field({
-      name: "name",
+      name: 'name',
       type: t.NonNull(t.String),
     }),
     t.field({
-      name: "appearsIn",
+      name: 'appearsIn',
       type: t.NonNull(t.List(t.NonNull(episodeEnum))),
     }),
     t.field({
-      name: "primaryFunction",
+      name: 'primaryFunction',
       type: t.NonNull(t.String),
     }),
     t.field({
-      name: "friends",
+      name: 'friends',
       type: characterConnectionType,
       args: relay.connectionArgs,
       resolve: async (c, args) => {
@@ -301,10 +301,10 @@ const droidType = t.objectType<Droid>({
       },
     }),
     t.field({
-      name: "secretBackStory",
+      name: 'secretBackStory',
       type: t.String,
       resolve: () => {
-        throw new Error("secretBackstory is secret");
+        throw new Error('secretBackstory is secret');
       },
     }),
   ],
@@ -314,7 +314,7 @@ const queryType = t.queryType({
   fields: () => [
     nodeField,
     t.field({
-      name: "hero",
+      name: 'hero',
       type: characterInterface,
       args: {
         episode: t.defaultArg(episodeEnum, Episode.EMPIRE),
@@ -322,21 +322,21 @@ const queryType = t.queryType({
       resolve: (_, { episode }) => getHero(episode),
     }),
     t.field({
-      name: "human",
+      name: 'human',
       type: humanType,
       args: { id: t.arg(t.NonNullInput(t.ID)) },
       resolve: (_, { id }) => getHuman(id),
     }),
     t.field({
-      name: "droid",
+      name: 'droid',
       type: droidType,
       args: {
-        id: t.arg(t.NonNullInput(t.String), "ID of the droid"),
+        id: t.arg(t.NonNullInput(t.String), 'ID of the droid'),
       },
       resolve: (_, { id }) => getDroid(id),
     }),
     t.field({
-      name: "contextContent",
+      name: 'contextContent',
       type: t.String,
       resolve: (_, _args, ctx) => ctx.contextContent,
     }),
@@ -350,7 +350,7 @@ const schema = {
 const app = express();
 
 app.use(
-  "/graphql",
+  '/graphql',
   graphqlHTTP({
     schema: buildGraphQLSchema(schema),
     graphiql: true,

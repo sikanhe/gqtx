@@ -1,4 +1,4 @@
-import * as graphql from "graphql";
+import * as graphql from 'graphql';
 import {
   Schema,
   InputType,
@@ -8,7 +8,7 @@ import {
   Argument,
   SubscriptionObject,
   ArgMap,
-} from "./types";
+} from './types';
 
 export function buildGraphQLSchema<Ctx, RootSrc>(
   schema: Schema<Ctx, RootSrc>
@@ -53,7 +53,7 @@ export function toGraphQLArgs<Ctx, T>(
     graphqlArgs[k] = {
       type: toGraphQLInputType(arg.type, typeMap),
       description: arg.description,
-      defaultValue: arg.kind === "DefaultArgument" ? arg.default : undefined,
+      defaultValue: arg.kind === 'DefaultArgument' ? arg.default : undefined,
     };
   });
 
@@ -96,14 +96,14 @@ export function toGraphQLInputType<Ctx>(
   }
 
   switch (t.kind) {
-    case "Scalar":
-    case "Enum":
+    case 'Scalar':
+    case 'Enum':
       return toGraphQLOutputType(t, typeMap) as graphql.GraphQLInputType;
-    case "NonNullInput":
+    case 'NonNullInput':
       return new graphql.GraphQLNonNull(toGraphQLInputType(t.ofType, typeMap));
-    case "ListInput":
+    case 'ListInput':
       return new graphql.GraphQLList(toGraphQLInputType(t.ofType, typeMap));
-    case "InputObject":
+    case 'InputObject':
       const fields = t.fieldsFn();
 
       function graphqlFields() {
@@ -143,10 +143,10 @@ export function toGraphQLOutputType<Ctx, Src>(
   }
 
   switch (t.kind) {
-    case "Scalar":
+    case 'Scalar':
       let scalar;
 
-      if ("builtInType" in t) {
+      if ('builtInType' in t) {
         scalar = t.builtInType;
       } else {
         scalar = new graphql.GraphQLScalarType({
@@ -155,7 +155,7 @@ export function toGraphQLOutputType<Ctx, Src>(
       }
       typeMap.set(t, scalar);
       return scalar;
-    case "Enum":
+    case 'Enum':
       const enumT = new graphql.GraphQLEnumType({
         name: t.name,
         description: t.description,
@@ -170,11 +170,11 @@ export function toGraphQLOutputType<Ctx, Src>(
       });
       typeMap.set(t, enumT);
       return enumT;
-    case "NonNull":
+    case 'NonNull':
       return new graphql.GraphQLNonNull(toGraphQLOutputType(t.ofType, typeMap));
-    case "List":
+    case 'List':
       return new graphql.GraphQLList(toGraphQLOutputType(t.ofType, typeMap));
-    case "ObjectType":
+    case 'ObjectType':
       const obj = new graphql.GraphQLObjectType({
         name: t.name,
         description: t.description,
@@ -205,21 +205,21 @@ export function toGraphQLOutputType<Ctx, Src>(
       typeMap.set(t, obj);
       return obj;
 
-    case "Union":
+    case 'Union':
       const union = new graphql.GraphQLUnionType({
         name: t.name,
         description: t.description,
         types: t.types.map((t) => toGraphQLOutputType(t, typeMap)) as any,
         resolveType: async (src, ctx, info) => {
           const resolved = await t.resolveType(src, ctx, info);
-          if (typeof resolved === "string" || resolved == null) return resolved;
+          if (typeof resolved === 'string' || resolved == null) return resolved;
           return typeMap.get(resolved) as any;
         },
       });
 
       typeMap.set(t, union);
       return union;
-    case "Interface":
+    case 'Interface':
       const intf = new graphql.GraphQLInterfaceType({
         name: t.name,
         description: t.description,

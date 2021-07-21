@@ -1,4 +1,4 @@
-import * as api from "../src";
+import * as api from '../src';
 
 {
   // correctly infer whether resolve function is mandatory or optional
@@ -13,34 +13,34 @@ import * as api from "../src";
   };
 
   t.objectType<Human>({
-    name: "Human",
+    name: 'Human',
     fields: () => [
       t.field({
-        name: "id",
+        name: 'id',
         type: t.String,
       }),
       // @ts-expect-error: type Human does not have a name property, thus resolve function must be declared
       t.field({
-        name: "name",
+        name: 'name',
         type: t.String,
       }),
       t.field({
-        name: "name",
+        name: 'name',
         type: t.String,
-        resolve: () => "Anonym",
+        resolve: () => 'Anonym',
       }),
       // @ts-expect-error: type Human does have age property but it is not of type String, thus resolve function must be declared
       t.field({
-        name: "age",
+        name: 'age',
         type: t.String,
       }),
       t.field({
-        name: "age",
+        name: 'age',
         type: t.String,
         resolve: (source) => String(source.age),
       }),
       t.field({
-        name: "friendIds",
+        name: 'friendIds',
         type: t.List(t.ID),
       }),
     ],
@@ -59,20 +59,20 @@ import * as api from "../src";
   };
 
   const GraphQLHuman = t.objectType<Human>({
-    name: "Human",
+    name: 'Human',
     fields: () => [
       t.field({
-        name: "id",
+        name: 'id',
         type: t.String,
       }),
     ],
   });
 
   t.objectType<Array<Human>>({
-    name: "HumanConnection",
+    name: 'HumanConnection',
     fields: () => [
       t.field({
-        name: "edges",
+        name: 'edges',
         type: t.List(t.NonNull(GraphQLHuman)),
         resolve: (value) => value,
       }),
@@ -80,10 +80,10 @@ import * as api from "../src";
   });
 
   t.objectType<Array<Human>>({
-    name: "HumanConnection",
+    name: 'HumanConnection',
     fields: () => [
       t.field({
-        name: "edges",
+        name: 'edges',
         type: t.NonNull(t.List(t.NonNull(GraphQLHuman))),
         resolve: (value) => value,
       }),
@@ -104,12 +104,12 @@ import * as api from "../src";
 
   // @ts-expect-error: 'GraphQLUserType' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
   const GraphQLUserType = t.objectType<User>({
-    name: "User",
+    name: 'User',
     fields: () => [
-      t.field({ name: "id", type: t.NonNull(t.ID) }),
-      t.field({ name: "name", type: t.NonNull(t.String) }),
+      t.field({ name: 'id', type: t.NonNull(t.ID) }),
+      t.field({ name: 'name', type: t.NonNull(t.String) }),
       t.field({
-        name: "parent",
+        name: 'parent',
         type: GraphQLUserType,
         resolve: () => {
           return 5;
@@ -120,12 +120,12 @@ import * as api from "../src";
 
   const GraphQLUserType1: api.ObjectType<Context, User | null> =
     t.objectType<User>({
-      name: "User",
+      name: 'User',
       fields: () => [
-        t.field({ name: "id", type: t.NonNull(t.ID) }),
-        t.field({ name: "name", type: t.NonNull(t.String) }),
+        t.field({ name: 'id', type: t.NonNull(t.ID) }),
+        t.field({ name: 'name', type: t.NonNull(t.String) }),
         t.field({
-          name: "parent",
+          name: 'parent',
           type: GraphQLUserType1,
           // @ts-expect-error: Type 'number' is not assignable to type 'User | Promise<User | null> | null'
           resolve: () => {
@@ -137,15 +137,15 @@ import * as api from "../src";
 
   const GraphQLUserType2: api.ObjectType<Context, User | null> =
     t.objectType<User>({
-      name: "User",
+      name: 'User',
       fields: () => [
-        t.field({ name: "id", type: t.NonNull(t.ID) }),
-        t.field({ name: "name", type: t.NonNull(t.String) }),
+        t.field({ name: 'id', type: t.NonNull(t.ID) }),
+        t.field({ name: 'name', type: t.NonNull(t.String) }),
         t.field({
-          name: "parent",
+          name: 'parent',
           type: GraphQLUserType2,
           resolve: () => {
-            return { id: "1", name: "Peter" };
+            return { id: '1', name: 'Peter' };
           },
         }),
       ],
@@ -158,7 +158,7 @@ import * as api from "../src";
   const t = api.createTypesFactory<Context>();
 
   t.subscriptionField({
-    name: "foo",
+    name: 'foo',
     type: t.Boolean,
     subscribe: async function* () {
       yield true;
@@ -166,7 +166,7 @@ import * as api from "../src";
   });
 
   t.subscriptionField({
-    name: "foo",
+    name: 'foo',
     type: t.Boolean,
     // @ts-expect-error: subscribe must return number not object with number property
     subscribe: async function* () {
@@ -175,11 +175,11 @@ import * as api from "../src";
   });
 
   t.subscriptionField({
-    name: "foo",
+    name: 'foo',
     type: t.Boolean,
     // @ts-expect-error: subscribe must return number not object with string property
     subscribe: async function* () {
-      yield { foo: "true" };
+      yield { foo: 'true' };
     },
   });
 }
@@ -190,7 +190,7 @@ import * as api from "../src";
   const t = api.createTypesFactory<unknown>();
 
   t.field({
-    name: "foo",
+    name: 'foo',
     type: t.Boolean,
     args: {
       foo: t.arg(t.Boolean),
@@ -224,25 +224,25 @@ import * as api from "../src";
   const t = api.createTypesFactory<unknown>();
 
   t.objectType({
-    name: "Foo",
+    name: 'Foo',
     // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
     fields: () => [],
   });
 
   t.mutationType({
-    name: "Foo",
+    name: 'Foo',
     // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
     fields: () => [],
   });
 
   t.queryType({
-    name: "Foo",
+    name: 'Foo',
     // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
     fields: () => [],
   });
 
   t.subscriptionType({
-    name: "Foo",
+    name: 'Foo',
     // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
     fields: () => [],
   });

@@ -1,4 +1,4 @@
-import * as graphql from "graphql";
+import * as graphql from 'graphql';
 import {
   Scalar,
   Enum,
@@ -19,7 +19,7 @@ import {
   SubscriptionField,
   SubscriptionObject,
   PromiseOrValue,
-} from "./types";
+} from './types';
 
 type ExtensionsMap = {
   field?: {
@@ -93,7 +93,7 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
       args?: ArgMap<Arg> | undefined;
       description?: string | undefined;
       deprecationReason?: string | undefined;
-      extensions?: TExtensionsMap["field"];
+      extensions?: TExtensionsMap['field'];
     } & (TKey extends keyof Src
       ? Src[TKey] extends Out
         ? ResolvePartialOptional<Src, Arg, Ctx, Out>
@@ -125,7 +125,7 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
     isTypeOf?:
       | ((src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean)
       | undefined;
-    extensions?: TExtensionsMap["objectType"];
+    extensions?: TExtensionsMap['objectType'];
   }): ObjectType<Ctx, Src | null>;
   inputObjectType<Src>({
     name,
@@ -218,7 +218,7 @@ function builtInScalar<Src>(
   builtInType: graphql.GraphQLScalarType
 ): Scalar<Src | null> {
   return {
-    kind: "Scalar",
+    kind: 'Scalar',
     builtInType,
   };
 }
@@ -247,7 +247,7 @@ export function createTypesFactory<
       parseLiteral?: (value: graphql.ValueNode) => Src | null;
     }): Scalar<Src | null> {
       return {
-        kind: "Scalar",
+        kind: 'Scalar',
         graphqlTypeConfig: {
           name,
           description,
@@ -267,7 +267,7 @@ export function createTypesFactory<
       values: Array<EnumValue<Src>>;
     }): Enum<Src | null> {
       return {
-        kind: "Enum",
+        kind: 'Enum',
         name,
         description,
         values,
@@ -276,7 +276,7 @@ export function createTypesFactory<
 
     arg<Src>(type: InputType<Src>, description?: string): Argument<Src> {
       return {
-        kind: "Argument",
+        kind: 'Argument',
         type,
         description,
       };
@@ -287,7 +287,7 @@ export function createTypesFactory<
       description?: string
     ): DefaultArgument<Exclude<Src, null>> {
       return {
-        kind: "DefaultArgument",
+        kind: 'DefaultArgument',
         type: type as any,
         description,
         default: defaultArg,
@@ -295,12 +295,12 @@ export function createTypesFactory<
     },
 
     field: ({ name, type, resolve, args, ...options }) => ({
-      kind: "Field",
+      kind: 'Field',
       name,
       type,
       args: args ?? {},
       // if no resolver is defined we fallback to the default GraphQL resolver which is (src) => src[fieldName]
-      resolve: typeof resolve === "function" ? resolve : undefined,
+      resolve: typeof resolve === 'function' ? resolve : undefined,
       ...options,
     }),
 
@@ -313,7 +313,7 @@ export function createTypesFactory<
       args?: ArgMap<unknown>;
     }): AbstractField<Ctx, Out> {
       return {
-        kind: "AbstractField",
+        kind: 'AbstractField',
         name: opts.name,
         description: opts.description,
         deprecationReason: opts.deprecationReason,
@@ -340,12 +340,12 @@ export function createTypesFactory<
         ctx: Ctx,
         info: graphql.GraphQLResolveInfo
       ) => boolean;
-      extensions?: TExtensions["objectType"] extends undefined
+      extensions?: TExtensions['objectType'] extends undefined
         ? Record<string, any>
-        : TExtensions["objectType"];
+        : TExtensions['objectType'];
     }): ObjectType<Ctx, Src | null> {
       const obj: ObjectType<Ctx, Src | null> = {
-        kind: "ObjectType",
+        kind: 'ObjectType',
         name,
         description,
         interfaces,
@@ -367,7 +367,7 @@ export function createTypesFactory<
       fields: (self: InputType<Src | null>) => InputFieldMap<Src>;
     }): InputObject<Src | null> {
       let inputObj: InputObject<Src | null> = {
-        kind: "InputObject",
+        kind: 'InputObject',
         name,
         description,
         fieldsFn: null as any,
@@ -388,7 +388,7 @@ export function createTypesFactory<
       resolveType: (src: Src) => ObjectType<any, any>;
     }): Union<Ctx, Src | null> {
       return {
-        kind: "Union",
+        kind: 'Union',
         name,
         description,
         types,
@@ -409,7 +409,7 @@ export function createTypesFactory<
       ) => Array<AbstractField<Ctx, any>>;
     }): Interface<Ctx, Src | null> {
       const obj: Interface<Ctx, Src | null> = {
-        kind: "Interface",
+        kind: 'Interface',
         name,
         description,
         interfaces,
@@ -423,52 +423,52 @@ export function createTypesFactory<
       ofType: OutputType<Ctx, Src>
     ): OutputType<Ctx, Array<Src> | null> {
       return {
-        kind: "List",
+        kind: 'List',
         ofType: ofType as any,
       };
     },
     ListInput<Src>(ofType: InputType<Src>): InputType<Array<Src> | null> {
       return {
-        kind: "ListInput",
+        kind: 'ListInput',
         ofType: ofType as any,
       };
     },
     NonNull<Src>(ofType: OutputType<Ctx, Src | null>): OutputType<Ctx, Src> {
       return {
-        kind: "NonNull",
+        kind: 'NonNull',
         ofType: ofType as any,
       };
     },
 
     NonNullInput<Src>(ofType: InputType<Src | null>): InputType<Src> {
       return {
-        kind: "NonNullInput",
+        kind: 'NonNullInput',
         ofType: ofType as any,
       };
     },
     queryType<RootSrc>({
-      name = "Query",
+      name = 'Query',
       fields,
     }: {
       name?: string;
       fields: () => Array<Field<Ctx, RootSrc, any>>;
     }): ObjectType<Ctx, RootSrc> {
       return {
-        kind: "ObjectType",
+        kind: 'ObjectType',
         name,
         interfaces: [],
         fieldsFn: fields,
       };
     },
     mutationType<RootSrc>({
-      name = "Mutation",
+      name = 'Mutation',
       fields,
     }: {
       name?: string;
       fields: () => Array<Field<Ctx, RootSrc, any>>;
     }): ObjectType<Ctx, RootSrc> {
       return {
-        kind: "ObjectType",
+        kind: 'ObjectType',
         name,
         interfaces: [],
         fieldsFn: fields,
@@ -495,7 +495,7 @@ export function createTypesFactory<
       ) => PromiseOrValue<AsyncIterableIterator<Out>>;
     }): SubscriptionField<Ctx, RootSrc, Arg, Out> {
       return {
-        kind: "SubscriptionField",
+        kind: 'SubscriptionField',
         name,
         type,
         args,
@@ -506,14 +506,14 @@ export function createTypesFactory<
       };
     },
     subscriptionType<Src>({
-      name = "Subscription",
+      name = 'Subscription',
       fields,
     }: {
       name?: string;
       fields: () => Array<SubscriptionField<Ctx, Src, unknown, unknown>>;
     }): SubscriptionObject<Ctx, Src> {
       return {
-        kind: "SubscriptionObject",
+        kind: 'SubscriptionObject',
         name,
         fields,
       };
