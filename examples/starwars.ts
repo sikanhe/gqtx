@@ -154,10 +154,13 @@ const characterInterface: Interface<Context, ICharacter | null> =
     name: 'Character',
     interfaces: [],
     fields: () => [
-      t.abstractField('id', t.NonNull(t.ID)),
-      t.abstractField('name', t.NonNull(t.String)),
-      t.abstractField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-      t.abstractField('friends', characterConnectionType),
+      t.abstractField({ name: 'id', type: t.NonNull(t.ID) }),
+      t.abstractField({ name: 'name', type: t.NonNull(t.String) }),
+      t.abstractField({
+        name: 'appearsIn',
+        type: t.NonNull(t.List(t.NonNull(episodeEnum))),
+      }),
+      t.abstractField({ name: 'friends', type: characterConnectionType }),
     ],
   });
 
@@ -351,6 +354,7 @@ const app = express();
 
 app.use(
   '/graphql',
+  // @ts-expect-error type inconsistencies...
   graphqlHTTP({
     schema: buildGraphQLSchema(schema),
     graphiql: true,
