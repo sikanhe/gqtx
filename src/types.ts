@@ -137,6 +137,7 @@ export type ObjectType<Ctx, Src> = {
 export type InputField<Src> = {
   type: InputType<Src>;
   description?: string;
+  defaultValue?: NonNullable<Src>;
 };
 
 export type InputFieldMap<T> = {
