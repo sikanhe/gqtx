@@ -8,14 +8,12 @@
     "declaration": true,
     /* Strict Type-Checking Options */
     "strict": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
     /* Additional Checks */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true
   },
   "files": ["./src/index.ts", "./src/relay.ts"]
 }

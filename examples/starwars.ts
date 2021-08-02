@@ -135,7 +135,9 @@ export function getDroid(id: string): Droid {
   return droidData[id];
 }
 
-const { nodeInterface, nodeField } = relay.nodeDefinitions((id) => getCharacter(id));
+const { nodeInterface, nodeField } = relay.nodeDefinitions((id) =>
+  getCharacter(id)
+);
 
 const episodeEnum = t.enumType({
   name: 'Episode',
@@ -147,36 +149,43 @@ const episodeEnum = t.enumType({
   ],
 });
 
-const characterInterface: Interface<Context, ICharacter | null> = t.interfaceType<ICharacter>({
-  name: 'Character',
-  interfaces: [],
-  fields: () => [
-    t.abstractField('id', t.NonNull(t.ID)),
-    t.abstractField('name', t.NonNull(t.String)),
-    t.abstractField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.abstractField('friends', characterConnectionType),
-  ],
-});
+const characterInterface: Interface<Context, ICharacter | null> =
+  t.interfaceType<ICharacter>({
+    name: 'Character',
+    interfaces: [],
+    fields: () => [
+      t.abstractField({ name: 'id', type: t.NonNull(t.ID) }),
+      t.abstractField({ name: 'name', type: t.NonNull(t.String) }),
+      t.abstractField({
+        name: 'appearsIn',
+        type: t.NonNull(t.List(t.NonNull(episodeEnum))),
+      }),
+      t.abstractField({ name: 'friends', type: characterConnectionType }),
+    ],
+  });
 
-const { connectionType: characterConnectionType } = relay.connectionDefinitions<ICharacter>({
-  nodeType: characterInterface,
-  edgeFields: () => [
-    t.field('friendshipTime', {
-      type: t.String,
-      resolve: (_edge: Edge<ICharacter>) => {
-        return 'Yesterday';
-      },
-    }),
-  ],
-  connectionFields: () => [
-    t.field('totalCount', {
-      type: t.Int,
-      resolve: () => {
-        return Object.keys(humanData).length + Object.keys(droidData).length;
-      },
-    }),
-  ],
-});
+const { connectionType: characterConnectionType } =
+  relay.connectionDefinitions<ICharacter>({
+    nodeType: characterInterface,
+    edgeFields: () => [
+      t.field({
+        name: 'friendshipTime',
+        type: t.String,
+        resolve: (_edge: Edge<ICharacter>) => {
+          return 'Yesterday';
+        },
+      }),
+    ],
+    connectionFields: () => [
+      t.field({
+        name: 'totalCount',
+        type: t.Int,
+        resolve: () => {
+          return Object.keys(humanData).length + Object.keys(droidData).length;
+        },
+      }),
+    ],
+  });
 
 const createConnectionFromCharacterArray = (
   array: ICharacter[],
@@ -228,11 +237,24 @@ const humanType = t.objectType<Human>({
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Human',
   fields: () => [
-    t.defaultField('id', t.NonNull(t.ID)),
-    t.defaultField('name', t.NonNull(t.String)),
-    t.defaultField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.defaultField('homePlanet', t.String),
-    t.field('friends', {
+    t.field({
+      name: 'id',
+      type: t.NonNull(t.ID),
+    }),
+    t.field({
+      name: 'name',
+      type: t.NonNull(t.String),
+    }),
+    t.field({
+      name: 'appearsIn',
+      type: t.NonNull(t.List(t.NonNull(episodeEnum))),
+    }),
+    t.field({
+      name: 'homePlanet',
+      type: t.String,
+    }),
+    t.field({
+      name: 'friends',
       type: characterConnectionType,
       args: relay.connectionArgs,
       resolve: async (c, args) => {
@@ -240,7 +262,8 @@ const humanType = t.objectType<Human>({
         return createConnectionFromCharacterArray(friends, args);
       },
     }),
-    t.field('secretBackStory', {
+    t.field({
+      name: 'secretBackStory',
       type: t.String,
       resolve: () => {
         throw new Error('secretBackstory is secret');
@@ -255,11 +278,24 @@ const droidType = t.objectType<Droid>({
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Droid',
   fields: () => [
-    t.defaultField('id', t.NonNull(t.ID)),
-    t.defaultField('name', t.NonNull(t.String)),
-    t.defaultField('appearsIn', t.NonNull(t.List(t.NonNull(episodeEnum)))),
-    t.defaultField('primaryFunction', t.NonNull(t.String)),
-    t.field('friends', {
+    t.field({
+      name: 'id',
+      type: t.NonNull(t.ID),
+    }),
+    t.field({
+      name: 'name',
+      type: t.NonNull(t.String),
+    }),
+    t.field({
+      name: 'appearsIn',
+      type: t.NonNull(t.List(t.NonNull(episodeEnum))),
+    }),
+    t.field({
+      name: 'primaryFunction',
+      type: t.NonNull(t.String),
+    }),
+    t.field({
+      name: 'friends',
       type: characterConnectionType,
       args: relay.connectionArgs,
       resolve: async (c, args) => {
@@ -267,7 +303,8 @@ const droidType = t.objectType<Droid>({
         return createConnectionFromCharacterArray(friends, args);
       },
     }),
-    t.field('secretBackStory', {
+    t.field({
+      name: 'secretBackStory',
       type: t.String,
       resolve: () => {
         throw new Error('secretBackstory is secret');
@@ -277,28 +314,32 @@ const droidType = t.objectType<Droid>({
 });
 
 const queryType = t.queryType({
-  fields: [
+  fields: () => [
     nodeField,
-    t.field('hero', {
+    t.field({
+      name: 'hero',
       type: characterInterface,
       args: {
         episode: t.defaultArg(episodeEnum, Episode.EMPIRE),
       },
       resolve: (_, { episode }) => getHero(episode),
     }),
-    t.field('human', {
+    t.field({
+      name: 'human',
       type: humanType,
       args: { id: t.arg(t.NonNullInput(t.ID)) },
       resolve: (_, { id }) => getHuman(id),
     }),
-    t.field('droid', {
+    t.field({
+      name: 'droid',
       type: droidType,
       args: {
         id: t.arg(t.NonNullInput(t.String), 'ID of the droid'),
       },
       resolve: (_, { id }) => getDroid(id),
     }),
-    t.field('contextContent', {
+    t.field({
+      name: 'contextContent',
       type: t.String,
       resolve: (_, _args, ctx) => ctx.contextContent,
     }),
@@ -313,6 +354,7 @@ const app = express();
 
 app.use(
   '/graphql',
+  // @ts-expect-error type inconsistencies...
   graphqlHTTP({
     schema: buildGraphQLSchema(schema),
     graphiql: true,
@@ -320,5 +362,5 @@ app.use(
 );
 
 app.listen(4000, () => {
-  console.log(`Listening on http://localhost:4000/graphql`)
+  console.log(`Listening on http://localhost:4000/graphql`);
 });

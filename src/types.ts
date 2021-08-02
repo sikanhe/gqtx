@@ -1,6 +1,6 @@
 import * as graphql from 'graphql';
 
-type PromiseOrValue<T> = Promise<T> | T;
+export type PromiseOrValue<T> = Promise<T> | T;
 type Maybe<T> = T | null | undefined;
 
 export type OutputType<Ctx, Src> =
@@ -89,13 +89,15 @@ export type ArgMap<T> = {
 };
 
 export type ArgMapValue<TArg> = TArg extends DefaultArgument<infer Src>
-? Src
+  ? Src
   : TArg extends Argument<infer Src>
-  ? Src extends null ? Maybe<Src> : Src
-: never
+  ? Src extends null
+    ? Maybe<Src>
+    : Src
+  : never;
 
 export type TOfArgMap<TArgMap> = {
-  [K in keyof TArgMap]: ArgMapValue<TArgMap[K]>
+  [K in keyof TArgMap]: ArgMapValue<TArgMap[K]>;
 };
 
 export type Field<Ctx, Src, Out, TArg extends object = {}> = {
@@ -105,7 +107,7 @@ export type Field<Ctx, Src, Out, TArg extends object = {}> = {
   type: OutputType<Ctx, Out>;
   args: ArgMap<TArg>;
   deprecationReason?: string;
-  resolve: (
+  resolve?: (
     src: Src,
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,
@@ -130,7 +132,11 @@ export type ObjectType<Ctx, Src> = {
   deprecationReason?: string;
   interfaces: Array<Interface<Ctx, any>>;
   fieldsFn: () => Array<Field<Ctx, Src, any, any>>;
-  isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean | Promise<boolean>;
+  isTypeOf?: (
+    src: any,
+    ctx: Ctx,
+    info: graphql.GraphQLResolveInfo
+  ) => boolean | Promise<boolean>;
   extensions?: Record<string, any>;
 };
 
@@ -176,7 +182,7 @@ export type Union<Ctx, Src> = {
 export type SubscriptionObject<Ctx, RootSrc> = {
   kind: 'SubscriptionObject';
   name: string;
-  fields: Array<SubscriptionField<Ctx, RootSrc, any, any>>;
+  fields: () => Array<SubscriptionField<Ctx, RootSrc, any, any>>;
 };
 
 export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
@@ -191,9 +197,9 @@ export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,
     info: graphql.GraphQLResolveInfo
-  ) => PromiseOrValue<AsyncIterator<Out>>;
-  resolve?: (
-    source: RootSrc,
+  ) => PromiseOrValue<AsyncIterableIterator<Out>>;
+  resolve: (
+    source: Out,
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,
     info: graphql.GraphQLResolveInfo
@@ -204,6 +210,6 @@ export type Schema<Ctx, RootSrc = undefined> = {
   query: ObjectType<Ctx, RootSrc>;
   mutation?: ObjectType<Ctx, RootSrc>;
   subscription?: SubscriptionObject<Ctx, RootSrc>;
-  types?: ObjectType<Ctx, any>[]
-  directives?: graphql.GraphQLDirective[]
+  types?: ObjectType<Ctx, any>[];
+  directives?: graphql.GraphQLDirective[];
 };

@@ -18,20 +18,37 @@ import {
   InputFieldMap,
   SubscriptionField,
   SubscriptionObject,
+  PromiseOrValue,
 } from './types';
-
 
 type ExtensionsMap = {
   field?: {
-    [key: string]: any
-  },
+    [key: string]: any;
+  };
   objectType?: {
-    [key: string]: any
-  }
-}
+    [key: string]: any;
+  };
+};
 
+type ResolvePartialMandatory<Src, Arg, Ctx, Out> = {
+  resolve: (
+    src: Src,
+    args: TOfArgMap<ArgMap<Arg>>,
+    ctx: Ctx,
+    info: graphql.GraphQLResolveInfo
+  ) => PromiseOrValue<Out>;
+};
 
-export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
+type ResolvePartialOptional<Src, Arg, Ctx, Out> = {
+  resolve?: (
+    src: Src,
+    args: TOfArgMap<ArgMap<Arg>>,
+    ctx: Ctx,
+    info: graphql.GraphQLResolveInfo
+  ) => PromiseOrValue<Out>;
+};
+
+export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
   String: Scalar<string | null>;
   Int: Scalar<number | null>;
   Float: Scalar<number | null>;
@@ -59,56 +76,38 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
     description?: string | undefined;
     values: EnumValue<Src>[];
   }): Enum<Src | null>;
-  arg<Src>(type: InputType<Src>, description?: string | undefined): Argument<Src>;
+  arg<Src>(
+    type: InputType<Src>,
+    description?: string | undefined
+  ): Argument<Src>;
   defaultArg<Src>(
     type: InputType<Src>,
     defaultArg: Exclude<Src, null>,
     description?: string | undefined
   ): DefaultArgument<Exclude<Src, null>>;
-  field<Src, Arg, Out>(
-    name: string,
-    {
-      type,
-      args,
-      resolve,
-      description,
-      deprecationReason,
-      extensions
-    }: {
+
+  field<TKey extends string, Src, Arg, Out>(
+    opts: {
+      name: TKey;
       type: OutputType<Ctx, Out>;
       args?: ArgMap<Arg> | undefined;
       description?: string | undefined;
       deprecationReason?: string | undefined;
-      resolve: (
-        src: Src,
-        args: TOfArgMap<ArgMap<Arg>>,
-        ctx: Ctx,
-        info: graphql.GraphQLResolveInfo
-      ) => Out | Promise<Out>;
       extensions?: TExtensionsMap['field'];
-    }
+    } & (TKey extends keyof Src
+      ? Src[TKey] extends Out
+        ? ResolvePartialOptional<Src, Arg, Ctx, Out>
+        : ResolvePartialMandatory<Src, Arg, Ctx, Out>
+      : ResolvePartialMandatory<Src, Arg, Ctx, Out>)
   ): Field<Ctx, Src, any, any>;
-  defaultField<Src extends object, K extends keyof Src>(
-    name: K,
-    type: OutputType<Ctx, Src[K]>,
-    opts?:
-      | {
-          description?: string | undefined;
-          deprecationReason?: string | undefined;
-        }
-      | undefined
-  ): Field<Ctx, Src, any, any>;
-  abstractField<Out_1>(
-    name: string,
-    type: OutputType<Ctx, Out_1>,
-    opts?:
-      | {
-          description?: string | undefined;
-          deprecationReason?: string | undefined;
-          args?: ArgMap<unknown> | undefined;
-        }
-      | undefined
-  ): AbstractField<Ctx, Out_1>;
+
+  abstractField<Out_1>(opts: {
+    name: string;
+    type: OutputType<Ctx, Out_1>;
+    description?: string | undefined;
+    deprecationReason?: string | undefined;
+    args?: ArgMap<unknown> | undefined;
+  }): AbstractField<Ctx, Out_1>;
   objectType<Src, Ctx = any>({
     name,
     description,
@@ -120,8 +119,12 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
     name: string;
     description?: string | undefined;
     interfaces?: Interface<Ctx, any>[] | undefined;
-    fields: (self: OutputType<Ctx, Src | null>) => Field<Ctx, Src, any, {}>[];
-    isTypeOf?: ((src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean) | undefined;
+    fields: (
+      self: OutputType<Ctx, Src | null>
+    ) => [Field<Ctx, Src, any, {}>, ...Field<Ctx, Src, any, {}>[]];
+    isTypeOf?:
+      | ((src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean)
+      | undefined;
     extensions?: TExtensionsMap['objectType'];
   }): ObjectType<Ctx, Src | null>;
   inputObjectType<Src>({
@@ -140,7 +143,7 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
     resolveType,
   }: {
     name: string;
-    description?: string |undefined;
+    description?: string | undefined;
     types: ObjectType<Ctx, any>[];
     resolveType: (src: Src) => ObjectType<any, any>;
   }): Union<Ctx, Src | null>;
@@ -164,62 +167,66 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap > = {
     fields,
   }: {
     name?: string | undefined;
-    fields: Field<Ctx, RootSrc, any, {}>[];
+    fields: () => [
+      Field<Ctx, RootSrc, any, {}>,
+      ...Field<Ctx, RootSrc, any, {}>[]
+    ];
   }): ObjectType<Ctx, RootSrc>;
   mutationType<RootSrc>({
     name,
     fields,
   }: {
     name?: string | undefined;
-    fields: Field<Ctx, RootSrc, any, {}>[];
+    fields: () => [
+      Field<Ctx, RootSrc, any, {}>,
+      ...Field<Ctx, RootSrc, any, {}>[]
+    ];
   }): ObjectType<Ctx, RootSrc>;
-  subscriptionField<RootSrc, Out_2, Arg_1>(
-    name: string,
-    {
-      type,
-      args,
-      subscribe,
-      resolve,
-      description,
-      deprecationReason,
-    }: {
-      type: OutputType<Ctx, Out_2>;
-      args?: ArgMap<Arg_1> | undefined;
-      description?: string | undefined;
-      deprecationReason?: string | undefined;
-      subscribe: (
-        src: RootSrc,
-        args: TOfArgMap<ArgMap<Arg_1>>,
-        ctx: Ctx,
-        info: graphql.GraphQLResolveInfo
-      ) => AsyncIterator<Out_2, any, undefined> | Promise<AsyncIterator<Out_2, any, undefined>>;
-      resolve?:
-        | ((
-            src: RootSrc,
-            args: TOfArgMap<ArgMap<Arg_1>>,
-            ctx: Ctx,
-            info: graphql.GraphQLResolveInfo
-          ) => Out_2 | Promise<Out_2>)
-        | undefined;
-    }
-  ): SubscriptionField<Ctx, RootSrc, Arg_1, Out_2>;
+  subscriptionField<RootSrc, Out_2, Arg_1>({
+    name,
+    type,
+    args,
+    subscribe,
+    description,
+    deprecationReason,
+  }: {
+    name: string;
+    type: OutputType<Ctx, Out_2>;
+    args?: ArgMap<Arg_1> | undefined;
+    description?: string | undefined;
+    deprecationReason?: string | undefined;
+    subscribe: (
+      src: RootSrc,
+      args: TOfArgMap<ArgMap<Arg_1>>,
+      ctx: Ctx,
+      info: graphql.GraphQLResolveInfo
+    ) => PromiseOrValue<AsyncIterableIterator<Out_2>>;
+  }): SubscriptionField<Ctx, RootSrc, Arg_1, Out_2>;
   subscriptionType<Src>({
     name,
     fields,
   }: {
     name?: string | undefined;
-    fields: SubscriptionField<Ctx, Src, unknown, unknown>[];
+    fields: () => [
+      SubscriptionField<Ctx, Src, any, any>,
+      ...SubscriptionField<Ctx, Src, any, any>[]
+    ];
   }): SubscriptionObject<Ctx, Src>;
 };
 
-function builtInScalar<Src>(builtInType: graphql.GraphQLScalarType): Scalar<Src | null> {
+function builtInScalar<Src>(
+  builtInType: graphql.GraphQLScalarType
+): Scalar<Src | null> {
   return {
     kind: 'Scalar',
     builtInType,
   };
 }
 
-export function createTypesFactory<Ctx = undefined, TExtensions extends ExtensionsMap = {}>(): Factory<Ctx, TExtensions> {
+export function createTypesFactory<
+  Ctx = undefined,
+  TExtensions extends ExtensionsMap = {}
+>(): Factory<Ctx, TExtensions> {
   return {
     String: builtInScalar<string>(graphql.GraphQLString),
     Int: builtInScalar<number>(graphql.GraphQLInt),
@@ -286,74 +293,32 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
         default: defaultArg,
       };
     },
-    field<Src, Arg, Out>(
-      name: string,
-      {
-        type,
-        args = {} as ArgMap<Arg>,
-        resolve,
-        description,
-        deprecationReason,
-        extensions
-      }: {
-        type: OutputType<Ctx, Out>;
-        args?: ArgMap<Arg>;
-        description?: string;
-        deprecationReason?: string;
-        resolve: (
-          src: Src,
-          args: TOfArgMap<ArgMap<Arg>>,
-          ctx: Ctx,
-          info: graphql.GraphQLResolveInfo
-        ) => Out | Promise<Out>;
-        extensions?: TExtensions['field'] extends undefined ? Record<string, any> : TExtensions['field']
-      }
-    ): Field<Ctx, Src, any, any> {
-      return {
-        kind: 'Field',
-        name,
-        type,
-        description,
-        deprecationReason,
-        args,
-        resolve,
-        extensions
-      };
-    },
-    defaultField<Src extends object, K extends keyof Src>(
-      name: K,
-      type: OutputType<Ctx, Src[K]>,
-      opts?: {
-        description?: string;
-        deprecationReason?: string;
-      }
-    ): Field<Ctx, Src, any, any> {
-      return {
-        kind: 'Field',
-        name: String(name),
-        type,
-        description: opts && opts.description,
-        deprecationReason: opts && opts.deprecationReason,
-        args: {},
-        resolve: (src: Src) => src[name],
-      };
-    },
-    abstractField<Out>(
-      name: string,
-      type: OutputType<Ctx, Out>,
-      opts?: {
-        description?: string;
-        deprecationReason?: string;
-        args?: ArgMap<unknown>;
-      }
-    ): AbstractField<Ctx, Out> {
+
+    field: ({ name, type, resolve, args, ...options }) => ({
+      kind: 'Field',
+      name,
+      type,
+      args: args ?? {},
+      // if no resolver is defined we fallback to the default GraphQL resolver which is (src) => src[fieldName]
+      resolve: typeof resolve === 'function' ? resolve : undefined,
+      ...options,
+    }),
+
+    abstractField<Out>(opts: {
+      name: string;
+      type: OutputType<Ctx, Out>;
+
+      description?: string;
+      deprecationReason?: string;
+      args?: ArgMap<unknown>;
+    }): AbstractField<Ctx, Out> {
       return {
         kind: 'AbstractField',
-        name,
-        description: opts && opts.description,
-        deprecationReason: opts && opts.deprecationReason,
-        args: opts && opts.args,
-        type,
+        name: opts.name,
+        description: opts.description,
+        deprecationReason: opts.deprecationReason,
+        args: opts.args,
+        type: opts.type,
       };
     },
     objectType<Src, Ctx = any>({
@@ -367,9 +332,17 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
       name: string;
       description?: string;
       interfaces?: Array<Interface<Ctx, any>>;
-      fields: (self: OutputType<Ctx, Src | null>) => Array<Field<Ctx, Src, any>>;
-      isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean;
-      extensions?: TExtensions['objectType'] extends undefined ? Record<string, any> : TExtensions['objectType'];
+      fields: (
+        self: OutputType<Ctx, Src | null>
+      ) => Array<Field<Ctx, Src, any>>;
+      isTypeOf?: (
+        src: any,
+        ctx: Ctx,
+        info: graphql.GraphQLResolveInfo
+      ) => boolean;
+      extensions?: TExtensions['objectType'] extends undefined
+        ? Record<string, any>
+        : TExtensions['objectType'];
     }): ObjectType<Ctx, Src | null> {
       const obj: ObjectType<Ctx, Src | null> = {
         kind: 'ObjectType',
@@ -431,7 +404,9 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
       name: string;
       description?: string;
       interfaces?: Array<Interface<Ctx, any>>;
-      fields: (self: Interface<Ctx, Src | null>) => Array<AbstractField<Ctx, any>>;
+      fields: (
+        self: Interface<Ctx, Src | null>
+      ) => Array<AbstractField<Ctx, any>>;
     }): Interface<Ctx, Src | null> {
       const obj: Interface<Ctx, Src | null> = {
         kind: 'Interface',
@@ -444,7 +419,9 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
       obj.fieldsFn = () => fields(obj) as any;
       return obj;
     },
-    List<Src>(ofType: OutputType<Ctx, Src>): OutputType<Ctx, Array<Src> | null> {
+    List<Src>(
+      ofType: OutputType<Ctx, Src>
+    ): OutputType<Ctx, Array<Src> | null> {
       return {
         kind: 'List',
         ofType: ofType as any,
@@ -474,13 +451,13 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
       fields,
     }: {
       name?: string;
-      fields: Array<Field<Ctx, RootSrc, any>>;
+      fields: () => Array<Field<Ctx, RootSrc, any>>;
     }): ObjectType<Ctx, RootSrc> {
       return {
         kind: 'ObjectType',
         name,
         interfaces: [],
-        fieldsFn: () => fields,
+        fieldsFn: fields,
       };
     },
     mutationType<RootSrc>({
@@ -488,50 +465,42 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
       fields,
     }: {
       name?: string;
-      fields: Array<Field<Ctx, RootSrc, any>>;
+      fields: () => Array<Field<Ctx, RootSrc, any>>;
     }): ObjectType<Ctx, RootSrc> {
       return {
         kind: 'ObjectType',
         name,
         interfaces: [],
-        fieldsFn: () => fields,
+        fieldsFn: fields,
       };
     },
-    subscriptionField<RootSrc, Out, Arg>(
-      name: string,
-      {
-        type,
-        args = {} as ArgMap<Arg>,
-        subscribe,
-        resolve,
-        description,
-        deprecationReason,
-      }: {
-        type: OutputType<Ctx, Out>;
-        args?: ArgMap<Arg>;
-        description?: string;
-        deprecationReason?: string;
-        subscribe: (
-          src: RootSrc,
-          args: TOfArgMap<ArgMap<Arg>>,
-          ctx: Ctx,
-          info: graphql.GraphQLResolveInfo
-        ) => AsyncIterator<Out> | Promise<AsyncIterator<Out>>;
-        resolve?: (
-          src: RootSrc,
-          args: TOfArgMap<ArgMap<Arg>>,
-          ctx: Ctx,
-          info: graphql.GraphQLResolveInfo
-        ) => Out | Promise<Out>;
-      }
-    ): SubscriptionField<Ctx, RootSrc, Arg, Out> {
+    subscriptionField<RootSrc, Out, Arg>({
+      name,
+      type,
+      args = {} as ArgMap<Arg>,
+      subscribe,
+      description,
+      deprecationReason,
+    }: {
+      name: string;
+      type: OutputType<Ctx, Out>;
+      args?: ArgMap<Arg> | undefined;
+      description?: string | undefined;
+      deprecationReason?: string | undefined;
+      subscribe: (
+        src: RootSrc,
+        args: TOfArgMap<ArgMap<Arg>>,
+        ctx: Ctx,
+        info: graphql.GraphQLResolveInfo
+      ) => PromiseOrValue<AsyncIterableIterator<Out>>;
+    }): SubscriptionField<Ctx, RootSrc, Arg, Out> {
       return {
         kind: 'SubscriptionField',
         name,
         type,
         args,
         subscribe,
-        resolve,
+        resolve: (value: Out) => value,
         description,
         deprecationReason,
       };
@@ -541,7 +510,7 @@ export function createTypesFactory<Ctx = undefined, TExtensions extends Extensio
       fields,
     }: {
       name?: string;
-      fields: Array<SubscriptionField<Ctx, Src, unknown, unknown>>;
+      fields: () => Array<SubscriptionField<Ctx, Src, unknown, unknown>>;
     }): SubscriptionObject<Ctx, Src> {
       return {
         kind: 'SubscriptionObject',

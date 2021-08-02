@@ -48,26 +48,37 @@ export type RelayConnectionDefinitions<Ctx, T> = {
   connectionType: ObjectType<Ctx, Connection<T>>;
 };
 
-export function createRelayHelpers<Ctx, ExtensionsMap>(t: Factory<Ctx, ExtensionsMap>) {
+export function createRelayHelpers<Ctx, ExtensionsMap>(
+  t: Factory<Ctx, ExtensionsMap>
+) {
   function nodeDefinitions<Src>(
-    idFetcher: (id: string, context: Ctx, info: GraphQLResolveInfo) => Promise<Src> | Src
+    idFetcher: (
+      id: string,
+      context: Ctx,
+      info: GraphQLResolveInfo
+    ) => Promise<Src> | Src
   ) {
     const nodeInterface = t.interfaceType({
       name: 'Node',
       description: 'An object with an ID',
       fields: () => [
-        t.abstractField('id', t.NonNull(t.ID), {
+        t.abstractField({
+          name: 'id',
+          type: t.NonNull(t.ID),
           description: 'The id of the object.',
         }),
       ],
     });
 
-    const nodeField = t.field('node', {
+    const nodeField = t.field({
+      name: 'node',
       type: nodeInterface,
       args: {
         id: t.arg(t.NonNullInput(t.ID), 'The ID of an object'),
       },
-      resolve: (_src, { id }, context, info) => idFetcher(id, context, info),
+      // TODO: figure out the as any
+      resolve: (_, { id }, context, info) =>
+        idFetcher(id, context, info) as any,
     });
 
     return { nodeInterface, nodeField };
@@ -92,16 +103,24 @@ export function createRelayHelpers<Ctx, ExtensionsMap>(t: Factory<Ctx, Extension
     name: 'PageInfo',
     description: 'Information about pagination in a connection.',
     fields: () => [
-      t.defaultField('hasNextPage', t.NonNull(t.Boolean), {
+      t.field({
+        name: 'hasNextPage',
+        type: t.NonNull(t.Boolean),
         description: 'When paginating forwards, are there more items?',
       }),
-      t.defaultField('hasPreviousPage', t.NonNull(t.Boolean), {
+      t.field({
+        name: 'hasPreviousPage',
+        type: t.NonNull(t.Boolean),
         description: 'When paginating backwards, are there more items?',
       }),
-      t.defaultField('startCursor', t.String, {
+      t.field({
+        name: 'startCursor',
+        type: t.String,
         description: 'When paginating backwards, the cursor to continue.',
       }),
-      t.defaultField('endCursor', t.String, {
+      t.field({
+        name: 'endCursor',
+        type: t.String,
         description: 'When paginating forwards, the cursor to continue.',
       }),
     ],
@@ -125,10 +144,16 @@ export function createRelayHelpers<Ctx, ExtensionsMap>(t: Factory<Ctx, Extension
       name: name + 'Edge',
       description: 'An edge in a connection.',
       fields: () => [
-        t.defaultField('node', t.NonNull(nodeType), {
+        // TODO: figure out how to fix the typings
+        // @ts-ignore
+        t.field({
+          name: 'node',
+          type: t.NonNull(nodeType),
           description: 'The item at the end of the edge',
         }),
-        t.defaultField('cursor', t.NonNull(t.String), {
+        t.field({
+          name: 'cursor',
+          type: t.NonNull(t.String),
           description: 'A cursor for use in pagination',
         }),
         ...edgeFields(),
@@ -139,10 +164,14 @@ export function createRelayHelpers<Ctx, ExtensionsMap>(t: Factory<Ctx, Extension
       name: name + 'Connection',
       description: 'A connection to a list of items.',
       fields: () => [
-        t.defaultField('pageInfo', t.NonNull(pageInfoType), {
+        t.field({
+          name: 'pageInfo',
+          type: t.NonNull(pageInfoType),
           description: 'Information to aid in pagination.',
         }),
-        t.defaultField('edges', t.List(edgeType), {
+        t.field({
+          name: 'edges',
+          type: t.List(edgeType),
           description: 'A list of edges.',
         }),
         ...connectionFields(),
