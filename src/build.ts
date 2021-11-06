@@ -114,6 +114,7 @@ export function toGraphQLInputType<Ctx>(
           gqlFieldConfig[k] = {
             type: toGraphQLInputType(field.type, typeMap),
             description: field.description,
+            defaultValue: field.defaultValue,
             deprecationReason: field.deprecationReason,
           } as graphql.GraphQLInputFieldConfig;
         });
