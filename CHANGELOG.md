@@ -1,6 +1,13 @@
 # next
 
-- Allow passing directives for the GraphQL schema to the `buildGraphQLSchema` function.
+# 0.8.0
+- [Feat] Allow passing directives for the GraphQL schema to the `buildGraphQLSchema` function.
+- [Feat] Input object type now supports default value (https://github.com/sikanhe/gqtx/pull/56)
+- [Feat] New unified API for field and defaultField. You no longer need to use a different function for default field. (https://github.com/sikanhe/gqtx/pull/52)
+- [Feat] Abstract fields can now have arguments enforced. (https://github.com/sikanhe/gqtx/pull/54)
+- [Feat] Added helpers for building a Relay compliant schema. (https://github.com/sikanhe/gqtx/pull/27)
+- [Feat] Can now pass directives to `buildGraphQLSchema` function. (https://github.com/sikanhe/gqtx/pull/23)
+- [Improvement] Mutation fields is now an array to be consistent. (https://github.com/sikanhe/gqtx/pull/46)
 
 # 0.7.0
 
