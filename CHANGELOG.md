@@ -1,6 +1,6 @@
 # next
 
-# 0.8.0
+# 0.8.1
 - [Feat] Allow passing directives for the GraphQL schema to the `buildGraphQLSchema` function.
 - [Feat] Input object type now supports default value (https://github.com/sikanhe/gqtx/pull/56)
 - [Feat] New unified API for field and defaultField. You no longer need to use a different function for default field. (https://github.com/sikanhe/gqtx/pull/52)
