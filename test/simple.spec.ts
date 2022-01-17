@@ -231,17 +231,19 @@ test('can build a schema', () => {
       sliceStart = Math.max(sliceEnd - args.last, 0);
     }
 
+    const edges = array.slice(sliceStart, sliceEnd).map((char) => ({
+      cursor: char.id,
+      node: char,
+    }));
+
     return {
-      edges: array.slice(sliceStart, sliceEnd).map((char) => ({
-        cursor: char.id,
-        node: char,
-      })),
-      pageInfo: {
-        endCursor: array[array.length - 1].id,
+      edges,
+      pageInfo: edges.length > 0 ? {
+        endCursor: edges[edges.length - 1].cursor,
         hasNextPage: args.first ? array.length >= args.first : false,
         hasPreviousPage: args.last ? array.length >= args.last : false,
-        startCursor: array[0].id,
-      },
+        startCursor: edges[0].cursor,
+      } : null,
     };
   };
 
@@ -430,7 +432,7 @@ enum Episode {
 \\"\\"\\"A connection to a list of items.\\"\\"\\"
 type CharacterConnection {
   \\"\\"\\"Information to aid in pagination.\\"\\"\\"
-  pageInfo: PageInfo!
+  pageInfo: PageInfo
 
   \\"\\"\\"A list of edges.\\"\\"\\"
   edges: [CharacterEdge]
@@ -446,10 +448,10 @@ type PageInfo {
   hasPreviousPage: Boolean!
 
   \\"\\"\\"When paginating backwards, the cursor to continue.\\"\\"\\"
-  startCursor: String
+  startCursor: String!
 
   \\"\\"\\"When paginating forwards, the cursor to continue.\\"\\"\\"
-  endCursor: String
+  endCursor: String!
 }
 
 \\"\\"\\"An edge in a connection.\\"\\"\\"

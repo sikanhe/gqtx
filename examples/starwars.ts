@@ -217,17 +217,19 @@ const createConnectionFromCharacterArray = (
     sliceStart = Math.max(sliceEnd - args.last, 0);
   }
 
+  const edges = array.slice(sliceStart, sliceEnd).map((char) => ({
+    cursor: char.id,
+    node: char,
+  }));
+
   return {
-    edges: array.slice(sliceStart, sliceEnd).map((char) => ({
-      cursor: char.id,
-      node: char,
-    })),
-    pageInfo: {
-      endCursor: array[array.length - 1].id,
+    edges,
+    pageInfo: edges.length > 0 ? {
+      endCursor: edges[edges.length - 1].cursor,
       hasNextPage: args.first ? array.length >= args.first : false,
       hasPreviousPage: args.last ? array.length >= args.last : false,
-      startCursor: array[0].id,
-    },
+      startCursor: edges[0].cursor,
+    } : null,
   };
 };
 

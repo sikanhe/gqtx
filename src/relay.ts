@@ -20,13 +20,13 @@ export type Edge<T> = {
 export type PageInfo = {
   hasNextPage: boolean;
   hasPreviousPage: boolean;
-  startCursor: string | null;
-  endCursor: string | null;
+  startCursor: string;
+  endCursor: string;
 };
 
 export type Connection<T> = {
   edges: Array<Edge<T> | null> | null;
-  pageInfo: PageInfo;
+  pageInfo: PageInfo | null;
 };
 
 export type ConnectionArgumentsDefinition = {
@@ -115,12 +115,12 @@ export function createRelayHelpers<Ctx, ExtensionsMap>(
       }),
       t.field({
         name: 'startCursor',
-        type: t.String,
+        type: t.NonNull(t.String),
         description: 'When paginating backwards, the cursor to continue.',
       }),
       t.field({
         name: 'endCursor',
-        type: t.String,
+        type: t.NonNull(t.String),
         description: 'When paginating forwards, the cursor to continue.',
       }),
     ],
@@ -166,7 +166,7 @@ export function createRelayHelpers<Ctx, ExtensionsMap>(
       fields: () => [
         t.field({
           name: 'pageInfo',
-          type: t.NonNull(pageInfoType),
+          type: pageInfoType,
           description: 'Information to aid in pagination.',
         }),
         t.field({
