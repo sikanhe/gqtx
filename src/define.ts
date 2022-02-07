@@ -348,7 +348,7 @@ export function createTypesFactory<
         ? Record<string, any>
         : TExtensions['objectType'];
     }): ObjectType<Ctx, Src | null> {
-      const obj: ObjectType<Ctx, Src | null | undefined> = {
+      const obj: ObjectType<Ctx, Src | null> = {
         kind: 'ObjectType',
         name,
         description,
@@ -437,14 +437,12 @@ export function createTypesFactory<
         ofType: ofType as any,
       };
     },
-
     NonNull<Src>(ofType: OutputType<Ctx, Src | null>): OutputType<Ctx, Src> {
       return {
         kind: 'NonNull',
         ofType: ofType as any,
       };
     },
-
     NonNullInput<Src>(ofType: InputType<Src | null>): InputType<Src> {
       return {
         kind: 'NonNullInput',
