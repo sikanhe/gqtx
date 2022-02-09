@@ -49,11 +49,11 @@ type ResolvePartialOptional<Src, Arg, Ctx, Out> = {
 };
 
 export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
-  String: Scalar<string | null>;
-  Int: Scalar<number | null>;
-  Float: Scalar<number | null>;
-  Boolean: Scalar<boolean | null>;
-  ID: Scalar<string | null>;
+  String: Scalar<string | null | undefined>;
+  Int: Scalar<number | null | undefined>;
+  Float: Scalar<number | null | undefined>;
+  Boolean: Scalar<boolean | null | undefined>;
+  ID: Scalar<string | null | undefined>;
   scalarType<Src>({
     name,
     description,
@@ -160,7 +160,11 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
   }): Interface<Ctx, Src | null>;
   List<Src>(ofType: OutputType<Ctx, Src>): OutputType<Ctx, Src[] | null>;
   ListInput<Src>(ofType: InputType<Src>): InputType<Src[] | null>;
+
+  NonNull<Src>(ofType: OutputType<Ctx, Src | null | undefined>): OutputType<Ctx, Src>;
   NonNull<Src>(ofType: OutputType<Ctx, Src | null>): OutputType<Ctx, Src>;
+
+  NonNullInput<Src>(ofType: InputType<Src | null | undefined>): InputType<Src>;
   NonNullInput<Src>(ofType: InputType<Src | null>): InputType<Src>;
   queryType<RootSrc>({
     name,
@@ -439,7 +443,6 @@ export function createTypesFactory<
         ofType: ofType as any,
       };
     },
-
     NonNullInput<Src>(ofType: InputType<Src | null>): InputType<Src> {
       return {
         kind: 'NonNullInput',

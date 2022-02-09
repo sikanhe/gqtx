@@ -27,6 +27,7 @@ type ICharacter = {
 type Human = ICharacter & {
   type: 'Human';
   homePlanet: string | null;
+  optionalField?: string
 };
 
 type Droid = ICharacter & {
@@ -269,6 +270,10 @@ const humanType = t.objectType<Human>({
         throw new Error('secretBackstory is secret');
       },
     }),
+    t.field({
+      name: 'optionalField',
+      type: t.String,
+    })
   ],
 });
 
