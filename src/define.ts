@@ -82,9 +82,9 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
   ): Argument<Src>;
   defaultArg<Src>(
     type: InputType<Src>,
-    defaultArg: Exclude<Src, null>,
+    defaultArg: Exclude<Src, null | undefined>,
     description?: string | undefined
-  ): DefaultArgument<Exclude<Src, null>>;
+  ): DefaultArgument<Exclude<Src, null | undefined>>;
 
   field<TKey extends string, Src, Arg, Out>(
     opts: {
@@ -287,9 +287,9 @@ export function createTypesFactory<
     },
     defaultArg<Src>(
       type: InputType<Src>,
-      defaultArg: Exclude<Src, null>,
+      defaultArg: Exclude<Src, null | undefined>,
       description?: string
-    ): DefaultArgument<Exclude<Src, null>> {
+    ): DefaultArgument<Exclude<Src, null | undefined>> {
       return {
         kind: 'DefaultArgument',
         type: type as any,
