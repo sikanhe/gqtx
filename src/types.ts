@@ -183,10 +183,10 @@ export type Union<Ctx, Src> = {
 export type SubscriptionObject<Ctx, RootSrc> = {
   kind: 'SubscriptionObject';
   name: string;
-  fields: () => Array<SubscriptionField<Ctx, RootSrc, any, any>>;
+  fields: () => Array<SubscriptionField<Ctx, RootSrc, any, any, any>>;
 };
 
-export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
+export type SubscriptionField<Ctx, RootSrc, TArg, Event, Out> = {
   kind: 'SubscriptionField';
   name: string;
   description?: string;
@@ -198,9 +198,9 @@ export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,
     info: graphql.GraphQLResolveInfo
-  ) => PromiseOrValue<AsyncIterableIterator<Out>>;
+  ) => PromiseOrValue<AsyncIterableIterator<Event>>;
   resolve: (
-    source: Out,
+    source: Event,
     args: TOfArgMap<ArgMap<TArg>>,
     ctx: Ctx,
     info: graphql.GraphQLResolveInfo

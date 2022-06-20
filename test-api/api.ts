@@ -163,24 +163,26 @@ import * as api from '../src';
     subscribe: async function* () {
       yield true;
     },
+    resolve: (p) => p,
   });
 
   t.subscriptionField({
     name: 'foo',
     type: t.Boolean,
-    // @ts-expect-error: subscribe must return number not object with number property
     subscribe: async function* () {
       yield { foo: true };
     },
+    resolve: (p) => p.foo,
   });
 
   t.subscriptionField({
     name: 'foo',
     type: t.Boolean,
-    // @ts-expect-error: subscribe must return number not object with string property
     subscribe: async function* () {
-      yield { foo: 'true' };
+      yield { foo: true };
     },
+    // @ts-expect-error: type { foo: boolean } is not assignable to bool
+    resolve: (p) => p,
   });
 }
 

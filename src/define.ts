@@ -161,7 +161,9 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
   List<Src>(ofType: OutputType<Ctx, Src>): OutputType<Ctx, Src[] | null>;
   ListInput<Src>(ofType: InputType<Src>): InputType<Src[] | null>;
 
-  NonNull<Src>(ofType: OutputType<Ctx, Src | null | undefined>): OutputType<Ctx, Src>;
+  NonNull<Src>(
+    ofType: OutputType<Ctx, Src | null | undefined>
+  ): OutputType<Ctx, Src>;
   NonNull<Src>(ofType: OutputType<Ctx, Src | null>): OutputType<Ctx, Src>;
 
   NonNullInput<Src>(ofType: InputType<Src | null | undefined>): InputType<Src>;
@@ -186,34 +188,33 @@ export type Factory<Ctx, TExtensionsMap extends ExtensionsMap> = {
       ...Field<Ctx, RootSrc, any, {}>[]
     ];
   }): ObjectType<Ctx, RootSrc>;
-  subscriptionField<RootSrc, Out_2, Arg_1>({
-    name,
-    type,
-    args,
-    subscribe,
-    description,
-    deprecationReason,
-  }: {
+  subscriptionField<RootSrc, Event, Out, Arg>(opts: {
     name: string;
-    type: OutputType<Ctx, Out_2>;
-    args?: ArgMap<Arg_1> | undefined;
+    type: OutputType<Ctx, Out>;
+    args?: ArgMap<Arg> | undefined;
     description?: string | undefined;
     deprecationReason?: string | undefined;
     subscribe: (
       src: RootSrc,
-      args: TOfArgMap<ArgMap<Arg_1>>,
+      args: TOfArgMap<ArgMap<Arg>>,
       ctx: Ctx,
       info: graphql.GraphQLResolveInfo
-    ) => PromiseOrValue<AsyncIterableIterator<Out_2>>;
-  }): SubscriptionField<Ctx, RootSrc, Arg_1, Out_2>;
+    ) => PromiseOrValue<AsyncIterableIterator<Event>>;
+    resolve: (
+      source: Event,
+      args: TOfArgMap<ArgMap<Arg>>,
+      ctx: Ctx,
+      info: graphql.GraphQLResolveInfo
+    ) => PromiseOrValue<Out>;
+  }): SubscriptionField<Ctx, RootSrc, Arg, Event, Out>;
   subscriptionType<Src>({
     name,
     fields,
   }: {
     name?: string | undefined;
     fields: () => [
-      SubscriptionField<Ctx, Src, any, any>,
-      ...SubscriptionField<Ctx, Src, any, any>[]
+      SubscriptionField<Ctx, Src, any, any, any>,
+      ...SubscriptionField<Ctx, Src, any, any, any>[]
     ];
   }): SubscriptionObject<Ctx, Src>;
 };
@@ -477,35 +478,34 @@ export function createTypesFactory<
         fieldsFn: fields,
       };
     },
-    subscriptionField<RootSrc, Out, Arg>({
-      name,
-      type,
-      args = {} as ArgMap<Arg>,
-      subscribe,
-      description,
-      deprecationReason,
-    }: {
+    subscriptionField<RootSrc, Event, Out, Arg>(opts: {
       name: string;
       type: OutputType<Ctx, Out>;
       args?: ArgMap<Arg> | undefined;
-      description?: string | undefined;
-      deprecationReason?: string | undefined;
       subscribe: (
         src: RootSrc,
         args: TOfArgMap<ArgMap<Arg>>,
         ctx: Ctx,
         info: graphql.GraphQLResolveInfo
-      ) => PromiseOrValue<AsyncIterableIterator<Out>>;
-    }): SubscriptionField<Ctx, RootSrc, Arg, Out> {
+      ) => PromiseOrValue<AsyncIterableIterator<Event>>;
+      resolve: (
+        source: Event,
+        args: TOfArgMap<ArgMap<Arg>>,
+        ctx: Ctx,
+        info: graphql.GraphQLResolveInfo
+      ) => PromiseOrValue<Out>;
+      description?: string | undefined;
+      deprecationReason?: string | undefined;
+    }): SubscriptionField<Ctx, RootSrc, Arg, Event, Out> {
       return {
         kind: 'SubscriptionField',
-        name,
-        type,
-        args,
-        subscribe,
-        resolve: (value: Out) => value,
-        description,
-        deprecationReason,
+        name: opts.name,
+        type: opts.type,
+        args: opts.args ?? ({} as ArgMap<Arg>),
+        subscribe: opts.subscribe,
+        resolve: opts.resolve,
+        description: opts.description,
+        deprecationReason: opts.deprecationReason,
       };
     },
     subscriptionType<Src>({
@@ -513,7 +513,9 @@ export function createTypesFactory<
       fields,
     }: {
       name?: string;
-      fields: () => Array<SubscriptionField<Ctx, Src, unknown, unknown>>;
+      fields: () => Array<
+        SubscriptionField<Ctx, Src, unknown, unknown, unknown>
+      >;
     }): SubscriptionObject<Ctx, Src> {
       return {
         kind: 'SubscriptionObject',

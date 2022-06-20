@@ -507,6 +507,7 @@ test('Subscription work properly', async () => {
             yield greeting;
           }
         },
+        resolve: (p) => p,
       }),
     ],
   });
