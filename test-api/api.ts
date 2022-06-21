@@ -157,6 +157,8 @@ import * as api from '../src';
   type Context = unknown;
   const t = api.createTypesFactory<Context>();
 
+  // subscribe yields a type that extends Out
+  // so resolve can be the identity
   t.subscriptionField({
     name: 'foo',
     type: t.Boolean,
@@ -166,22 +168,36 @@ import * as api from '../src';
     resolve: (p) => p,
   });
 
+  // subscribe yields a type that extends Out
+  // so resolve can be omitted
   t.subscriptionField({
     name: 'foo',
     type: t.Boolean,
     subscribe: async function* () {
-      yield { foo: true };
+      yield true;
     },
-    resolve: (p) => p.foo,
   });
 
+  // subscribe yields an Event type that does not extend Out
+  // so resolve must be Event => Out
   t.subscriptionField({
     name: 'foo',
     type: t.Boolean,
     subscribe: async function* () {
-      yield { foo: true };
+      yield { bar: true };
     },
-    // @ts-expect-error: type { foo: boolean } is not assignable to bool
+    resolve: (p) => p.bar,
+  });
+
+  // subscribe yields an Event type that does not extend Out
+  // so this does not type check
+  t.subscriptionField({
+    name: 'foo',
+    type: t.Boolean,
+    subscribe: async function* () {
+      yield { bar: true };
+    },
+    // @ts-expect-error: type { bar: boolean } is not assignable to bool
     resolve: (p) => p,
   });
 }
