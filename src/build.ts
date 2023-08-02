@@ -8,23 +8,24 @@ import {
   Argument,
   SubscriptionObject,
   ArgMap,
+  Ctx,
 } from './types';
 
-export function buildGraphQLSchema<Ctx, RootSrc>(
-  schema: Schema<Ctx, RootSrc>
+export function buildGraphQLSchema<RootSrc>(
+  schema: Schema<RootSrc>
 ): graphql.GraphQLSchema {
   const typeMap = new Map();
   return new graphql.GraphQLSchema({
-    query: toGraphQLOutputType<Ctx, RootSrc>(
+    query: toGraphQLOutputType<RootSrc>(
       schema.query,
       typeMap
     ) as graphql.GraphQLObjectType,
     mutation:
       schema.mutation &&
-      (toGraphQLOutputType<Ctx, RootSrc>(
+      (toGraphQLOutputType<RootSrc>(
         schema.mutation,
         typeMap
-      ) as graphql.GraphQLObjectType<RootSrc, Ctx>),
+      ) as graphql.GraphQLObjectType<RootSrc>),
     subscription:
       schema.subscription &&
       toGraphQLSubscriptionObject(schema.subscription, typeMap),
@@ -41,9 +42,9 @@ export function buildGraphQLSchema<Ctx, RootSrc>(
   });
 }
 
-export function toGraphQLArgs<Ctx, T>(
+export function toGraphQLArgs<T>(
   args: ArgMap<T>,
-  typeMap: Map<AllType<Ctx>, graphql.GraphQLType>
+  typeMap: Map<AllType, graphql.GraphQLType>
 ): graphql.GraphQLFieldConfigArgumentMap {
   const graphqlArgs: graphql.GraphQLFieldConfigArgumentMap = {};
 
@@ -60,9 +61,9 @@ export function toGraphQLArgs<Ctx, T>(
   return graphqlArgs;
 }
 
-export function toGraphQLSubscriptionObject<Ctx, RootSrc>(
-  subscriptionObj: SubscriptionObject<Ctx, RootSrc>,
-  typeMap: Map<AllType<Ctx>, graphql.GraphQLType>
+export function toGraphQLSubscriptionObject<RootSrc>(
+  subscriptionObj: SubscriptionObject<RootSrc>,
+  typeMap: Map<AllType, graphql.GraphQLType>
 ): graphql.GraphQLObjectType {
   return new graphql.GraphQLObjectType({
     name: subscriptionObj.name,
@@ -85,9 +86,9 @@ export function toGraphQLSubscriptionObject<Ctx, RootSrc>(
   });
 }
 
-export function toGraphQLInputType<Ctx>(
+export function toGraphQLInputType(
   t: InputType<any>,
-  typeMap: Map<AllType<Ctx>, graphql.GraphQLType>
+  typeMap: Map<AllType, graphql.GraphQLType>
 ): graphql.GraphQLInputType {
   const found = typeMap.get(t);
 
@@ -133,9 +134,9 @@ export function toGraphQLInputType<Ctx>(
   }
 }
 
-export function toGraphQLOutputType<Ctx, Src>(
-  t: OutputType<Ctx, any>,
-  typeMap: Map<AllType<Ctx>, graphql.GraphQLType>
+export function toGraphQLOutputType<Src>(
+  t: OutputType<any>,
+  typeMap: Map<AllType, graphql.GraphQLType>
 ): graphql.GraphQLOutputType {
   const found = typeMap.get(t);
 
@@ -195,7 +196,7 @@ export function toGraphQLOutputType<Ctx, Src>(
               args: toGraphQLArgs(field.args, typeMap),
               deprecationReason: field.deprecationReason,
               extensions: field.extensions,
-            } as graphql.GraphQLFieldConfig<unknown, Ctx, any>;
+            } as graphql.GraphQLFieldConfig<unknown, any>;
           });
 
           return gqlFieldConfig;
@@ -207,14 +208,13 @@ export function toGraphQLOutputType<Ctx, Src>(
       return obj;
 
     case 'Union':
+      const types = typeof t.types === 'function' ? t.types() : t.types;
       const union = new graphql.GraphQLUnionType({
         name: t.name,
         description: t.description,
-        types: t.types.map((t) => toGraphQLOutputType(t, typeMap)) as any,
+        types: types.map((t) => toGraphQLOutputType(t, typeMap)) as any,
         resolveType: async (src, ctx, info) => {
-          const resolved = await t.resolveType(src, ctx, info);
-          if (typeof resolved === 'string' || resolved == null) return resolved;
-          return typeMap.get(resolved) as any;
+          return t.resolveType(src, ctx, info);
         },
       });
 
@@ -242,6 +242,9 @@ export function toGraphQLOutputType<Ctx, Src>(
         interfaces: t.interfaces.map((intf) =>
           toGraphQLOutputType(intf, typeMap)
         ) as any,
+        resolveType: async (src, ctx, info) => {
+          return t.resolveType?.(src, ctx, info);
+        },
       });
 
       typeMap.set(t, intf);

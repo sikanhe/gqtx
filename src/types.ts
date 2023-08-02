@@ -3,17 +3,19 @@ import * as graphql from 'graphql';
 export type PromiseOrValue<T> = Promise<T> | T;
 type Maybe<T> = T | null | undefined;
 
-export type OutputType<Ctx, Src> =
+export interface Ctx {};
+
+export type OutputType<Src> =
   | Scalar<Src>
   | Enum<Src>
-  | ObjectType<Ctx, Src>
-  | Union<Ctx, Src>
-  | Interface<Ctx, Src>
-  | ListType<Ctx, Src>
-  | NonNullType<Ctx, Src>;
+  | ObjectType<Src>
+  | Union<Src>
+  | Interface<Src>
+  | ListType<Src>
+  | NonNullType<Src>;
 
-interface ListType<Ctx, Src> extends List<Ctx, OutputType<Ctx, Src>> {}
-interface NonNullType<Ctx, Src> extends NonNull<Ctx, OutputType<Ctx, Src>> {}
+interface ListType<Src> extends List<OutputType<Src>> {}
+interface NonNullType<Src> extends NonNull<OutputType<Src>> {}
 
 export type InputType<Src> =
   | Scalar<Src>
@@ -25,7 +27,7 @@ export type InputType<Src> =
 interface ListInputType<Src> extends ListInput<InputType<Src>> {}
 interface NonNullInputType<Src> extends NonNullInput<InputType<Src>> {}
 
-export type AllType<Ctx> = OutputType<Ctx, any> | InputType<any>;
+export type AllType = OutputType<any> | InputType<any>;
 
 export type Scalar<Src> =
   | {
@@ -51,14 +53,14 @@ export type EnumValue<Src> = {
   value: Src;
 };
 
-export type List<Ctx, Src> = {
+export type List<Src> = {
   kind: 'List';
-  ofType: OutputType<Ctx, Src>;
+  ofType: OutputType<Src>;
 };
 
-export type NonNull<Ctx, Src> = {
+export type NonNull<Src> = {
   kind: 'NonNull';
-  ofType: OutputType<Ctx, Src>;
+  ofType: OutputType<Src>;
 };
 
 export type ListInput<Src> = {
@@ -100,11 +102,11 @@ export type TOfArgMap<TArgMap> = {
   [K in keyof TArgMap]: ArgMapValue<TArgMap[K]>;
 };
 
-export type Field<Ctx, Src, Out, TArg extends object = {}> = {
+export type Field<Src, Out, TArg extends object = {}> = {
   kind: 'Field';
   name: string;
   description?: string;
-  type: OutputType<Ctx, Out>;
+  type: OutputType<Out>;
   args: ArgMap<TArg>;
   deprecationReason?: string;
   resolve?: (
@@ -116,22 +118,22 @@ export type Field<Ctx, Src, Out, TArg extends object = {}> = {
   extensions?: Record<string, any>;
 };
 
-export type AbstractField<Ctx, Out> = {
+export type AbstractField<Out> = {
   kind: 'AbstractField';
   name: string;
   description?: string;
   deprecationReason?: string;
   args?: ArgMap<unknown>;
-  type: OutputType<Ctx, Out>;
+  type: OutputType<Out>;
 };
 
-export type ObjectType<Ctx, Src> = {
+export type ObjectType<Src> = {
   kind: 'ObjectType';
   name: string;
   description?: string;
   deprecationReason?: string;
-  interfaces: Array<Interface<Ctx, any>>;
-  fieldsFn: () => Array<Field<Ctx, Src, any, any>>;
+  interfaces: Array<Interface<any>>;
+  fieldsFn: () => Array<Field<Src, any, any>>;
   isTypeOf?: (
     src: any,
     ctx: Ctx,
@@ -157,40 +159,40 @@ export type InputObject<Src> = {
   fieldsFn: () => InputFieldMap<Src>;
 };
 
-type ResolveType<Src, Ctx> = (
+export type ResolveType<Src, Ctx> = (
   src: Src,
   ctx: Ctx,
   info: graphql.GraphQLResolveInfo
-) => PromiseOrValue<Maybe<ObjectType<Ctx, Src | null> | string>>;
+) => PromiseOrValue<string | undefined>;
 
-export type Interface<Ctx, Src> = {
+export type Interface<Src> = {
   kind: 'Interface';
   name: string;
   description?: string;
-  interfaces: Array<Interface<Ctx, any>>;
-  fieldsFn: () => Array<AbstractField<Ctx, any>>;
+  interfaces: Array<Interface<any>>;
+  fieldsFn: () => Array<AbstractField<any>>;
   resolveType?: ResolveType<Src, Ctx>;
 };
 
-export type Union<Ctx, Src> = {
+export type Union<Src> = {
   kind: 'Union';
   name: string;
   description?: string;
-  types: Array<ObjectType<Ctx, Src>>;
+  types: Array<ObjectType<Src>> | (() => Array<ObjectType<Src>>);
   resolveType: ResolveType<Src, Ctx>;
 };
 
-export type SubscriptionObject<Ctx, RootSrc> = {
+export type SubscriptionObject<RootSrc> = {
   kind: 'SubscriptionObject';
   name: string;
-  fields: () => Array<SubscriptionField<Ctx, RootSrc, any, any>>;
+  fields: () => Array<SubscriptionField<RootSrc, any, any>>;
 };
 
-export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
+export type SubscriptionField<RootSrc, TArg, Out> = {
   kind: 'SubscriptionField';
   name: string;
   description?: string;
-  type: OutputType<Ctx, Out>;
+  type: OutputType<Out>;
   args: ArgMap<TArg>;
   deprecationReason?: string;
   subscribe: (
@@ -207,10 +209,10 @@ export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
   ) => PromiseOrValue<Out>;
 };
 
-export type Schema<Ctx, RootSrc = undefined> = {
-  query: ObjectType<Ctx, RootSrc>;
-  mutation?: ObjectType<Ctx, RootSrc>;
-  subscription?: SubscriptionObject<Ctx, RootSrc>;
-  types?: ObjectType<Ctx, any>[];
+export type Schema<RootSrc = undefined> = {
+  query: ObjectType<RootSrc>;
+  mutation?: ObjectType<RootSrc>;
+  subscription?: SubscriptionObject<RootSrc>;
+  types?: ObjectType<any>[];
   directives?: graphql.GraphQLDirective[];
 };

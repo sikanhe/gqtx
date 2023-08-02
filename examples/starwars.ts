@@ -1,14 +1,36 @@
 import type { Interface } from '../src';
 import type { Connection, ConnectionArguments, Edge } from '../src/relay';
-import { createTypesFactory, buildGraphQLSchema } from '../src';
-import { createRelayHelpers } from '../src/relay';
+import {
+  GqlID,
+  GqlInt,
+  GqlString,
+  GqlBoolean,
+  List,
+  NonNull,
+  NonNullInput,
+  InterfaceType,
+  AbstractField,
+  Field,
+  ObjectType,
+  QueryType,
+  DefaultArg,
+  Arg,
+  buildGraphQLSchema,
+  EnumType,
+} from '../src';
+import {
+  connectionArgs,
+  connectionDefinitions,
+  nodeDefinitions,
+} from '../src/relay';
 import express = require('express');
 import graphqlHTTP = require('express-graphql');
 
-type Context = { contextContent: string };
-
-const t = createTypesFactory<Context>();
-const relay = createRelayHelpers(t);
+declare module '../src/types' {
+  interface Ctx {
+    contextContent: string;
+  }
+}
 
 const enum Episode {
   NEWHOPE = 4,
@@ -27,7 +49,7 @@ type ICharacter = {
 type Human = ICharacter & {
   type: 'Human';
   homePlanet: string | null;
-  optionalField?: string
+  optionalField?: string;
 };
 
 type Droid = ICharacter & {
@@ -111,12 +133,13 @@ const droidData: Record<string, Droid> = {
   '2000': threepio,
   '2001': artoo,
 };
+
 function getCharacter(id: string) {
   return Promise.resolve(humanData[id] || droidData[id]);
 }
 
 export function getFriends(character: ICharacter): Array<Promise<ICharacter>> {
-  return character.friends.map((id) => getCharacter(id));
+  return character.friends.map(id => getCharacter(id));
 }
 
 export function getHero(episode: Episode | null): ICharacter {
@@ -136,11 +159,9 @@ export function getDroid(id: string): Droid {
   return droidData[id];
 }
 
-const { nodeInterface, nodeField } = relay.nodeDefinitions((id) =>
-  getCharacter(id)
-);
+const { nodeInterface, nodeField } = nodeDefinitions(NonNull(GqlID) => getCharacterNonNull(GqlID));
 
-const episodeEnum = t.enumType({
+const episodeEnum = EnumType({
   name: 'Episode',
   description: 'One of the films in the Star Wars Trilogy',
   values: [
@@ -150,37 +171,37 @@ const episodeEnum = t.enumType({
   ],
 });
 
-const characterInterface: Interface<Context, ICharacter | null> =
-  t.interfaceType<ICharacter>({
+const characterInterface: Interface<ICharacter | null | undefined> =
+  InterfaceType<ICharacter>({
     name: 'Character',
     interfaces: [],
     fields: () => [
-      t.abstractField({ name: 'id', type: t.NonNull(t.ID) }),
-      t.abstractField({ name: 'name', type: t.NonNull(t.String) }),
-      t.abstractField({
+      AbstractField({ name: 'id', type: NonNull(GqlID) }),
+      AbstractField({ name: 'name', type: NonNull(GqlString) }),
+      AbstractField({
         name: 'appearsIn',
-        type: t.NonNull(t.List(t.NonNull(episodeEnum))),
+        type: NonNull(List(NonNull(episodeEnum))),
       }),
-      t.abstractField({ name: 'friends', type: characterConnectionType }),
+      AbstractField({ name: 'friends', type: characterConnectionType }),
     ],
   });
 
 const { connectionType: characterConnectionType } =
-  relay.connectionDefinitions<ICharacter>({
+  connectionDefinitions<ICharacter>({
     nodeType: characterInterface,
     edgeFields: () => [
-      t.field({
+      Field({
         name: 'friendshipTime',
-        type: t.String,
+        type: GqlString,
         resolve: (_edge: Edge<ICharacter>) => {
           return 'Yesterday';
         },
       }),
     ],
     connectionFields: () => [
-      t.field({
+      Field({
         name: 'totalCount',
-        type: t.Int,
+        type: GqlInt,
         resolve: () => {
           return Object.keys(humanData).length + Object.keys(droidData).length;
         },
@@ -232,85 +253,85 @@ const createConnectionFromCharacterArray = (
   };
 };
 
-const humanType = t.objectType<Human>({
+const humanType = ObjectType<Human>({
   name: 'Human',
   description: 'A humanoid creature in the Star Wars universe.',
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Human',
   fields: () => [
-    t.field({
+    Field({
       name: 'id',
-      type: t.NonNull(t.ID),
+      type: NonNull(GqlID),
     }),
-    t.field({
+    Field({
       name: 'name',
-      type: t.NonNull(t.String),
+      type: NonNull(GqlString),
     }),
-    t.field({
+    Field({
       name: 'appearsIn',
-      type: t.NonNull(t.List(t.NonNull(episodeEnum))),
+      type: NonNull(List(NonNull(episodeEnum))),
     }),
-    t.field({
+    Field({
       name: 'homePlanet',
-      type: t.String,
+      type: GqlString,
     }),
-    t.field({
+    Field({
       name: 'friends',
       type: characterConnectionType,
-      args: relay.connectionArgs,
-      resolve: async (c, args) => {
+      args: connectionArgs,
+      resolve: async (c, args, ctx) => {
         const friends = await Promise.all(getFriends(c));
         return createConnectionFromCharacterArray(friends, args);
       },
     }),
-    t.field({
+    Field({
       name: 'secretBackStory',
-      type: t.String,
+      type: GqlString,
       resolve: () => {
         throw new Error('secretBackstory is secret');
       },
     }),
-    t.field({
+    Field({
       name: 'optionalField',
-      type: t.String,
-    })
+      type: GqlString,
+    }),
   ],
 });
 
-const droidType = t.objectType<Droid>({
+const droidType = ObjectType<Droid>({
   name: 'Droid',
   description: 'A mechanical creature in the Star Wars universe.',
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Droid',
   fields: () => [
-    t.field({
+    Field({
       name: 'id',
-      type: t.NonNull(t.ID),
+      type: NonNull(GqlID),
     }),
-    t.field({
+    Field({
       name: 'name',
-      type: t.NonNull(t.String),
+      type: NonNull(GqlString),
     }),
-    t.field({
+    Field({
       name: 'appearsIn',
-      type: t.NonNull(t.List(t.NonNull(episodeEnum))),
+      type: NonNull(List(NonNull(episodeEnum))),
     }),
-    t.field({
+    Field({
       name: 'primaryFunction',
-      type: t.NonNull(t.String),
+      type: NonNull(GqlString),
     }),
-    t.field({
+    Field({
       name: 'friends',
       type: characterConnectionType,
-      args: relay.connectionArgs,
+      args: connectionArgs,
       resolve: async (c, args) => {
         const friends = await Promise.all(getFriends(c));
         return createConnectionFromCharacterArray(friends, args);
       },
     }),
-    t.field({
+    Field({
       name: 'secretBackStory',
-      type: t.String,
+      type: GqlString,
       resolve: () => {
         throw new Error('secretBackstory is secret');
       },
@@ -318,41 +339,41 @@ const droidType = t.objectType<Droid>({
   ],
 });
 
-const queryType = t.queryType({
+const query = QueryType({
   fields: () => [
     nodeField,
-    t.field({
+    Field({
       name: 'hero',
       type: characterInterface,
       args: {
-        episode: t.defaultArg(episodeEnum, Episode.EMPIRE),
+        episode: DefaultArg(episodeEnum, Episode.EMPIRE),
       },
       resolve: (_, { episode }) => getHero(episode),
     }),
-    t.field({
+    Field({
       name: 'human',
       type: humanType,
-      args: { id: t.arg(t.NonNullInput(t.ID)) },
+      args: { id: Arg(NonNullInput(GqlID)) },
       resolve: (_, { id }) => getHuman(id),
     }),
-    t.field({
+    Field({
       name: 'droid',
       type: droidType,
       args: {
-        id: t.arg(t.NonNullInput(t.String), 'ID of the droid'),
+        id: Arg(NonNullInput(GqlString), 'ID of the droid'),
       },
       resolve: (_, { id }) => getDroid(id),
     }),
-    t.field({
+    Field({
       name: 'contextContent',
-      type: t.String,
+      type: GqlString,
       resolve: (_, _args, ctx) => ctx.contextContent,
     }),
   ],
 });
 
 const schema = {
-  query: queryType,
+  query: query,
 };
 
 const app = express();

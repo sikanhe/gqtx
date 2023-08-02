@@ -1,5 +1,29 @@
 export * from './types';
-export { createTypesFactory } from './define';
+export {
+  GqlBoolean,
+  GqlInt,
+  GqlFloat,
+  GqlString,
+  GqlID,
+  Scalar,
+  EnumType,
+  Arg,
+  List,
+  ListInput,
+  NonNull,
+  NonNullInput,
+  InterfaceType,
+  ObjectType,
+  UnionType,
+  InputObjectType,
+  AbstractField,
+  Field,
+  DefaultArg,
+  SubscriptionField,
+  QueryType,
+  MutationType,
+  SubscriptionType,
+} from './define';
 export {
   buildGraphQLSchema,
   toGraphQLInputType,
