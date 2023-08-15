@@ -28,7 +28,7 @@ Most importantly, we achieve all this _without_ having to:
 ### What does it look like?
 
 ```ts
-import { createTypesFactory, buildGraphQLSchema } from 'gqtx';
+import { buildGraphQLSchema, id, string } from 'gqtx';
 
 enum Role {
   Admin,
@@ -46,16 +46,16 @@ const users: User[] = [
   { id: '2', role: Role.User, name: 'Nicole' },
 ];
 
-type AppContext = {
-  viewerId: 1;
-  users: User[];
-};
+// We can declare the app context type once, and it will
+// be automatically inferred for all our resolvers
+declare module "gqtx" {
+  interface Context {
+    viewerId: number;
+    users: User[];
+  }
+}
 
-// We can set the app context type once, and it will
-// be automatically inferred for all our resolvers! :)
-const t = createTypesFactory<AppContext>();
-
-const RoleEnum = t.enumType({
+const RoleEnum = enumType({
   name: 'Role',
   description: 'A user role',
   values: [
@@ -64,31 +64,30 @@ const RoleEnum = t.enumType({
   ],
 });
 
-const UserType = t.objectType<User>({
+const UserType = objectType<User>({
   name: 'User',
   description: 'A User',
   fields: () => [
-    t.field({ name: 'id', type: t.NonNull(t.ID) }),
-    t.field({ name: 'role', type: t.NonNull(RoleEnum) }),
-    t.field({ name: 'name', type: t.NonNull(t.String) }),
+    field({ name: 'id', type: nonnull(id) }),
+    field({ name: 'role', type: nonnull(RoleEnum) }),
+    field({ name: 'name', type: nonnull(string) }),
   ],
 });
 
-const Query = t.queryType({
+const Query = queryType({
   fields: [
-    t.field({
+    field({
       name: 'userById',
       type: UserType,
       args: {
-        id: t.arg(t.NonNullInput(t.ID)),
+        id: arg({ type: nonnullInput(id) }),
       },
       resolve: (_, args, ctx) => {
         // `args` is automatically inferred as { id: string }
-        // `ctx` is also automatically inferred as AppContext
-        //  All with no extra work!
+        // `ctx` (context) is also automatically inferred as { viewerId: number, users: User[] }
         const user = ctx.users.find((u) => u.id === args.id);
-        // Also ensures we return an `User | null` type :)
-        return user || null;
+        // Also ensures we return an `User | null | undefined` type
+        return user
       },
     }),
   ],
