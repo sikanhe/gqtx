@@ -265,7 +265,7 @@ export function unionType<Src>({
 }: {
   name: string;
   description?: string;
-  types: Array<ObjectType<any>>;
+  types: Array<ObjectType<any>> | (() => Array<ObjectType<any>>);
   resolveType: (src: Src) => string;
 }): Union<Src | null> {
   return {
@@ -285,7 +285,7 @@ export function interfaceType<Src>({
 }: {
   name: string;
   description?: string;
-  interfaces?: Array<Interface<any>>;
+  interfaces?: Array<Interface<any>> | (() => Array<Interface<any>>);
   fields: (self: Interface<Src | null>) => Array<AbstractField<any>>;
 }): Interface<Src | null> {
   const obj: Interface<Src | null> = {

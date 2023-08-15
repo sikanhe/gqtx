@@ -181,9 +181,10 @@ export function toGraphQLOutputType<Src>(
       const obj = new graphql.GraphQLObjectType({
         name: t.name,
         description: t.description,
-        interfaces: t.interfaces.map((intf) =>
-          toGraphQLOutputType(intf, typeMap)
-        ) as any,
+        interfaces: (typeof t.interfaces === 'function'
+          ? t.interfaces()
+          : t.interfaces
+        ).map((intf) => toGraphQLOutputType(intf, typeMap)) as any,
         isTypeOf: t.isTypeOf,
         fields: () => {
           const fields = t.fieldsFn();
@@ -241,9 +242,10 @@ export function toGraphQLOutputType<Src>(
 
           return result;
         },
-        interfaces: t.interfaces.map((intf) =>
-          toGraphQLOutputType(intf, typeMap)
-        ) as any,
+        interfaces: (typeof t.interfaces === 'function'
+          ? t.interfaces()
+          : t.interfaces
+        ).map((intf) => toGraphQLOutputType(intf, typeMap)) as any,
         resolveType: async (src, ctx, info) => {
           return t.resolveType?.(src, ctx, info);
         },

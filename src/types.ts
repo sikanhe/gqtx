@@ -133,7 +133,7 @@ export type ObjectType<Src> = {
   name: string;
   description?: string;
   deprecationReason?: string;
-  interfaces: Array<Interface<any>>;
+  interfaces: Array<Interface<any>> | (() => Array<Interface<any>>);
   fieldsFn: () => Array<Field<Src, any, any>>;
   isTypeOf?: (
     src: any,
@@ -170,7 +170,7 @@ export type Interface<Src> = {
   kind: 'Interface';
   name: string;
   description?: string;
-  interfaces: Array<Interface<any>>;
+  interfaces: Array<Interface<any>> | (() => Array<Interface<any>>);
   fieldsFn: () => Array<AbstractField<any>>;
   resolveType?: ResolveType<Src>;
 };
