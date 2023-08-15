@@ -405,8 +405,8 @@ export function subscriptionType<Src>({
 }: {
   name?: string;
   fields: () => [
-    SubscriptionField<Src, any, {}>,
-    ...SubscriptionField<Src, any, {}>[]
+    SubscriptionField<Src, any, any>,
+    ...SubscriptionField<Src, any, any>[]
   ];
 }): SubscriptionObject<Src> {
   return {
