@@ -35,7 +35,7 @@
     "cross-env": "7.0.3",
     "express": "^4.17.1",
     "express-graphql": "^0.9.0",
-    "graphql": "^16.1.0",
+    "graphql": "^16.7.0",
     "jest": "27.0.4",
     "prettier": "2.3.1",
     "rollup": "^2.39.0",
@@ -45,7 +45,7 @@
     "typescript": "4.3.2"
   },
   "peerDependencies": {
-    "graphql": "^15.1.0"
+    "graphql": "^16.7.0"
   },
   "scripts": {
     "build:cjs": "cross-env MODE=cjs rollup -c",
