@@ -206,8 +206,14 @@ export function objectType<Src>({
   name: string;
   description?: string;
   interfaces?: Array<Interface<any>>;
-  fields: (self: OutputType<Src | null>) => Array<Field<Src, any>>;
-  isTypeOf?: (src: any, ctx: Context, info: graphql.GraphQLResolveInfo) => boolean;
+  fields: (
+    self: OutputType<Src | null>
+  ) => [Field<Src, any, {}>, ...Field<Src, any, {}>[]];
+  isTypeOf?: (
+    src: any,
+    ctx: Context,
+    info: graphql.GraphQLResolveInfo
+  ) => boolean;
   extensions?: ExtensionsMap['objectType'] extends undefined
     ? Record<string, any>
     : ExtensionsMap['objectType'];
@@ -336,7 +342,7 @@ export function queryType<RootSrc>({
   fields,
 }: {
   name?: string;
-  fields: () => Array<Field<RootSrc, any>>;
+  fields: () => [Field<RootSrc, any, {}>, ...Field<RootSrc, any, {}>[]];
 }): ObjectType<RootSrc> {
   return {
     kind: 'ObjectType',
@@ -351,7 +357,7 @@ export function mutationType<RootSrc>({
   fields,
 }: {
   name?: string;
-  fields: () => Array<Field<RootSrc, any>>;
+  fields: () => [Field<RootSrc, any, {}>, ...Field<RootSrc, any, {}>[]];
 }): ObjectType<RootSrc> {
   return {
     kind: 'ObjectType',
@@ -398,7 +404,10 @@ export function subscriptionType<Src>({
   fields,
 }: {
   name?: string;
-  fields: () => Array<SubscriptionField<Src, any, any>>;
+  fields: () => [
+    SubscriptionField<Src, any, {}>,
+    ...SubscriptionField<Src, any, {}>[]
+  ];
 }): SubscriptionObject<Src> {
   return {
     kind: 'SubscriptionObject',

@@ -1,10 +1,27 @@
-import * as api from '../src';
+import {
+  arg,
+  field,
+  mutationType,
+  objectType,
+  queryType,
+  subscriptionField,
+  subscriptionType,
+  string,
+  id,
+  list,
+  boolean,
+  nonnull,
+  ObjectType,
+} from '../src';
+
+declare module '../src/types' {
+  interface Context {
+    contextContent: string;
+  }
+}
 
 {
   // correctly infer whether resolve function is mandatory or optional
-
-  type Context = unknown;
-  const t = api.createTypesFactory<Context>();
 
   type Human = {
     id: string;
@@ -12,36 +29,36 @@ import * as api from '../src';
     friendIds: Array<string>;
   };
 
-  t.objectType<Human>({
+  objectType<Human>({
     name: 'Human',
     fields: () => [
-      t.field({
+      field({
         name: 'id',
-        type: t.String,
+        type: string,
       }),
       // @ts-expect-error: type Human does not have a name property, thus resolve function must be declared
-      t.field({
+      field({
         name: 'name',
-        type: t.String,
+        type: string,
       }),
-      t.field({
+      field({
         name: 'name',
-        type: t.String,
+        type: string,
         resolve: () => 'Anonym',
       }),
       // @ts-expect-error: type Human does have age property but it is not of type String, thus resolve function must be declared
-      t.field({
+      field({
         name: 'age',
-        type: t.String,
+        type: string,
       }),
-      t.field({
+      field({
         name: 'age',
-        type: t.String,
+        type: string,
         resolve: (source) => String(source.age),
       }),
-      t.field({
+      field({
         name: 'friendIds',
-        type: t.List(t.ID),
+        type: list(id),
       }),
     ],
   });
@@ -50,41 +67,39 @@ import * as api from '../src';
 {
   // correctly infer list types
 
-  const t = api.createTypesFactory<unknown>();
-
   type Human = {
     id: string;
     age: number;
     friendIds: Array<string>;
   };
 
-  const GraphQLHuman = t.objectType<Human>({
+  const GraphQLHuman = objectType<Human>({
     name: 'Human',
     fields: () => [
-      t.field({
+      field({
         name: 'id',
-        type: t.String,
+        type: string,
       }),
     ],
   });
 
-  t.objectType<Array<Human>>({
+  objectType<Array<Human>>({
     name: 'HumanConnection',
     fields: () => [
-      t.field({
+      field({
         name: 'edges',
-        type: t.List(t.NonNull(GraphQLHuman)),
+        type: list(nonnull(GraphQLHuman)),
         resolve: (value) => value,
       }),
     ],
   });
 
-  t.objectType<Array<Human>>({
+  objectType<Array<Human>>({
     name: 'HumanConnection',
     fields: () => [
-      t.field({
+      field({
         name: 'edges',
-        type: t.NonNull(t.List(t.NonNull(GraphQLHuman))),
+        type: nonnull(list(nonnull(GraphQLHuman))),
         resolve: (value) => value,
       }),
     ],
@@ -99,16 +114,13 @@ import * as api from '../src';
     name: string;
   };
 
-  type Context = unknown;
-  const t = api.createTypesFactory<Context>();
-
   // @ts-expect-error: 'GraphQLUserType' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
-  const GraphQLUserType = t.objectType<User>({
+  const GraphQLUserType = objectType<User>({
     name: 'User',
     fields: () => [
-      t.field({ name: 'id', type: t.NonNull(t.ID) }),
-      t.field({ name: 'name', type: t.NonNull(t.String) }),
-      t.field({
+      field({ name: 'id', type: nonnull(id) }),
+      field({ name: 'name', type: nonnull(string) }),
+      field({
         name: 'parent',
         type: GraphQLUserType,
         resolve: () => {
@@ -118,13 +130,13 @@ import * as api from '../src';
     ],
   });
 
-  const GraphQLUserType1: api.ObjectType<Context, User | null> =
-    t.objectType<User>({
+  const GraphQLUserType1: ObjectType<User | null> =
+    objectType<User>({
       name: 'User',
       fields: () => [
-        t.field({ name: 'id', type: t.NonNull(t.ID) }),
-        t.field({ name: 'name', type: t.NonNull(t.String) }),
-        t.field({
+        field({ name: 'id', type: nonnull(id) }),
+        field({ name: 'name', type: nonnull(string) }),
+        field({
           name: 'parent',
           type: GraphQLUserType1,
           // @ts-expect-error: Type 'number' is not assignable to type 'User | Promise<User | null> | null'
@@ -135,13 +147,13 @@ import * as api from '../src';
       ],
     });
 
-  const GraphQLUserType2: api.ObjectType<Context, User | null> =
-    t.objectType<User>({
+  const GraphQLUserType2: ObjectType<User | null> =
+    objectType<User>({
       name: 'User',
       fields: () => [
-        t.field({ name: 'id', type: t.NonNull(t.ID) }),
-        t.field({ name: 'name', type: t.NonNull(t.String) }),
-        t.field({
+        field({ name: 'id', type: nonnull(id) }),
+        field({ name: 'name', type: nonnull(string) }),
+        field({
           name: 'parent',
           type: GraphQLUserType2,
           resolve: () => {
@@ -154,29 +166,26 @@ import * as api from '../src';
 
 {
   // Subscription API Test
-  type Context = unknown;
-  const t = api.createTypesFactory<Context>();
-
-  t.subscriptionField({
+  subscriptionField({
     name: 'foo',
-    type: t.Boolean,
+    type: boolean,
     subscribe: async function* () {
       yield true;
     },
   });
 
-  t.subscriptionField({
+  subscriptionField({
     name: 'foo',
-    type: t.Boolean,
+    type: boolean,
     // @ts-expect-error: subscribe must return number not object with number property
     subscribe: async function* () {
       yield { foo: true };
     },
   });
 
-  t.subscriptionField({
+  subscriptionField({
     name: 'foo',
-    type: t.Boolean,
+    type: boolean,
     // @ts-expect-error: subscribe must return number not object with string property
     subscribe: async function* () {
       yield { foo: 'true' };
@@ -186,14 +195,11 @@ import * as api from '../src';
 
 {
   // arguments
-
-  const t = api.createTypesFactory<unknown>();
-
-  t.field({
+  field({
     name: 'foo',
-    type: t.Boolean,
+    type: boolean,
     args: {
-      foo: t.arg(t.Boolean),
+      foo: arg({ type: boolean }),
     },
     // args.foo should be boolean | null | undefined
     resolve: (_, args) => {
@@ -220,28 +226,25 @@ import * as api from '../src';
 
 {
   // require at least one field
-
-  const t = api.createTypesFactory<unknown>();
-
-  t.objectType({
+  objectType({
     name: 'Foo',
     // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
     fields: () => [],
   });
 
-  t.mutationType({
+  mutationType({
     name: 'Foo',
     // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
     fields: () => [],
   });
 
-  t.queryType({
+  queryType({
     name: 'Foo',
     // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
     fields: () => [],
   });
 
-  t.subscriptionType({
+  subscriptionType({
     name: 'Foo',
     // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
     fields: () => [],
