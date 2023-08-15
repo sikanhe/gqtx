@@ -4,21 +4,21 @@ import type {
   Interface,
   Argument,
   TOfArgMap,
-  Ctx,
+  Context,
 } from './types';
 import {
-  GqlID,
-  GqlInt,
-  List,
-  String,
-  GqlBoolean,
-  NonNull,
-  NonNullInput,
-  AbstractField,
-  Arg,
-  Field,
-  InterfaceType,
-  ObjectType,
+  id,
+  int,
+  list,
+  string,
+  boolean,
+  nonnull,
+  nonnullInput,
+  abstractField,
+  arg,
+  field,
+  interfaceType,
+  objectType,
 } from './define';
 import { GraphQLResolveInfo } from 'graphql';
 
@@ -27,7 +27,7 @@ import { GraphQLResolveInfo } from 'graphql';
 
 export type ConnectionConfig<T> = {
   name?: string;
-  nodeType: ObjectType<T | null | undefined> | Interface<T | null | undefined>;
+  nodeType: ObjectType<T | null> | Interface<T | null>;
   edgeFields?: () => Array<Field<Edge<T>, any, any>>;
   connectionFields?: () => Array<Field<Connection<T>, any, any>>;
 };
@@ -71,27 +71,27 @@ export type RelayConnectionDefinitions<T> = {
 export function nodeDefinitions<Src>(
   idFetcher: (
     id: string,
-    context: Ctx,
+    context: Context,
     info: GraphQLResolveInfo
   ) => Promise<Src> | Src
 ) {
-  const nodeInterface = InterfaceType({
+  const nodeInterface = interfaceType({
     name: 'Node',
     description: 'An object with an ID',
     fields: () => [
-      AbstractField({
+      abstractField({
         name: 'id',
-        type: NonNull(GqlID),
+        type: nonnull(id),
         description: 'The id of the object.',
       }),
     ],
   });
 
-  const nodeField = Field({
+  const nodeField = field({
     name: 'node',
     type: nodeInterface,
     args: {
-      id: Arg(NonNullInput(GqlID), 'The ID of an object'),
+      id: arg({ type: nonnullInput(id), description: 'The ID of an object' }),
     },
     // TODO: figure out the as any
     resolve: (_, { id }, context, info) => idFetcher(id, context, info) as any,
@@ -101,13 +101,13 @@ export function nodeDefinitions<Src>(
 }
 
 const forwardConnectionArgs = {
-  after: Arg(String),
-  first: Arg(GqlInt),
+  after: arg({ type: string }),
+  first: arg({ type: int }),
 };
 
 const backwardConnectionArgs = {
-  before: Arg(String),
-  last: Arg(GqlInt),
+  before: arg({ type: string }),
+  last: arg({ type: int }),
 };
 
 export const connectionArgs = {
@@ -115,28 +115,28 @@ export const connectionArgs = {
   ...backwardConnectionArgs,
 };
 
-const pageInfoType = ObjectType<PageInfo>({
+const pageInfoType = objectType<PageInfo>({
   name: 'PageInfo',
   description: 'Information about pagination in a connection.',
   fields: () => [
-    Field({
+    field({
       name: 'hasNextPage',
-      type: NonNull(GqlBoolean),
+      type: nonnull(boolean),
       description: 'When paginating forwards, are there more items?',
     }),
-    Field({
+    field({
       name: 'hasPreviousPage',
-      type: NonNull(GqlBoolean),
+      type: nonnull(boolean),
       description: 'When paginating backwards, are there more items?',
     }),
-    Field({
+    field({
       name: 'startCursor',
-      type: String,
+      type: string,
       description: 'When paginating backwards, the cursor to continue.',
     }),
-    Field({
+    field({
       name: 'endCursor',
-      type: String,
+      type: string,
       description: 'When paginating forwards, the cursor to continue.',
     }),
   ],
@@ -156,38 +156,38 @@ export function connectionDefinitions<T>(
   const edgeFields = config.edgeFields || (() => []);
   const connectionFields = config.connectionFields || (() => []);
 
-  const edgeType = ObjectType<Edge<T>>({
+  const edgeType = objectType<Edge<T>>({
     name: name + 'Edge',
     description: 'An edge in a connection.',
     fields: () => [
       // TODO: figure out how to fix the typings
       // @ts-ignore
-      Field({
+      field({
         name: 'node',
-        type: NonNull(nodeType),
+        type: nonnull(nodeType),
         description: 'The item at the end of the edge',
       }),
-      Field({
+      field({
         name: 'cursor',
-        type: NonNull(String),
+        type: nonnull(string),
         description: 'A cursor for use in pagination',
       }),
       ...edgeFields(),
     ],
   });
 
-  const connectionType = ObjectType<Connection<T>>({
+  const connectionType = objectType<Connection<T>>({
     name: name + 'Connection',
     description: 'A connection to a list of items.',
     fields: () => [
-      Field({
+      field({
         name: 'pageInfo',
-        type: NonNull(pageInfoType),
+        type: nonnull(pageInfoType),
         description: 'Information to aid in pagination.',
       }),
-      Field({
+      field({
         name: 'edges',
-        type: List(edgeType),
+        type: list(edgeType),
         description: 'A list of edges.',
       }),
       ...connectionFields(),

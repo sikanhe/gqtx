@@ -8,7 +8,7 @@ import {
   Argument,
   SubscriptionObject,
   ArgMap,
-  Ctx,
+  Context,
 } from './types';
 
 export function buildGraphQLSchema<RootSrc>(
@@ -54,7 +54,7 @@ export function toGraphQLArgs<T>(
     graphqlArgs[k] = {
       type: toGraphQLInputType(arg.type, typeMap),
       description: arg.description,
-      defaultValue: arg.kind === 'DefaultArgument' ? arg.default : undefined,
+      defaultValue: arg.default,
     };
   });
 
@@ -68,7 +68,8 @@ export function toGraphQLSubscriptionObject<RootSrc>(
   return new graphql.GraphQLObjectType({
     name: subscriptionObj.name,
     fields: () => {
-      const gqlFieldConfig: graphql.GraphQLFieldConfigMap<RootSrc, Ctx> = {};
+      const gqlFieldConfig: graphql.GraphQLFieldConfigMap<RootSrc, Context> =
+        {};
 
       subscriptionObj.fields().forEach((field) => {
         gqlFieldConfig[field.name] = {
@@ -186,7 +187,8 @@ export function toGraphQLOutputType<Src>(
         isTypeOf: t.isTypeOf,
         fields: () => {
           const fields = t.fieldsFn();
-          const gqlFieldConfig: graphql.GraphQLFieldConfigMap<Src, Ctx> = {};
+          const gqlFieldConfig: graphql.GraphQLFieldConfigMap<Src, Context> =
+            {};
 
           fields.forEach((field) => {
             gqlFieldConfig[field.name] = {
@@ -226,7 +228,7 @@ export function toGraphQLOutputType<Src>(
         description: t.description,
         fields: () => {
           const fields = t.fieldsFn();
-          const result: graphql.GraphQLFieldConfigMap<Src, Ctx> = {};
+          const result: graphql.GraphQLFieldConfigMap<Src, Context> = {};
 
           fields.forEach((field) => {
             result[field.name] = {

@@ -3,7 +3,7 @@ import * as graphql from 'graphql';
 export type PromiseOrValue<T> = Promise<T> | T;
 type Maybe<T> = T | null | undefined;
 
-export interface Ctx {};
+export interface Context {}
 
 export type OutputType<Src> =
   | Scalar<Src>
@@ -77,6 +77,7 @@ export type Argument<Src> = {
   kind: 'Argument';
   type: InputType<Src>;
   description?: string;
+  default?: Exclude<Src, null>;
 };
 
 export type DefaultArgument<Src> = {
@@ -112,7 +113,7 @@ export type Field<Src, Out, TArg extends object = {}> = {
   resolve?: (
     src: Src,
     args: TOfArgMap<ArgMap<TArg>>,
-    ctx: Ctx,
+    ctx: Context,
     info: graphql.GraphQLResolveInfo
   ) => Out | Promise<Out>;
   extensions?: Record<string, any>;
@@ -136,7 +137,7 @@ export type ObjectType<Src> = {
   fieldsFn: () => Array<Field<Src, any, any>>;
   isTypeOf?: (
     src: any,
-    ctx: Ctx,
+    ctx: Context,
     info: graphql.GraphQLResolveInfo
   ) => boolean | Promise<boolean>;
   extensions?: Record<string, any>;
@@ -159,9 +160,9 @@ export type InputObject<Src> = {
   fieldsFn: () => InputFieldMap<Src>;
 };
 
-export type ResolveType<Src, Ctx> = (
+export type ResolveType<Src> = (
   src: Src,
-  ctx: Ctx,
+  ctx: Context,
   info: graphql.GraphQLResolveInfo
 ) => PromiseOrValue<string | undefined>;
 
@@ -171,7 +172,7 @@ export type Interface<Src> = {
   description?: string;
   interfaces: Array<Interface<any>>;
   fieldsFn: () => Array<AbstractField<any>>;
-  resolveType?: ResolveType<Src, Ctx>;
+  resolveType?: ResolveType<Src>;
 };
 
 export type Union<Src> = {
@@ -179,7 +180,7 @@ export type Union<Src> = {
   name: string;
   description?: string;
   types: Array<ObjectType<Src>> | (() => Array<ObjectType<Src>>);
-  resolveType: ResolveType<Src, Ctx>;
+  resolveType: ResolveType<Src>;
 };
 
 export type SubscriptionObject<RootSrc> = {
@@ -198,13 +199,13 @@ export type SubscriptionField<RootSrc, TArg, Out> = {
   subscribe: (
     source: RootSrc,
     args: TOfArgMap<ArgMap<TArg>>,
-    ctx: Ctx,
+    ctx: Context,
     info: graphql.GraphQLResolveInfo
   ) => PromiseOrValue<AsyncIterableIterator<Out>>;
   resolve: (
     source: Out,
     args: TOfArgMap<ArgMap<TArg>>,
-    ctx: Ctx,
+    ctx: Context,
     info: graphql.GraphQLResolveInfo
   ) => PromiseOrValue<Out>;
 };

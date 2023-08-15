@@ -19,7 +19,7 @@ import {
   SubscriptionField,
   SubscriptionObject,
   PromiseOrValue,
-  Ctx,
+  Context,
 } from './types';
 
 type ExtensionsMap = {
@@ -35,7 +35,7 @@ type ResolvePartialMandatory<Src, Arg, Out> = {
   resolve: (
     src: Src,
     args: TOfArgMap<ArgMap<Arg>>,
-    ctx: Ctx,
+    ctx: Context,
     info: graphql.GraphQLResolveInfo
   ) => PromiseOrValue<Out>;
 };
@@ -44,27 +44,37 @@ type ResolvePartialOptional<Src, Arg, Out> = {
   resolve?: (
     src: Src,
     args: TOfArgMap<ArgMap<Arg>>,
-    ctx: Ctx,
+    ctx: Context,
     info: graphql.GraphQLResolveInfo
   ) => PromiseOrValue<Out>;
 };
 
 function builtInScalar<Src>(
   builtInType: graphql.GraphQLScalarType
-): Scalar<Src | null | undefined> {
+): Scalar<Src | null> {
   return {
     kind: 'Scalar',
     builtInType,
   };
 }
 
-export const GqlString = builtInScalar<string>(graphql.GraphQLString);
-export const GqlInt = builtInScalar<number>(graphql.GraphQLInt);
-export const GqlFloat = builtInScalar<number>(graphql.GraphQLFloat);
-export const GqlBoolean = builtInScalar<boolean>(graphql.GraphQLBoolean);
-export const GqlID = builtInScalar<string>(graphql.GraphQLID);
+export const string: Scalar<string | null | undefined> = builtInScalar<string>(
+  graphql.GraphQLString
+);
+export const int: Scalar<number | null | undefined> = builtInScalar<number>(
+  graphql.GraphQLInt
+);
+export const float: Scalar<number | null | undefined> = builtInScalar<number>(
+  graphql.GraphQLFloat
+);
+export const boolean: Scalar<boolean | null | undefined> =
+  builtInScalar<boolean>(graphql.GraphQLBoolean);
 
-export function Scalar<Src>({
+export const id: Scalar<string | null | undefined> = builtInScalar<string>(
+  graphql.GraphQLID
+);
+
+export function scalar<Src>({
   name,
   description,
   serialize,
@@ -89,7 +99,7 @@ export function Scalar<Src>({
   };
 }
 
-export function EnumType<Src>({
+export function enumType<Src>({
   name,
   description,
   values,
@@ -106,22 +116,30 @@ export function EnumType<Src>({
   };
 }
 
-export function Arg<Src>(
-  type: InputType<Src>,
-  description?: string
-): Argument<Src> {
+export function arg<Src, TDefault extends Exclude<Src, null> | undefined>({
+  type,
+  description,
+  default: defaultArg,
+}: {
+  type: InputType<Src>;
+  description?: string;
+  default?: TDefault;
+}): Argument<
+  TDefault extends undefined ? Src : Exclude<Src, null | undefined>
+> {
   return {
     kind: 'Argument',
-    type,
+    type: type as any,
     description,
+    default: defaultArg as any,
   };
 }
 
-export function DefaultArg<Src>(
+export function defaultArg<Src>(
   type: InputType<Src>,
-  defaultArg: Exclude<Src, null | undefined>,
+  defaultArg: Exclude<Src, null>,
   description?: string
-): DefaultArgument<Exclude<Src, null | undefined>> {
+): DefaultArgument<Exclude<Src, null>> {
   return {
     kind: 'DefaultArgument',
     type: type as any,
@@ -130,7 +148,7 @@ export function DefaultArg<Src>(
   };
 }
 
-export function Field<Key extends string, Src, Out, Arg extends object = {}>({
+export function field<Key extends string, Src, Out, Arg extends object = {}>({
   name,
   type,
   resolve,
@@ -139,9 +157,9 @@ export function Field<Key extends string, Src, Out, Arg extends object = {}>({
 }: {
   name: Key;
   type: OutputType<Out>;
-  args?: ArgMap<Arg> | undefined;
-  description?: string | undefined;
-  deprecationReason?: string | undefined;
+  args?: ArgMap<Arg>;
+  description?: string;
+  deprecationReason?: string;
   extensions?: ExtensionsMap['field'];
 } & (Key extends keyof Src
   ? Src[Key] extends Out
@@ -159,7 +177,7 @@ export function Field<Key extends string, Src, Out, Arg extends object = {}>({
   } as Field<Src, any, any>;
 }
 
-export function AbstractField<Out>(opts: {
+export function abstractField<Out>(opts: {
   name: string;
   type: OutputType<Out>;
 
@@ -177,7 +195,7 @@ export function AbstractField<Out>(opts: {
   };
 }
 
-export function ObjectType<Src>({
+export function objectType<Src>({
   name,
   description,
   interfaces = [],
@@ -189,12 +207,12 @@ export function ObjectType<Src>({
   description?: string;
   interfaces?: Array<Interface<any>>;
   fields: (self: OutputType<Src | null>) => Array<Field<Src, any>>;
-  isTypeOf?: (src: any, ctx: Ctx, info: graphql.GraphQLResolveInfo) => boolean;
+  isTypeOf?: (src: any, ctx: Context, info: graphql.GraphQLResolveInfo) => boolean;
   extensions?: ExtensionsMap['objectType'] extends undefined
     ? Record<string, any>
     : ExtensionsMap['objectType'];
-}): ObjectType<Src | null | undefined> {
-  const obj: ObjectType<Src | null | undefined> = {
+}): ObjectType<Src | null> {
+  const obj: ObjectType<Src | null> = {
     kind: 'ObjectType',
     name,
     description,
@@ -208,7 +226,7 @@ export function ObjectType<Src>({
   return obj;
 }
 
-export function InputObjectType<Src>({
+export function inputObjectType<Src>({
   name,
   description,
   fields,
@@ -228,7 +246,7 @@ export function InputObjectType<Src>({
   return inputObj;
 }
 
-export function UnionType<Src>({
+export function unionType<Src>({
   name,
   description,
   types,
@@ -238,17 +256,17 @@ export function UnionType<Src>({
   description?: string;
   types: Array<ObjectType<any>>;
   resolveType: (src: Src) => string;
-}): Union<Src | null | undefined> {
+}): Union<Src | null> {
   return {
     kind: 'Union',
     name,
     description,
     types,
     resolveType,
-  } as Union<Src | null | undefined>;
+  } as Union<Src | null>;
 }
 
-export function InterfaceType<Src>({
+export function interfaceType<Src>({
   name,
   description,
   interfaces = [],
@@ -258,8 +276,8 @@ export function InterfaceType<Src>({
   description?: string;
   interfaces?: Array<Interface<any>>;
   fields: (self: Interface<Src | null>) => Array<AbstractField<any>>;
-}): Interface<Src | null | undefined> {
-  const obj: Interface<Src | null | undefined> = {
+}): Interface<Src | null> {
+  const obj: Interface<Src | null> = {
     kind: 'Interface',
     name,
     description,
@@ -271,43 +289,49 @@ export function InterfaceType<Src>({
   return obj;
 }
 
-export function List<Src>(
+export function list<Src>(
   ofType: OutputType<Src>
-): OutputType<Array<Src> | null | undefined> {
+): OutputType<Array<Src> | null> {
   return {
     kind: 'List',
     ofType: ofType as any,
   };
 }
 
-export function ListInput<Src>(
+export function listInput<Src>(
   ofType: InputType<Src>
-): InputType<Array<Src> | null | undefined> {
+): InputType<Array<Src> | null> {
   return {
     kind: 'ListInput',
     ofType: ofType as any,
   };
 }
 
-export function NonNull<Src>(
+export function nonnull<Src>(
   ofType: OutputType<Src | null | undefined>
-): OutputType<Src> {
+): OutputType<Src>;
+export function nonnull<Src>(ofType: OutputType<Src | null>): OutputType<Src>;
+export function nonnull(ofType: unknown): unknown {
   return {
     kind: 'NonNull',
     ofType: ofType as any,
   };
 }
 
-export function NonNullInput<Src>(
+export function nonnullInput<Src>(
   ofType: InputType<Src | null | undefined>
-): InputType<Src> {
+): InputType<Src>;
+export function nonnullInput<Src>(
+  ofType: InputType<Src | null>
+): InputType<Src>;
+export function nonnullInput(ofType: unknown): unknown {
   return {
     kind: 'NonNullInput',
     ofType: ofType as any,
   };
 }
 
-export function QueryType<RootSrc>({
+export function queryType<RootSrc>({
   name = 'Query',
   fields,
 }: {
@@ -322,7 +346,7 @@ export function QueryType<RootSrc>({
   };
 }
 
-export function MutationType<RootSrc>({
+export function mutationType<RootSrc>({
   name = 'Mutation',
   fields,
 }: {
@@ -337,7 +361,7 @@ export function MutationType<RootSrc>({
   };
 }
 
-export function SubscriptionField<RootSrc, Out, Arg>({
+export function subscriptionField<RootSrc, Out, Arg>({
   name,
   type,
   args = {} as ArgMap<Arg>,
@@ -347,13 +371,13 @@ export function SubscriptionField<RootSrc, Out, Arg>({
 }: {
   name: string;
   type: OutputType<Out>;
-  args?: ArgMap<Arg> | undefined;
-  description?: string | undefined;
-  deprecationReason?: string | undefined;
+  args?: ArgMap<Arg>;
+  description?: string;
+  deprecationReason?: string;
   subscribe: (
     src: RootSrc,
     args: TOfArgMap<ArgMap<Arg>>,
-    ctx: Ctx,
+    ctx: Context,
     info: graphql.GraphQLResolveInfo
   ) => PromiseOrValue<AsyncIterableIterator<Out>>;
 }): SubscriptionField<RootSrc, Arg, Out> {
@@ -369,7 +393,7 @@ export function SubscriptionField<RootSrc, Out, Arg>({
   };
 }
 
-export function SubscriptionType<Src>({
+export function subscriptionType<Src>({
   name = 'Subscription',
   fields,
 }: {

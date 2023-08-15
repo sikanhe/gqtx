@@ -1,22 +1,20 @@
 import type { Interface } from '../src';
 import type { Connection, ConnectionArguments, Edge } from '../src/relay';
 import {
-  GqlID,
-  GqlInt,
-  GqlString,
-  GqlBoolean,
-  List,
-  NonNull,
-  NonNullInput,
-  InterfaceType,
-  AbstractField,
-  Field,
-  ObjectType,
-  QueryType,
-  DefaultArg,
-  Arg,
+  id,
+  int,
+  string,
+  list,
+  nonnull,
+  nonnullInput,
+  interfaceType,
+  abstractField,
+  field,
+  objectType,
+  queryType,
+  arg,
   buildGraphQLSchema,
-  EnumType,
+  enumType,
 } from '../src';
 import {
   connectionArgs,
@@ -27,7 +25,7 @@ import express = require('express');
 import graphqlHTTP = require('express-graphql');
 
 declare module '../src/types' {
-  interface Ctx {
+  interface Context {
     contextContent: string;
   }
 }
@@ -139,7 +137,7 @@ function getCharacter(id: string) {
 }
 
 export function getFriends(character: ICharacter): Array<Promise<ICharacter>> {
-  return character.friends.map(id => getCharacter(id));
+  return character.friends.map((id) => getCharacter(id));
 }
 
 export function getHero(episode: Episode | null): ICharacter {
@@ -159,9 +157,9 @@ export function getDroid(id: string): Droid {
   return droidData[id];
 }
 
-const { nodeInterface, nodeField } = nodeDefinitions(NonNull(GqlID) => getCharacterNonNull(GqlID));
+const { nodeInterface, nodeField } = nodeDefinitions((id) => getCharacter(id));
 
-const episodeEnum = EnumType({
+const episodeEnum = enumType({
   name: 'Episode',
   description: 'One of the films in the Star Wars Trilogy',
   values: [
@@ -171,18 +169,18 @@ const episodeEnum = EnumType({
   ],
 });
 
-const characterInterface: Interface<ICharacter | null | undefined> =
-  InterfaceType<ICharacter>({
+const characterInterface: Interface<ICharacter | null> =
+  interfaceType<ICharacter>({
     name: 'Character',
     interfaces: [],
     fields: () => [
-      AbstractField({ name: 'id', type: NonNull(GqlID) }),
-      AbstractField({ name: 'name', type: NonNull(GqlString) }),
-      AbstractField({
+      abstractField({ name: 'id', type: nonnull(id) }),
+      abstractField({ name: 'name', type: nonnull(string) }),
+      abstractField({
         name: 'appearsIn',
-        type: NonNull(List(NonNull(episodeEnum))),
+        type: nonnull(list(nonnull(episodeEnum))),
       }),
-      AbstractField({ name: 'friends', type: characterConnectionType }),
+      abstractField({ name: 'friends', type: characterConnectionType }),
     ],
   });
 
@@ -190,18 +188,18 @@ const { connectionType: characterConnectionType } =
   connectionDefinitions<ICharacter>({
     nodeType: characterInterface,
     edgeFields: () => [
-      Field({
+      field({
         name: 'friendshipTime',
-        type: GqlString,
+        type: string,
         resolve: (_edge: Edge<ICharacter>) => {
           return 'Yesterday';
         },
       }),
     ],
     connectionFields: () => [
-      Field({
+      field({
         name: 'totalCount',
-        type: GqlInt,
+        type: int,
         resolve: () => {
           return Object.keys(humanData).length + Object.keys(droidData).length;
         },
@@ -253,29 +251,29 @@ const createConnectionFromCharacterArray = (
   };
 };
 
-const humanType = ObjectType<Human>({
+const humanType = objectType<Human>({
   name: 'Human',
   description: 'A humanoid creature in the Star Wars universe.',
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Human',
   fields: () => [
-    Field({
+    field({
       name: 'id',
-      type: NonNull(GqlID),
+      type: nonnull(id),
     }),
-    Field({
+    field({
       name: 'name',
-      type: NonNull(GqlString),
+      type: nonnull(string),
     }),
-    Field({
+    field({
       name: 'appearsIn',
-      type: NonNull(List(NonNull(episodeEnum))),
+      type: nonnull(list(nonnull(episodeEnum))),
     }),
-    Field({
+    field({
       name: 'homePlanet',
-      type: GqlString,
+      type: string,
     }),
-    Field({
+    field({
       name: 'friends',
       type: characterConnectionType,
       args: connectionArgs,
@@ -284,43 +282,43 @@ const humanType = ObjectType<Human>({
         return createConnectionFromCharacterArray(friends, args);
       },
     }),
-    Field({
+    field({
       name: 'secretBackStory',
-      type: GqlString,
+      type: string,
       resolve: () => {
         throw new Error('secretBackstory is secret');
       },
     }),
-    Field({
+    field({
       name: 'optionalField',
-      type: GqlString,
+      type: string,
     }),
   ],
 });
 
-const droidType = ObjectType<Droid>({
+const droidType = objectType<Droid>({
   name: 'Droid',
   description: 'A mechanical creature in the Star Wars universe.',
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Droid',
   fields: () => [
-    Field({
+    field({
       name: 'id',
-      type: NonNull(GqlID),
+      type: nonnull(id),
     }),
-    Field({
+    field({
       name: 'name',
-      type: NonNull(GqlString),
+      type: nonnull(string),
     }),
-    Field({
+    field({
       name: 'appearsIn',
-      type: NonNull(List(NonNull(episodeEnum))),
+      type: nonnull(list(nonnull(episodeEnum))),
     }),
-    Field({
+    field({
       name: 'primaryFunction',
-      type: NonNull(GqlString),
+      type: nonnull(string),
     }),
-    Field({
+    field({
       name: 'friends',
       type: characterConnectionType,
       args: connectionArgs,
@@ -329,9 +327,9 @@ const droidType = ObjectType<Droid>({
         return createConnectionFromCharacterArray(friends, args);
       },
     }),
-    Field({
+    field({
       name: 'secretBackStory',
-      type: GqlString,
+      type: string,
       resolve: () => {
         throw new Error('secretBackstory is secret');
       },
@@ -339,34 +337,34 @@ const droidType = ObjectType<Droid>({
   ],
 });
 
-const query = QueryType({
+const query = queryType({
   fields: () => [
     nodeField,
-    Field({
+    field({
       name: 'hero',
       type: characterInterface,
       args: {
-        episode: DefaultArg(episodeEnum, Episode.EMPIRE),
+        episode: arg({ type: episodeEnum, default: Episode.EMPIRE }),
       },
       resolve: (_, { episode }) => getHero(episode),
     }),
-    Field({
+    field({
       name: 'human',
       type: humanType,
-      args: { id: Arg(NonNullInput(GqlID)) },
+      args: { id: arg({ type: nonnullInput(id) }) },
       resolve: (_, { id }) => getHuman(id),
     }),
-    Field({
+    field({
       name: 'droid',
       type: droidType,
       args: {
-        id: Arg(NonNullInput(GqlString), 'ID of the droid'),
+        id: arg({ type: nonnullInput(string), description: 'ID of the droid' }),
       },
       resolve: (_, { id }) => getDroid(id),
     }),
-    Field({
+    field({
       name: 'contextContent',
-      type: GqlString,
+      type: string,
       resolve: (_, _args, ctx) => ctx.contextContent,
     }),
   ],
