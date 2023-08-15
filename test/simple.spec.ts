@@ -529,10 +529,18 @@ test('can build a schema', async () => {
           __typename
           name
           friends {
-            name
-            appearsIn
-            friends {
-              name
+            pageInfo {
+              endCursor
+              startCursor
+              hasNextPage
+              hasPreviousPage
+            }
+            edges {
+              cursor
+              node {
+                name
+                appearsIn
+              }
             }
           }
         }
@@ -545,7 +553,60 @@ test('can build a schema', async () => {
       "data": {
         "hero": {
           "__typename": "Human",
-          "friends": {},
+          "friends": {
+            "edges": [
+              {
+                "cursor": "1002",
+                "node": {
+                  "appearsIn": [
+                    "NEWHOPE",
+                    "EMPIRE",
+                    "JEDI",
+                  ],
+                  "name": "Han Solo",
+                },
+              },
+              {
+                "cursor": "1003",
+                "node": {
+                  "appearsIn": [
+                    "NEWHOPE",
+                    "EMPIRE",
+                    "JEDI",
+                  ],
+                  "name": "Leia Organa",
+                },
+              },
+              {
+                "cursor": "2000",
+                "node": {
+                  "appearsIn": [
+                    "NEWHOPE",
+                    "EMPIRE",
+                    "JEDI",
+                  ],
+                  "name": "C-3PO",
+                },
+              },
+              {
+                "cursor": "2001",
+                "node": {
+                  "appearsIn": [
+                    "NEWHOPE",
+                    "EMPIRE",
+                    "JEDI",
+                  ],
+                  "name": "R2-D2",
+                },
+              },
+            ],
+            "pageInfo": {
+              "endCursor": "2001",
+              "hasNextPage": false,
+              "hasPreviousPage": false,
+              "startCursor": "1002",
+            },
+          },
           "name": "Luke Skywalker",
         },
         "luke": {
