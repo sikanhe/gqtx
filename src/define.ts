@@ -74,7 +74,7 @@ export const id: Scalar<string | null | undefined> = builtInScalar<string>(
   graphql.GraphQLID
 );
 
-export function scalar<Src>({
+export function scalarType<Src>({
   name,
   description,
   serialize,
