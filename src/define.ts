@@ -116,7 +116,10 @@ export function enumType<Src>({
   };
 }
 
-export function arg<Src, TDefault extends Exclude<Src, null> | undefined>({
+export function arg<
+  Src,
+  TDefault extends Exclude<Src, null | undefined> | undefined
+>({
   type,
   description,
   default: defaultArg,
@@ -125,7 +128,9 @@ export function arg<Src, TDefault extends Exclude<Src, null> | undefined>({
   description?: string;
   default?: TDefault;
 }): Argument<
-  TDefault extends undefined ? Src : Exclude<Src, null | undefined>
+  TDefault extends undefined
+    ? Exclude<Src, undefined>
+    : Exclude<Src, null | undefined>
 > {
   return {
     kind: 'Argument',
