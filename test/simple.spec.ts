@@ -1,4 +1,4 @@
-import { parse, printSchema, subscribe } from 'graphql';
+import { execute, parse, printSchema, subscribe } from 'graphql';
 import * as relay from '../src/relay';
 import {
   abstractField,
@@ -30,7 +30,7 @@ declare module '../src/types' {
   }
 }
 
-test('can build a schema', () => {
+test('can build a schema', async () => {
   enum Episode {
     NEWHOPE = 4,
     EMPIRE = 5,
@@ -58,6 +58,8 @@ test('can build a schema', () => {
   type Character = Human | Droid;
 
   const luke: Human = {
+    // @ts-expect-error
+    __typename: 'Human',
     type: 'Human',
     id: '1000',
     name: 'Luke Skywalker',
@@ -412,104 +414,150 @@ test('can build a schema', () => {
   const printed = printSchema(schema);
 
   expect(printed).toMatchInlineSnapshot(`
-"type Query {
-  node(
-    \\"\\"\\"The ID of an object\\"\\"\\"
-    id: ID!
-  ): Node
-  hero(episode: Episode = EMPIRE): Character
-  human(id: ID!): Human
-  droid(
-    \\"\\"\\"ID of the droid\\"\\"\\"
-    id: String!
-  ): Droid
-  contextContent: String
-  search(human: HumanInput): [SearchResult]
-}
+    "type Query {
+      node(
+        """The ID of an object"""
+        id: ID!
+      ): Node
+      hero(episode: Episode = EMPIRE): Character
+      human(id: ID!): Human
+      droid(
+        """ID of the droid"""
+        id: String!
+      ): Droid
+      contextContent: String
+      search(human: HumanInput): [SearchResult]
+    }
 
-\\"\\"\\"An object with an ID\\"\\"\\"
-interface Node {
-  \\"\\"\\"The id of the object.\\"\\"\\"
-  id: ID!
-}
+    """An object with an ID"""
+    interface Node {
+      """The id of the object."""
+      id: ID!
+    }
 
-interface Character {
-  id: ID!
-  name: String!
-  appearsIn: [Episode!]!
-  friends(first: Int, after: String): CharacterConnection
-}
+    interface Character {
+      id: ID!
+      name: String!
+      appearsIn: [Episode!]!
+      friends(first: Int, after: String): CharacterConnection
+    }
 
-\\"\\"\\"One of the films in the Star Wars Trilogy\\"\\"\\"
-enum Episode {
-  NEWHOPE
-  EMPIRE
-  JEDI
-}
+    """One of the films in the Star Wars Trilogy"""
+    enum Episode {
+      NEWHOPE
+      EMPIRE
+      JEDI
+    }
 
-\\"\\"\\"A connection to a list of items.\\"\\"\\"
-type CharacterConnection {
-  \\"\\"\\"Information to aid in pagination.\\"\\"\\"
-  pageInfo: PageInfo!
+    """A connection to a list of items."""
+    type CharacterConnection {
+      """Information to aid in pagination."""
+      pageInfo: PageInfo!
 
-  \\"\\"\\"A list of edges.\\"\\"\\"
-  edges: [CharacterEdge]
-  totalCount: Int
-}
+      """A list of edges."""
+      edges: [CharacterEdge]
+      totalCount: Int
+    }
 
-\\"\\"\\"Information about pagination in a connection.\\"\\"\\"
-type PageInfo {
-  \\"\\"\\"When paginating forwards, are there more items?\\"\\"\\"
-  hasNextPage: Boolean!
+    """Information about pagination in a connection."""
+    type PageInfo {
+      """When paginating forwards, are there more items?"""
+      hasNextPage: Boolean!
 
-  \\"\\"\\"When paginating backwards, are there more items?\\"\\"\\"
-  hasPreviousPage: Boolean!
+      """When paginating backwards, are there more items?"""
+      hasPreviousPage: Boolean!
 
-  \\"\\"\\"When paginating backwards, the cursor to continue.\\"\\"\\"
-  startCursor: String
+      """When paginating backwards, the cursor to continue."""
+      startCursor: String
 
-  \\"\\"\\"When paginating forwards, the cursor to continue.\\"\\"\\"
-  endCursor: String
-}
+      """When paginating forwards, the cursor to continue."""
+      endCursor: String
+    }
 
-\\"\\"\\"An edge in a connection.\\"\\"\\"
-type CharacterEdge {
-  \\"\\"\\"The item at the end of the edge\\"\\"\\"
-  node: Character!
+    """An edge in a connection."""
+    type CharacterEdge {
+      """The item at the end of the edge"""
+      node: Character!
 
-  \\"\\"\\"A cursor for use in pagination\\"\\"\\"
-  cursor: String!
-  friendshipTime: String
-}
+      """A cursor for use in pagination"""
+      cursor: String!
+      friendshipTime: String
+    }
 
-\\"\\"\\"A humanoid creature in the Star Wars universe.\\"\\"\\"
-type Human implements Node & Character {
-  id: ID!
-  name: String!
-  appearsIn: [Episode!]!
-  homePlanet: String
-  friends(after: String, first: Int, before: String, last: Int): CharacterConnection
-  secretBackStory: String
-}
+    """A humanoid creature in the Star Wars universe."""
+    type Human implements Node & Character {
+      id: ID!
+      name: String!
+      appearsIn: [Episode!]!
+      homePlanet: String
+      friends(after: String, first: Int, before: String, last: Int): CharacterConnection
+      secretBackStory: String
+    }
 
-\\"\\"\\"A mechanical creature in the Star Wars universe.\\"\\"\\"
-type Droid implements Node & Character {
-  id: ID!
-  name: String!
-  appearsIn: [Episode!]!
-  primaryFunction: String!
-  friends(after: String, first: Int, before: String, last: Int): CharacterConnection
-  secretBackStory: String
-}
+    """A mechanical creature in the Star Wars universe."""
+    type Droid implements Node & Character {
+      id: ID!
+      name: String!
+      appearsIn: [Episode!]!
+      primaryFunction: String!
+      friends(after: String, first: Int, before: String, last: Int): CharacterConnection
+      secretBackStory: String
+    }
 
-\\"\\"\\"Either droid or human\\"\\"\\"
-union SearchResult = Human | Droid
+    """Either droid or human"""
+    union SearchResult = Human | Droid
 
-\\"\\"\\"I just want to test input types\\"\\"\\"
-input HumanInput {
-  unused: String!
-}"
-`);
+    """I just want to test input types"""
+    input HumanInput {
+      unused: String!
+    }"
+  `);
+
+  const result = await execute({
+    schema,
+    document: parse(/* GraphQL */ `
+      query {
+        node(id: "1000") {
+          __typename
+        }
+
+        luke: human(id: "1000") {
+          __typename
+          name
+        }
+        hero {
+          __typename
+          name
+          friends {
+            name
+            appearsIn
+            friends {
+              name
+            }
+          }
+        }
+      }
+    `),
+  });
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "data": {
+        "hero": {
+          "__typename": "Human",
+          "friends": {},
+          "name": "Luke Skywalker",
+        },
+        "luke": {
+          "__typename": "Human",
+          "name": "Luke Skywalker",
+        },
+        "node": {
+          "__typename": "Human",
+        },
+      },
+    }
+  `);
 });
 
 test('Subscription work properly', async () => {
@@ -551,29 +599,29 @@ test('Subscription work properly', async () => {
     values.push(value);
   }
   expect(values).toMatchInlineSnapshot(`
-Array [
-  Object {
-    "data": Object {
-      "greetings": "hi",
-    },
-  },
-  Object {
-    "data": Object {
-      "greetings": "ola",
-    },
-  },
-  Object {
-    "data": Object {
-      "greetings": "sup",
-    },
-  },
-  Object {
-    "data": Object {
-      "greetings": "hello",
-    },
-  },
-]
-`);
+    [
+      {
+        "data": {
+          "greetings": "hi",
+        },
+      },
+      {
+        "data": {
+          "greetings": "ola",
+        },
+      },
+      {
+        "data": {
+          "greetings": "sup",
+        },
+      },
+      {
+        "data": {
+          "greetings": "hello",
+        },
+      },
+    ]
+  `);
 });
 
 function assertAsyncIterable(

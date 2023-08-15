@@ -9,6 +9,8 @@ import {
   SubscriptionObject,
   ArgMap,
   Context,
+  Union,
+  Interface,
 } from './types';
 
 export function buildGraphQLSchema<RootSrc>(
@@ -216,9 +218,23 @@ export function toGraphQLOutputType<Src>(
         name: t.name,
         description: t.description,
         types: types.map((t) => toGraphQLOutputType(t, typeMap)) as any,
-        resolveType: async (src, ctx, info) => {
-          return t.resolveType(src, ctx, info);
-        },
+        resolveType: t.resolveType
+          ? async (src, ctx, info, abstractType) => {
+              let ourType;
+              for (const [t, graphqlType] of typeMap.entries()) {
+                if (graphqlType === abstractType) {
+                  ourType = t;
+                  break;
+                }
+              }
+              return t.resolveType?.(
+                src,
+                ctx,
+                info,
+                ourType as Union<any> | Interface<any>
+              );
+            }
+          : undefined,
       });
 
       typeMap.set(t, union);
@@ -246,9 +262,23 @@ export function toGraphQLOutputType<Src>(
           ? t.interfaces()
           : t.interfaces
         ).map((intf) => toGraphQLOutputType(intf, typeMap)) as any,
-        resolveType: async (src, ctx, info) => {
-          return t.resolveType?.(src, ctx, info);
-        },
+        resolveType: t.resolveType
+          ? async (src, ctx, info, abstractType) => {
+              let ourType;
+              for (const [t, graphqlType] of typeMap.entries()) {
+                if (graphqlType === abstractType) {
+                  ourType = t;
+                  break;
+                }
+              }
+              return t.resolveType?.(
+                src,
+                ctx,
+                info,
+                ourType as Union<any> | Interface<any>
+              );
+            }
+          : undefined,
       });
 
       typeMap.set(t, intf);

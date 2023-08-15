@@ -163,7 +163,8 @@ export type InputObject<Src> = {
 export type ResolveType<Src> = (
   src: Src,
   ctx: Context,
-  info: graphql.GraphQLResolveInfo
+  info: graphql.GraphQLResolveInfo,
+  abstractType: Union<Src> | Interface<Src>
 ) => PromiseOrValue<string | undefined>;
 
 export type Interface<Src> = {

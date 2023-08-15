@@ -93,8 +93,7 @@ export function nodeDefinitions<Src>(
     args: {
       id: arg({ type: nonnullInput(id), description: 'The ID of an object' }),
     },
-    // TODO: figure out the as any
-    resolve: (_, { id }, context, info) => idFetcher(id, context, info) as any,
+    resolve: (_, { id }, context, info) => idFetcher(id, context, info),
   });
 
   return { nodeInterface, nodeField };
@@ -160,8 +159,6 @@ export function connectionDefinitions<T>(
     name: name + 'Edge',
     description: 'An edge in a connection.',
     fields: () => [
-      // TODO: figure out how to fix the typings
-      // @ts-ignore
       field({
         name: 'node',
         type: nonnull(nodeType),
