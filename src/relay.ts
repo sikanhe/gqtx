@@ -64,8 +64,8 @@ export type ConnectionArguments = TOfArgMap<{
 }>;
 
 export type RelayConnectionDefinitions<T> = {
-  edgeType: ObjectType<Edge<T>>;
-  connectionType: ObjectType<Connection<T>>;
+  edgeType: ObjectType<Edge<T> | null>;
+  connectionType: ObjectType<Connection<T> | null>;
 };
 
 export function nodeDefinitions<Src>(
