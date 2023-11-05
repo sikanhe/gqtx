@@ -99,12 +99,12 @@ export function nodeDefinitions<Src>(
   return { nodeInterface, nodeField };
 }
 
-const forwardConnectionArgs = {
+export const forwardConnectionArgs = {
   after: arg({ type: string }),
   first: arg({ type: int }),
 };
 
-const backwardConnectionArgs = {
+export const backwardConnectionArgs = {
   before: arg({ type: string }),
   last: arg({ type: int }),
 };
