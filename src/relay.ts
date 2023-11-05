@@ -161,7 +161,7 @@ export function connectionDefinitions<T>(
     fields: () => [
       field({
         name: 'node',
-        type: nonnull(nodeType),
+        type: nodeType,
         description: 'The item at the end of the edge',
       }),
       field({
