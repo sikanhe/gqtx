@@ -477,7 +477,7 @@ test('can build a schema', async () => {
     """An edge in a connection."""
     type CharacterEdge {
       """The item at the end of the edge"""
-      node: Character!
+      node: Character
 
       """A cursor for use in pagination"""
       cursor: String!
