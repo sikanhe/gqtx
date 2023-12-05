@@ -1,18 +1,4 @@
-import {
-  arg,
-  field,
-  mutationType,
-  objectType,
-  queryType,
-  subscriptionField,
-  subscriptionType,
-  string,
-  id,
-  list,
-  boolean,
-  nonnull,
-  ObjectType,
-} from '../src';
+import { Gql, ObjectType } from '../src';
 
 declare module '../src/types' {
   interface Context {
@@ -29,36 +15,36 @@ declare module '../src/types' {
     friendIds: Array<string>;
   };
 
-  objectType<Human>({
+  Gql.Object<Human>({
     name: 'Human',
     fields: () => [
-      field({
+      Gql.Field({
         name: 'id',
-        type: string,
+        type: Gql.String,
       }),
       // @ts-expect-error: type Human does not have a name property, thus resolve function must be declared
-      field({
+      Gql.Field({
         name: 'name',
-        type: string,
+        type: Gql.String,
       }),
-      field({
+      Gql.Field({
         name: 'name',
-        type: string,
+        type: Gql.String,
         resolve: () => 'Anonym',
       }),
       // @ts-expect-error: type Human does have age property but it is not of type String, thus resolve function must be declared
-      field({
+      Gql.Field({
         name: 'age',
-        type: string,
+        type: Gql.String,
       }),
-      field({
+      Gql.Field({
         name: 'age',
-        type: string,
+        type: Gql.String,
         resolve: (source) => String(source.age),
       }),
-      field({
+      Gql.Field({
         name: 'friendIds',
-        type: list(id),
+        type: Gql.List(Gql.ID),
       }),
     ],
   });
@@ -73,33 +59,33 @@ declare module '../src/types' {
     friendIds: Array<string>;
   };
 
-  const GraphQLHuman = objectType<Human>({
+  const GraphQLHuman = Gql.Object<Human>({
     name: 'Human',
     fields: () => [
-      field({
+      Gql.Field({
         name: 'id',
-        type: string,
+        type: Gql.String,
       }),
     ],
   });
 
-  objectType<Array<Human>>({
+  Gql.Object<Array<Human>>({
     name: 'HumanConnection',
     fields: () => [
-      field({
+      Gql.Field({
         name: 'edges',
-        type: list(nonnull(GraphQLHuman)),
+        type: Gql.List(Gql.NonNull(GraphQLHuman)),
         resolve: (value) => value,
       }),
     ],
   });
 
-  objectType<Array<Human>>({
+  Gql.Object<Array<Human>>({
     name: 'HumanConnection',
     fields: () => [
-      field({
+      Gql.Field({
         name: 'edges',
-        type: nonnull(list(nonnull(GraphQLHuman))),
+        type: Gql.NonNull(Gql.List(Gql.NonNull(GraphQLHuman))),
         resolve: (value) => value,
       }),
     ],
@@ -115,12 +101,12 @@ declare module '../src/types' {
   };
 
   // @ts-expect-error: 'GraphQLUserType' implicitly has type 'any' because it does not have a type annotation and is referenced directly or indirectly in its own initializer.
-  const GraphQLUserType = objectType<User>({
+  const GraphQLUserType = Gql.Object<User>({
     name: 'User',
     fields: () => [
-      field({ name: 'id', type: nonnull(id) }),
-      field({ name: 'name', type: nonnull(string) }),
-      field({
+      Gql.Field({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+      Gql.Field({ name: 'name', type: Gql.NonNull(Gql.String) }),
+      Gql.Field({
         name: 'parent',
         type: GraphQLUserType,
         resolve: () => {
@@ -130,62 +116,60 @@ declare module '../src/types' {
     ],
   });
 
-  const GraphQLUserType1: ObjectType<User | null> =
-    objectType<User>({
-      name: 'User',
-      fields: () => [
-        field({ name: 'id', type: nonnull(id) }),
-        field({ name: 'name', type: nonnull(string) }),
-        field({
-          name: 'parent',
-          type: GraphQLUserType1,
-          // @ts-expect-error: Type 'number' is not assignable to type 'User | Promise<User | null> | null'
-          resolve: () => {
-            return 5;
-          },
-        }),
-      ],
-    });
+  const GraphQLUserType1: ObjectType<User | null> = Gql.Object<User>({
+    name: 'User',
+    fields: () => [
+      Gql.Field({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+      Gql.Field({ name: 'name', type: Gql.NonNull(Gql.String) }),
+      Gql.Field({
+        name: 'parent',
+        type: GraphQLUserType1,
+        // @ts-expect-error: Type 'number' is not assignable to type 'User | Promise<User | null> | null'
+        resolve: () => {
+          return 5;
+        },
+      }),
+    ],
+  });
 
-  const GraphQLUserType2: ObjectType<User | null> =
-    objectType<User>({
-      name: 'User',
-      fields: () => [
-        field({ name: 'id', type: nonnull(id) }),
-        field({ name: 'name', type: nonnull(string) }),
-        field({
-          name: 'parent',
-          type: GraphQLUserType2,
-          resolve: () => {
-            return { id: '1', name: 'Peter' };
-          },
-        }),
-      ],
-    });
+  const GraphQLUserType2: ObjectType<User | null> = Gql.Object<User>({
+    name: 'User',
+    fields: () => [
+      Gql.Field({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+      Gql.Field({ name: 'name', type: Gql.NonNull(Gql.String) }),
+      Gql.Field({
+        name: 'parent',
+        type: GraphQLUserType2,
+        resolve: () => {
+          return { id: '1', name: 'Peter' };
+        },
+      }),
+    ],
+  });
 }
 
 {
   // Subscription API Test
-  subscriptionField({
+  Gql.SubscriptionField({
     name: 'foo',
-    type: boolean,
+    type: Gql.Boolean,
     subscribe: async function* () {
       yield true;
     },
   });
 
-  subscriptionField({
+  Gql.SubscriptionField({
     name: 'foo',
-    type: boolean,
+    type: Gql.Boolean,
     // @ts-expect-error: subscribe must return number not object with number property
     subscribe: async function* () {
       yield { foo: true };
     },
   });
 
-  subscriptionField({
+  Gql.SubscriptionField({
     name: 'foo',
-    type: boolean,
+    type: Gql.Boolean,
     // @ts-expect-error: subscribe must return number not object with string property
     subscribe: async function* () {
       yield { foo: 'true' };
@@ -195,11 +179,11 @@ declare module '../src/types' {
 
 {
   // arguments
-  field({
+  Gql.Field({
     name: 'foo',
-    type: boolean,
+    type: Gql.Boolean,
     args: {
-      foo: arg({ type: boolean }),
+      foo: Gql.Arg({ type: Gql.Boolean }),
     },
     // args.foo should be boolean | null | undefined
     resolve: (_, args) => {
@@ -226,25 +210,25 @@ declare module '../src/types' {
 
 {
   // require at least one field
-  objectType({
+  Gql.Object({
     name: 'Foo',
     // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
     fields: () => [],
   });
 
-  mutationType({
+  Gql.Mutation({
     name: 'Foo',
     // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
     fields: () => [],
   });
 
-  queryType({
+  Gql.Query({
     name: 'Foo',
     // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
     fields: () => [],
   });
 
-  subscriptionType({
+  Gql.Subscription({
     name: 'Foo',
     // @ts-expect-error: Source has 0 element(s) but target requires 1.ts(2322)
     fields: () => [],

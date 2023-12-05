@@ -1,21 +1,6 @@
 import type { Interface } from '../src';
 import type { Connection, ConnectionArguments, Edge } from '../src/relay';
-import {
-  id,
-  int,
-  string,
-  list,
-  nonnull,
-  nonnullInput,
-  interfaceType,
-  abstractField,
-  field,
-  objectType,
-  queryType,
-  arg,
-  buildGraphQLSchema,
-  enumType,
-} from '../src';
+import { buildGraphQLSchema, Gql } from '../src';
 import {
   connectionArgs,
   connectionDefinitions,
@@ -159,7 +144,7 @@ export function getDroid(id: string): Droid {
 
 const { nodeInterface, nodeField } = nodeDefinitions((id) => getCharacter(id));
 
-const episodeEnum = enumType({
+const episodeEnum = Gql.Enum({
   name: 'Episode',
   description: 'One of the films in the Star Wars Trilogy',
   values: [
@@ -170,17 +155,17 @@ const episodeEnum = enumType({
 });
 
 const characterInterface: Interface<ICharacter | null> =
-  interfaceType<ICharacter>({
+  Gql.InterfaceType<ICharacter>({
     name: 'Character',
     interfaces: [],
     fields: () => [
-      abstractField({ name: 'id', type: nonnull(id) }),
-      abstractField({ name: 'name', type: nonnull(string) }),
-      abstractField({
+      Gql.AbstractField({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+      Gql.AbstractField({ name: 'name', type: Gql.NonNull(Gql.String) }),
+      Gql.AbstractField({
         name: 'appearsIn',
-        type: nonnull(list(nonnull(episodeEnum))),
+        type: Gql.NonNull(Gql.List(Gql.NonNull(episodeEnum))),
       }),
-      abstractField({ name: 'friends', type: characterConnectionType }),
+      Gql.AbstractField({ name: 'friends', type: characterConnectionType }),
     ],
   });
 
@@ -188,18 +173,18 @@ const { connectionType: characterConnectionType } =
   connectionDefinitions<ICharacter>({
     nodeType: characterInterface,
     edgeFields: () => [
-      field({
+      Gql.Field({
         name: 'friendshipTime',
-        type: string,
+        type: Gql.String,
         resolve: (_edge: Edge<ICharacter>) => {
           return 'Yesterday';
         },
       }),
     ],
     connectionFields: () => [
-      field({
+      Gql.Field({
         name: 'totalCount',
-        type: int,
+        type: Gql.Int,
         resolve: () => {
           return Object.keys(humanData).length + Object.keys(droidData).length;
         },
@@ -251,29 +236,29 @@ const createConnectionFromCharacterArray = (
   };
 };
 
-const humanType = objectType<Human>({
+const humanType = Gql.Object<Human>({
   name: 'Human',
   description: 'A humanoid creature in the Star Wars universe.',
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Human',
   fields: () => [
-    field({
+    Gql.Field({
       name: 'id',
-      type: nonnull(id),
+      type: Gql.NonNull(Gql.ID),
     }),
-    field({
+    Gql.Field({
       name: 'name',
-      type: nonnull(string),
+      type: Gql.NonNull(Gql.String),
     }),
-    field({
+    Gql.Field({
       name: 'appearsIn',
-      type: nonnull(list(nonnull(episodeEnum))),
+      type: Gql.NonNull(Gql.List(Gql.NonNull(episodeEnum))),
     }),
-    field({
+    Gql.Field({
       name: 'homePlanet',
-      type: string,
+      type: Gql.String,
     }),
-    field({
+    Gql.Field({
       name: 'friends',
       type: characterConnectionType,
       args: connectionArgs,
@@ -282,43 +267,43 @@ const humanType = objectType<Human>({
         return createConnectionFromCharacterArray(friends, args);
       },
     }),
-    field({
+    Gql.Field({
       name: 'secretBackStory',
-      type: string,
+      type: Gql.String,
       resolve: () => {
         throw new Error('secretBackstory is secret');
       },
     }),
-    field({
+    Gql.Field({
       name: 'optionalField',
-      type: string,
+      type: Gql.String,
     }),
   ],
 });
 
-const droidType = objectType<Droid>({
+const droidType = Gql.Object<Droid>({
   name: 'Droid',
   description: 'A mechanical creature in the Star Wars universe.',
   interfaces: [nodeInterface, characterInterface],
   isTypeOf: (thing: ICharacter) => thing.type === 'Droid',
   fields: () => [
-    field({
+    Gql.Field({
       name: 'id',
-      type: nonnull(id),
+      type: Gql.NonNull(Gql.ID),
     }),
-    field({
+    Gql.Field({
       name: 'name',
-      type: nonnull(string),
+      type: Gql.NonNull(Gql.String),
     }),
-    field({
+    Gql.Field({
       name: 'appearsIn',
-      type: nonnull(list(nonnull(episodeEnum))),
+      type: Gql.NonNull(Gql.List(Gql.NonNull(episodeEnum))),
     }),
-    field({
+    Gql.Field({
       name: 'primaryFunction',
-      type: nonnull(string),
+      type: Gql.NonNull(Gql.String),
     }),
-    field({
+    Gql.Field({
       name: 'friends',
       type: characterConnectionType,
       args: connectionArgs,
@@ -327,9 +312,9 @@ const droidType = objectType<Droid>({
         return createConnectionFromCharacterArray(friends, args);
       },
     }),
-    field({
+    Gql.Field({
       name: 'secretBackStory',
-      type: string,
+      type: Gql.String,
       resolve: () => {
         throw new Error('secretBackstory is secret');
       },
@@ -337,34 +322,37 @@ const droidType = objectType<Droid>({
   ],
 });
 
-const query = queryType({
+const query = Gql.Query({
   fields: () => [
     nodeField,
-    field({
+    Gql.Field({
       name: 'hero',
       type: characterInterface,
       args: {
-        episode: arg({ type: episodeEnum, default: Episode.EMPIRE }),
+        episode: Gql.Arg({ type: episodeEnum, default: Episode.EMPIRE }),
       },
       resolve: (_, { episode }) => getHero(episode),
     }),
-    field({
+    Gql.Field({
       name: 'human',
       type: humanType,
-      args: { id: arg({ type: nonnullInput(id) }) },
+      args: { id: Gql.Arg({ type: Gql.NonNullInput(Gql.ID) }) },
       resolve: (_, { id }) => getHuman(id),
     }),
-    field({
+    Gql.Field({
       name: 'droid',
       type: droidType,
       args: {
-        id: arg({ type: nonnullInput(string), description: 'ID of the droid' }),
+        id: Gql.Arg({
+          type: Gql.NonNullInput(Gql.String),
+          description: 'ID of the droid',
+        }),
       },
       resolve: (_, { id }) => getDroid(id),
     }),
-    field({
+    Gql.Field({
       name: 'contextContent',
-      type: string,
+      type: Gql.String,
       resolve: (_, _args, ctx) => ctx.contextContent,
     }),
   ],

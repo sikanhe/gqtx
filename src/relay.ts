@@ -1,25 +1,12 @@
 import type {
-  ObjectType,
   Field,
   Interface,
   Argument,
   TOfArgMap,
   Context,
+  ObjectType,
 } from './types';
-import {
-  id,
-  int,
-  list,
-  string,
-  boolean,
-  nonnull,
-  nonnullInput,
-  abstractField,
-  arg,
-  field,
-  interfaceType,
-  objectType,
-} from './define';
+import { Gql } from './define';
 import { GraphQLResolveInfo } from 'graphql';
 
 // Adapted from
@@ -75,23 +62,26 @@ export function nodeDefinitions<Src>(
     info: GraphQLResolveInfo
   ) => Promise<Src> | Src
 ) {
-  const nodeInterface = interfaceType({
+  const nodeInterface = Gql.InterfaceType({
     name: 'Node',
     description: 'An object with an ID',
     fields: () => [
-      abstractField({
+      Gql.AbstractField({
         name: 'id',
-        type: nonnull(id),
+        type: Gql.NonNull(Gql.ID),
         description: 'The id of the object.',
       }),
     ],
   });
 
-  const nodeField = field({
+  const nodeField = Gql.Field({
     name: 'node',
     type: nodeInterface,
     args: {
-      id: arg({ type: nonnullInput(id), description: 'The ID of an object' }),
+      id: Gql.Arg({
+        type: Gql.NonNullInput(Gql.ID),
+        description: 'The ID of an object',
+      }),
     },
     resolve: (_, { id }, context, info) => idFetcher(id, context, info),
   });
@@ -100,13 +90,13 @@ export function nodeDefinitions<Src>(
 }
 
 export const forwardConnectionArgs = {
-  after: arg({ type: string }),
-  first: arg({ type: int }),
+  after: Gql.Arg({ type: Gql.String }),
+  first: Gql.Arg({ type: Gql.Int }),
 };
 
 export const backwardConnectionArgs = {
-  before: arg({ type: string }),
-  last: arg({ type: int }),
+  before: Gql.Arg({ type: Gql.String }),
+  last: Gql.Arg({ type: Gql.Int }),
 };
 
 export const connectionArgs = {
@@ -114,35 +104,35 @@ export const connectionArgs = {
   ...backwardConnectionArgs,
 };
 
-const pageInfoType = objectType<PageInfo>({
+const pageInfoType = Gql.Object<PageInfo>({
   name: 'PageInfo',
   description: 'Information about pagination in a connection.',
   fields: () => [
-    field({
+    Gql.Field({
       name: 'hasNextPage',
-      type: nonnull(boolean),
+      type: Gql.NonNull(Gql.Boolean),
       description: 'When paginating forwards, are there more items?',
     }),
-    field({
+    Gql.Field({
       name: 'hasPreviousPage',
-      type: nonnull(boolean),
+      type: Gql.NonNull(Gql.Boolean),
       description: 'When paginating backwards, are there more items?',
     }),
-    field({
+    Gql.Field({
       name: 'startCursor',
-      type: string,
+      type: Gql.String,
       description: 'When paginating backwards, the cursor to continue.',
     }),
-    field({
+    Gql.Field({
       name: 'endCursor',
-      type: string,
+      type: Gql.String,
       description: 'When paginating forwards, the cursor to continue.',
     }),
   ],
 });
 
 /**
- * Returns ObjectTypes for a connection with the given name,
+ * Returns Objects for a connection with the given name,
  * and whose nodes are of the specified type.
  */
 export function connectionDefinitions<T>(
@@ -155,36 +145,36 @@ export function connectionDefinitions<T>(
   const edgeFields = config.edgeFields || (() => []);
   const connectionFields = config.connectionFields || (() => []);
 
-  const edgeType = objectType<Edge<T>>({
+  const edgeType = Gql.Object<Edge<T>>({
     name: name + 'Edge',
     description: 'An edge in a connection.',
     fields: () => [
-      field({
+      Gql.Field({
         name: 'node',
         type: nodeType,
         description: 'The item at the end of the edge',
       }),
-      field({
+      Gql.Field({
         name: 'cursor',
-        type: nonnull(string),
+        type: Gql.NonNull(Gql.String),
         description: 'A cursor for use in pagination',
       }),
       ...edgeFields(),
     ],
   });
 
-  const connectionType = objectType<Connection<T>>({
+  const connectionType = Gql.Object<Connection<T>>({
     name: name + 'Connection',
     description: 'A connection to a list of items.',
     fields: () => [
-      field({
+      Gql.Field({
         name: 'pageInfo',
-        type: nonnull(pageInfoType),
+        type: Gql.NonNull(pageInfoType),
         description: 'Information to aid in pagination.',
       }),
-      field({
+      Gql.Field({
         name: 'edges',
-        type: list(edgeType),
+        type: Gql.List(edgeType),
         description: 'A list of edges.',
       }),
       ...connectionFields(),

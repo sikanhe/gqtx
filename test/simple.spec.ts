@@ -1,26 +1,6 @@
 import { execute, parse, printSchema, subscribe } from 'graphql';
 import * as relay from '../src/relay';
-import {
-  abstractField,
-  arg,
-  defaultArg,
-  field,
-  id,
-  int,
-  string,
-  inputObjectType,
-  interfaceType,
-  list,
-  nonnull,
-  nonnullInput,
-  objectType,
-  queryType,
-  unionType,
-  enumType,
-  subscriptionType,
-  subscriptionField,
-  boolean,
-} from '../src/define';
+import { Gql } from '../src/define';
 import { Interface } from '../src/types';
 import { buildGraphQLSchema } from '../src/build';
 
@@ -163,7 +143,7 @@ test('can build a schema', async () => {
     getCharacter(id)
   );
 
-  const episodeEnum = enumType({
+  const episodeEnum = Gql.Enum({
     name: 'Episode',
     description: 'One of the films in the Star Wars Trilogy',
     values: [
@@ -174,22 +154,22 @@ test('can build a schema', async () => {
   });
 
   const characterInterface: Interface<Character | null> =
-    interfaceType<Character>({
+    Gql.InterfaceType<Character>({
       name: 'Character',
       interfaces: [],
       fields: () => [
-        abstractField({ name: 'id', type: nonnull(id) }),
-        abstractField({ name: 'name', type: nonnull(string) }),
-        abstractField({
+        Gql.AbstractField({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+        Gql.AbstractField({ name: 'name', type: Gql.NonNull(Gql.String) }),
+        Gql.AbstractField({
           name: 'appearsIn',
-          type: nonnull(list(nonnull(episodeEnum))),
+          type: Gql.NonNull(Gql.List(Gql.NonNull(episodeEnum))),
         }),
-        abstractField({
+        Gql.AbstractField({
           name: 'friends',
           type: characterConnectionType,
           args: {
-            first: arg({ type: int }),
-            after: arg({ type: string }),
+            first: Gql.Arg({ type: Gql.Int }),
+            after: Gql.Arg({ type: Gql.String }),
           },
         }),
       ],
@@ -199,18 +179,18 @@ test('can build a schema', async () => {
     relay.connectionDefinitions<Character>({
       nodeType: characterInterface,
       edgeFields: () => [
-        field({
+        Gql.Field({
           name: 'friendshipTime',
-          type: string,
+          type: Gql.String,
           resolve: (_edge) => {
             return 'Yesterday';
           },
         }),
       ],
       connectionFields: () => [
-        field({
+        Gql.Field({
           name: 'totalCount',
-          type: int,
+          type: Gql.Int,
           resolve: () => {
             return (
               Object.keys(humanData).length + Object.keys(droidData).length
@@ -268,20 +248,20 @@ test('can build a schema', async () => {
     return input != null;
   }
 
-  const humanType = objectType<Human>({
+  const humanType = Gql.Object<Human>({
     name: 'Human',
     description: 'A humanoid creature in the Star Wars universe.',
     interfaces: [nodeInterface, characterInterface],
     isTypeOf: (thing) => thing.type === 'Human',
     fields: () => [
-      field({ name: 'id', type: nonnull(id) }),
-      field({ name: 'name', type: nonnull(string) }),
-      field({
+      Gql.Field({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+      Gql.Field({ name: 'name', type: Gql.NonNull(Gql.String) }),
+      Gql.Field({
         name: 'appearsIn',
-        type: nonnull(list(nonnull(episodeEnum))),
+        type: Gql.NonNull(Gql.List(Gql.NonNull(episodeEnum))),
       }),
-      field({ name: 'homePlanet', type: string }),
-      field({
+      Gql.Field({ name: 'homePlanet', type: Gql.String }),
+      Gql.Field({
         name: 'friends',
         type: characterConnectionType,
         args: relay.connectionArgs,
@@ -293,9 +273,9 @@ test('can build a schema', async () => {
           );
         },
       }),
-      field({
+      Gql.Field({
         name: 'secretBackStory',
-        type: string,
+        type: Gql.String,
         resolve: () => {
           throw new Error('secretBackstory is secret');
         },
@@ -303,20 +283,20 @@ test('can build a schema', async () => {
     ],
   });
 
-  const droidType = objectType<Droid>({
+  const droidType = Gql.Object<Droid>({
     name: 'Droid',
     description: 'A mechanical creature in the Star Wars universe.',
     interfaces: [nodeInterface, characterInterface],
     isTypeOf: (thing) => thing.type === 'Droid',
     fields: () => [
-      field({ name: 'id', type: nonnull(id) }),
-      field({ name: 'name', type: nonnull(string) }),
-      field({
+      Gql.Field({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+      Gql.Field({ name: 'name', type: Gql.NonNull(Gql.String) }),
+      Gql.Field({
         name: 'appearsIn',
-        type: nonnull(list(nonnull(episodeEnum))),
+        type: Gql.NonNull(Gql.List(Gql.NonNull(episodeEnum))),
       }),
-      field({ name: 'primaryFunction', type: nonnull(string) }),
-      field({
+      Gql.Field({ name: 'primaryFunction', type: Gql.NonNull(Gql.String) }),
+      Gql.Field({
         name: 'friends',
         type: characterConnectionType,
         args: relay.connectionArgs,
@@ -328,9 +308,9 @@ test('can build a schema', async () => {
           );
         },
       }),
-      field({
+      Gql.Field({
         name: 'secretBackStory',
-        type: string,
+        type: Gql.String,
         resolve: () => {
           throw new Error('secretBackstory is secret');
         },
@@ -338,7 +318,7 @@ test('can build a schema', async () => {
     ],
   });
 
-  const searchResultType = unionType<Droid | Human>({
+  const searchResultType = Gql.Union<Droid | Human>({
     name: 'SearchResult',
     description: 'Either droid or human',
     resolveType: (src) => {
@@ -352,52 +332,52 @@ test('can build a schema', async () => {
     types: [humanType, droidType],
   });
 
-  const humanInputType = inputObjectType({
+  const humanInputType = Gql.InputObject({
     name: 'HumanInput',
     description: 'I just want to test input types',
     fields: () => ({
-      unused: { type: nonnullInput(string) },
+      unused: { type: Gql.NonNullInput(Gql.String) },
     }),
   });
 
-  const query = queryType({
+  const query = Gql.Query({
     fields: () => [
       nodeField,
-      field({
+      Gql.Field({
         name: 'hero',
         type: characterInterface,
         args: {
-          episode: defaultArg(episodeEnum, Episode.EMPIRE),
+          episode: Gql.DefaultArg(episodeEnum, Episode.EMPIRE),
         },
         resolve: (_, { episode }) => getHero(episode),
       }),
-      field({
+      Gql.Field({
         name: 'human',
         type: humanType,
-        args: { id: arg({ type: nonnullInput(id) }) },
+        args: { id: Gql.Arg({ type: Gql.NonNullInput(Gql.ID) }) },
         resolve: (_, { id }) => getHuman(id),
       }),
-      field({
+      Gql.Field({
         name: 'droid',
         type: droidType,
         args: {
-          id: arg({
-            type: nonnullInput(string),
+          id: Gql.Arg({
+            type: Gql.NonNullInput(Gql.String),
             description: 'ID of the droid',
           }),
         },
         resolve: (_, { id }) => getDroid(id),
       }),
-      field({
+      Gql.Field({
         name: 'contextContent',
-        type: string,
+        type: Gql.String,
         resolve: (_, _args, ctx) => ctx.contextContent,
       }),
-      field({
+      Gql.Field({
         name: 'search',
-        type: list(searchResultType),
+        type: Gql.List(searchResultType),
         args: {
-          human: arg({ type: humanInputType }),
+          human: Gql.Arg({ type: humanInputType }),
         },
         resolve: () => [
           ...Object.values(humanData),
@@ -622,12 +602,12 @@ test('can build a schema', async () => {
 });
 
 test('Subscription work properly', async () => {
-  const GraphQLSubscriptionObjectType = subscriptionType({
+  const GraphQLSubscriptionObject = Gql.Subscription({
     name: 'Subscription',
     fields: () => [
-      subscriptionField({
+      Gql.SubscriptionField({
         name: 'greetings',
-        type: nonnull(string),
+        type: Gql.NonNull(Gql.String),
         subscribe: async function* () {
           for (const greeting of ['hi', 'ola', 'sup', 'hello']) {
             yield greeting;
@@ -638,11 +618,13 @@ test('Subscription work properly', async () => {
   });
 
   const schema = buildGraphQLSchema({
-    query: queryType({
+    query: Gql.Query({
       name: 'Query',
-      fields: () => [field({ name: '_', type: boolean, resolve: () => null })],
+      fields: () => [
+        Gql.Field({ name: '_', type: Gql.Boolean, resolve: () => null }),
+      ],
     }),
-    subscription: GraphQLSubscriptionObjectType,
+    subscription: GraphQLSubscriptionObject,
   });
 
   const result = await subscribe({
