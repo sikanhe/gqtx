@@ -1,5 +1,5 @@
 import * as graphql from 'graphql';
-import {
+import type {
   ScalarType,
   EnumType,
   EnumValue,
@@ -20,7 +20,7 @@ import {
   SubscriptionObjectType,
   PromiseOrValue,
   GqlContext,
-} from './types';
+} from './types.js';
 
 type ExtensionsMap = {
   field?: {

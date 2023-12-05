@@ -1,5 +1,5 @@
 import * as graphql from 'graphql';
-import {
+import type {
   Schema,
   InputType,
   OutputType,
@@ -11,7 +11,7 @@ import {
   GqlContext,
   UnionType,
   InterfaceType,
-} from './types';
+} from './types.js';
 
 export function buildGraphQLSchema<RootSrc>(
   schema: Schema<RootSrc>
