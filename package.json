@@ -2,17 +2,17 @@
   "name": "gqtx",
   "version": "0.9.0",
   "type": "module",
-  "main": "cjs/index.js",
+  "main": "cjs/index.cjs",
   "module": "index.js",
   "types": "index.d.ts",
   "exports": {
     ".": {
       "import": "./index.js",
-      "require": "./cjs/index.js"
+      "require": "./cjs/index.cjs"
     },
     "./relay": {
       "import": "./relay.js",
-      "require": "./cjs/relay.js"
+      "require": "./cjs/relay.cjs"
     },
     "./package.json": "./package.json",
     "./": "./"
