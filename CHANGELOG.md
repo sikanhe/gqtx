@@ -1,10 +1,48 @@
-# next
+# Next 
 
-- [Breaking] No longer need create a builder just to have user provide Context type
-- [Breaking] No need for defaultArg vs arg, (leverage conditional types)
-- [Breaking] Lowercase all types builders function names
+# 0.9.3
+- [Breaking] All type constructors are exported under "Gql" namespace for easy autocompletion and reduce import bloat.
+```ts
+const UserType = Gql.Object<User>({
+  name: 'User',
+  description: 'A User',
+  fields: () => [
+    Gql.Field({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+    Gql.Field({ name: 'role', type: Gql.NonNull(RoleEnum) }),
+    Gql.Field({ name: 'name', type: Gql.NonNull(Gql.String) }),
+  ],
+});
+```
+- [Breaking] No longer need create a builder just to have user provide GqlContext type
+```ts
+declare module "gqtx" {
+  interface GqlContext {
+    viewerId: number;
+    users: User[];
+  }
+}
+```
+- [Breaking] No need for DefaultArg vs Arg, (leverage conditional types)
+```ts
+Gql.Arg({ name: "name", type: Gql.String, default: "Joe" })
+```
 - [Breaking] Union/Interface resolveType now returns string, as expected by graphql-js v16
 - [Improvement] Union's types array can be now defined as a function to support forward references
+```ts 
+const GqlPostCommentUnion = Gql.Union({
+  name: "PostOrCommentUnion",
+  types: () => [GqlPost, GqlComment], // Can now be a function
+  resolveType: (value) => {
+    if (value.type === "Post") {
+      // old: return GqlPost
+      return GqlPost.name
+    } else {
+      // old: return GqlComment
+      return GqlComment.name
+    }
+  },
+})
+```
 
 # 0.8.1
 
