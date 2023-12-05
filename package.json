@@ -1,6 +1,6 @@
 {
   "name": "gqtx",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "type": "module",
   "main": "cjs/index.cjs",
   "module": "index.js",
