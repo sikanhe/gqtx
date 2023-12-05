@@ -20,7 +20,7 @@ import type {
   SubscriptionObjectType,
   PromiseOrValue,
   GqlContext,
-} from './types.ts';
+} from './types.js';
 
 type ExtensionsMap = {
   field?: {

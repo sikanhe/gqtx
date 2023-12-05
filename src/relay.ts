@@ -5,8 +5,8 @@ import type {
   TOfArgMap,
   GqlContext,
   ObjectType,
-} from './types.ts';
-import { Gql } from './define.ts';
+} from './types.js';
+import { Gql } from './define.js';
 import { GraphQLResolveInfo } from 'graphql';
 
 // Adapted from

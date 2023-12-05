@@ -1,15 +1,15 @@
-import type { InterfaceType } from '../src';
-import type { Connection, ConnectionArguments, Edge } from '../src/relay';
-import { buildGraphQLSchema, Gql } from '../src';
+import type { InterfaceType } from '../src/index.js';
+import type { Connection, ConnectionArguments, Edge } from '../src/relay.js';
+import { buildGraphQLSchema, Gql } from '../src/index.js';
 import {
   connectionArgs,
   connectionDefinitions,
   nodeDefinitions,
-} from '../src/relay';
+} from '../src/relay.js';
 import express = require('express');
 import graphqlHTTP = require('express-graphql');
 
-declare module '../src/types' {
+declare module '../src/types.js' {
   interface GqlContext {
     contextContent: string;
   }
