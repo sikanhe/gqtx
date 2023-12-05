@@ -28,6 +28,7 @@ export default {
     {
       dir: isCJSBuild ? 'dist/cjs' : 'dist',
       format: isCJSBuild ? 'cjs' : 'esm',
+      entryFileNames: isCJSBuild ? '[name].cjs' : '[name].js',
     },
   ],
   plugins: [

@@ -1,7 +1,7 @@
-export * from './types';
-export * from './define';
+export * from './types.js';
+export * from './define.js';
 export {
   buildGraphQLSchema,
   toGraphQLInputType,
   toGraphQLOutputType,
-} from './build';
+} from './build.js';

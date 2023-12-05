@@ -3,3 +3,4 @@ yarn-error.log
 .vscode
 dist
 tsconfig.tsbuildinfo
+install-state.gz
