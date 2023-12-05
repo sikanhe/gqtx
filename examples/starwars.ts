@@ -1,4 +1,4 @@
-import type { Interface } from '../src';
+import type { InterfaceType } from '../src';
 import type { Connection, ConnectionArguments, Edge } from '../src/relay';
 import { buildGraphQLSchema, Gql } from '../src';
 import {
@@ -10,7 +10,7 @@ import express = require('express');
 import graphqlHTTP = require('express-graphql');
 
 declare module '../src/types' {
-  interface Context {
+  interface GqlContext {
     contextContent: string;
   }
 }
@@ -154,7 +154,7 @@ const episodeEnum = Gql.Enum({
   ],
 });
 
-const characterInterface: Interface<ICharacter | null> =
+const characterInterface: InterfaceType<ICharacter | null> =
   Gql.InterfaceType<ICharacter>({
     name: 'Character',
     interfaces: [],

@@ -1,12 +1,12 @@
 import * as graphql from 'graphql';
 import {
-  Scalar,
-  Enum,
+  ScalarType,
+  EnumType,
   EnumValue,
   ObjectType,
-  InputObject,
-  Interface,
-  Union,
+  InputObjectType,
+  InterfaceType,
+  UnionType,
   InputType,
   OutputType,
   ArgMap,
@@ -17,9 +17,9 @@ import {
   Argument,
   InputFieldMap,
   SubscriptionField,
-  SubscriptionObject,
+  SubscriptionObjectType,
   PromiseOrValue,
-  Context,
+  GqlContext,
 } from './types';
 
 type ExtensionsMap = {
@@ -35,7 +35,7 @@ type ResolvePartialMandatory<Src, Arg, Out> = {
   resolve: (
     src: Src,
     args: TOfArgMap<ArgMap<Arg>>,
-    ctx: Context,
+    ctx: GqlContext,
     info: graphql.GraphQLResolveInfo
   ) => PromiseOrValue<Out>;
 };
@@ -44,14 +44,14 @@ type ResolvePartialOptional<Src, Arg, Out> = {
   resolve?: (
     src: Src,
     args: TOfArgMap<ArgMap<Arg>>,
-    ctx: Context,
+    ctx: GqlContext,
     info: graphql.GraphQLResolveInfo
   ) => PromiseOrValue<Out>;
 };
 
 function builtInScalar<Src>(
   builtInType: graphql.GraphQLScalarType
-): Scalar<Src | null> {
+): ScalarType<Src | null> {
   return {
     kind: 'Scalar',
     builtInType,
@@ -59,22 +59,22 @@ function builtInScalar<Src>(
 }
 
 export namespace Gql {
-  export const String: Scalar<string | null | undefined> =
+  export const String: ScalarType<string | null | undefined> =
     builtInScalar<string>(graphql.GraphQLString);
-  export const Int: Scalar<number | null | undefined> = builtInScalar<number>(
+  export const Int: ScalarType<number | null | undefined> = builtInScalar<number>(
     graphql.GraphQLInt
   );
-  export const Float: Scalar<number | null | undefined> = builtInScalar<number>(
+  export const Float: ScalarType<number | null | undefined> = builtInScalar<number>(
     graphql.GraphQLFloat
   );
-  export const Boolean: Scalar<boolean | null | undefined> =
+  export const Boolean: ScalarType<boolean | null | undefined> =
     builtInScalar<boolean>(graphql.GraphQLBoolean);
 
-  export const ID: Scalar<string | null | undefined> = builtInScalar<string>(
+  export const ID: ScalarType<string | null | undefined> = builtInScalar<string>(
     graphql.GraphQLID
   );
 
-  export function ScalarType<Src>({
+  export function Scalar<Src>({
     name,
     description,
     serialize,
@@ -86,7 +86,7 @@ export namespace Gql {
     serialize: (src: Src) => any | null;
     parseValue?: (value: unknown) => Src | null;
     parseLiteral?: (value: graphql.ValueNode) => Src | null;
-  }): Scalar<Src | null> {
+  }): ScalarType<Src | null> {
     return {
       kind: 'Scalar',
       graphqlTypeConfig: {
@@ -107,7 +107,7 @@ export namespace Gql {
     name: string;
     description?: string;
     values: Array<EnumValue<Src>>;
-  }): Enum<Src | null> {
+  }): EnumType<Src | null> {
     return {
       kind: 'Enum',
       name,
@@ -210,13 +210,13 @@ export namespace Gql {
   }: {
     name: string;
     description?: string;
-    interfaces?: Array<Interface<any>>;
+    interfaces?: Array<InterfaceType<any>>;
     fields: (
       self: OutputType<Src | null>
     ) => [Field<Src, any, {}>, ...Field<Src, any, {}>[]];
     isTypeOf?: (
       src: any,
-      ctx: Context,
+      ctx: GqlContext,
       info: graphql.GraphQLResolveInfo
     ) => boolean;
     extensions?: ExtensionsMap['objectType'] extends undefined
@@ -245,8 +245,8 @@ export namespace Gql {
     name: string;
     description?: string;
     fields: (self: InputType<Src | null>) => InputFieldMap<Src>;
-  }): InputObject<Src | null> {
-    let inputObj: InputObject<Src | null> = {
+  }): InputObjectType<Src | null> {
+    let inputObj: InputObjectType<Src | null> = {
       kind: 'InputObject',
       name,
       description,
@@ -267,14 +267,14 @@ export namespace Gql {
     description?: string;
     types: Array<ObjectType<any>> | (() => Array<ObjectType<any>>);
     resolveType: (src: Src) => string;
-  }): Union<Src | null> {
+  }): UnionType<Src | null> {
     return {
       kind: 'Union',
       name,
       description,
       types,
       resolveType,
-    } as Union<Src | null>;
+    } as UnionType<Src | null>;
   }
 
   export function InterfaceType<Src>({
@@ -285,10 +285,10 @@ export namespace Gql {
   }: {
     name: string;
     description?: string;
-    interfaces?: Array<Interface<any>> | (() => Array<Interface<any>>);
-    fields: (self: Interface<Src | null>) => Array<AbstractField<any>>;
-  }): Interface<Src | null> {
-    const obj: Interface<Src | null> = {
+    interfaces?: Array<InterfaceType<any>> | (() => Array<InterfaceType<any>>);
+    fields: (self: InterfaceType<Src | null>) => Array<AbstractField<any>>;
+  }): InterfaceType<Src | null> {
+    const obj: InterfaceType<Src | null> = {
       kind: 'Interface',
       name,
       description,
@@ -388,7 +388,7 @@ export namespace Gql {
     subscribe: (
       src: RootSrc,
       args: TOfArgMap<ArgMap<Arg>>,
-      ctx: Context,
+      ctx: GqlContext,
       info: graphql.GraphQLResolveInfo
     ) => PromiseOrValue<AsyncIterableIterator<Out>>;
   }): SubscriptionField<RootSrc, Arg, Out> {
@@ -413,7 +413,7 @@ export namespace Gql {
       SubscriptionField<Src, any, any>,
       ...SubscriptionField<Src, any, any>[]
     ];
-  }): SubscriptionObject<Src> {
+  }): SubscriptionObjectType<Src> {
     return {
       kind: 'SubscriptionObject',
       name,

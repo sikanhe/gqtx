@@ -1,11 +1,11 @@
 import { execute, parse, printSchema, subscribe } from 'graphql';
 import * as relay from '../src/relay';
 import { Gql } from '../src/define';
-import { Interface } from '../src/types';
+import { InterfaceType } from '../src/types';
 import { buildGraphQLSchema } from '../src/build';
 
 declare module '../src/types' {
-  interface Context {
+  interface GqlContext {
     contextContent: string;
   }
 }
@@ -153,7 +153,7 @@ test('can build a schema', async () => {
     ],
   });
 
-  const characterInterface: Interface<Character | null> =
+  const characterInterface: InterfaceType<Character | null> =
     Gql.InterfaceType<Character>({
       name: 'Character',
       interfaces: [],

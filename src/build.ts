@@ -6,11 +6,11 @@ import {
   AllType,
   DefaultArgument,
   Argument,
-  SubscriptionObject,
+  SubscriptionObjectType,
   ArgMap,
-  Context,
-  Union,
-  Interface,
+  GqlContext,
+  UnionType,
+  InterfaceType,
 } from './types';
 
 export function buildGraphQLSchema<RootSrc>(
@@ -64,13 +64,13 @@ export function toGraphQLArgs<T>(
 }
 
 export function toGraphQLSubscriptionObject<RootSrc>(
-  subscriptionObj: SubscriptionObject<RootSrc>,
+  subscriptionObj: SubscriptionObjectType<RootSrc>,
   typeMap: Map<AllType, graphql.GraphQLType>
 ): graphql.GraphQLObjectType {
   return new graphql.GraphQLObjectType({
     name: subscriptionObj.name,
     fields: () => {
-      const gqlFieldConfig: graphql.GraphQLFieldConfigMap<RootSrc, Context> =
+      const gqlFieldConfig: graphql.GraphQLFieldConfigMap<RootSrc, GqlContext> =
         {};
 
       subscriptionObj.fields().forEach((field) => {
@@ -190,7 +190,7 @@ export function toGraphQLOutputType<Src>(
         isTypeOf: t.isTypeOf,
         fields: () => {
           const fields = t.fieldsFn();
-          const gqlFieldConfig: graphql.GraphQLFieldConfigMap<Src, Context> =
+          const gqlFieldConfig: graphql.GraphQLFieldConfigMap<Src, GqlContext> =
             {};
 
           fields.forEach((field) => {
@@ -231,7 +231,7 @@ export function toGraphQLOutputType<Src>(
                 src,
                 ctx,
                 info,
-                ourType as Union<any> | Interface<any>
+                ourType as UnionType<any> | InterfaceType<any>
               );
             }
           : undefined,
@@ -245,7 +245,7 @@ export function toGraphQLOutputType<Src>(
         description: t.description,
         fields: () => {
           const fields = t.fieldsFn();
-          const result: graphql.GraphQLFieldConfigMap<Src, Context> = {};
+          const result: graphql.GraphQLFieldConfigMap<Src, GqlContext> = {};
 
           fields.forEach((field) => {
             result[field.name] = {
@@ -275,7 +275,7 @@ export function toGraphQLOutputType<Src>(
                 src,
                 ctx,
                 info,
-                ourType as Union<any> | Interface<any>
+                ourType as UnionType<any> | InterfaceType<any>
               );
             }
           : undefined,

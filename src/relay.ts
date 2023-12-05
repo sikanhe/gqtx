@@ -1,9 +1,9 @@
 import type {
   Field,
-  Interface,
+  InterfaceType,
   Argument,
   TOfArgMap,
-  Context,
+  GqlContext,
   ObjectType,
 } from './types';
 import { Gql } from './define';
@@ -14,7 +14,7 @@ import { GraphQLResolveInfo } from 'graphql';
 
 export type ConnectionConfig<T> = {
   name?: string;
-  nodeType: ObjectType<T | null> | Interface<T | null>;
+  nodeType: ObjectType<T | null> | InterfaceType<T | null>;
   edgeFields?: () => Array<Field<Edge<T>, any, any>>;
   connectionFields?: () => Array<Field<Connection<T>, any, any>>;
 };
@@ -58,7 +58,7 @@ export type RelayConnectionDefinitions<T> = {
 export function nodeDefinitions<Src>(
   idFetcher: (
     id: string,
-    context: Context,
+    context: GqlContext,
     info: GraphQLResolveInfo
   ) => Promise<Src> | Src
 ) {
