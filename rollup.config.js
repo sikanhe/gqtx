@@ -16,6 +16,7 @@ const commonjsPkgJSONPlugin = () => {
         );
       } else {
         await fs.copyFile('package.json', 'dist/package.json');
+        await fs.copyFile('README.md', 'dist/README.md');
       }
     },
   };
