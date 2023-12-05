@@ -1,5 +1,5 @@
-export * from './types';
-export * from './define';
+export type * from './types';
+export { Gql } from './define';
 export {
   buildGraphQLSchema,
   toGraphQLInputType,
