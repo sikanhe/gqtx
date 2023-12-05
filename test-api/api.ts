@@ -1,6 +1,6 @@
-import { Gql, ObjectType } from '../src';
+import { Gql, ObjectType } from '../src/index.ts';
 
-declare module '../src/types' {
+declare module '../src/types.ts' {
   interface Context {
     contextContent: string;
   }

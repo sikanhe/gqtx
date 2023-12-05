@@ -11,7 +11,7 @@ import type {
   GqlContext,
   UnionType,
   InterfaceType,
-} from './types.js';
+} from './types.ts';
 
 export function buildGraphQLSchema<RootSrc>(
   schema: Schema<RootSrc>

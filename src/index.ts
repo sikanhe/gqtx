@@ -1,7 +1,7 @@
-export type * from './types.js';
-export { Gql } from './define.js';
+export type * from './types.ts';
+export { Gql } from './define.ts';
 export {
   buildGraphQLSchema,
   toGraphQLInputType,
   toGraphQLOutputType,
-} from './build.js';
+} from './build.ts';
