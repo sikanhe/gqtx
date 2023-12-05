@@ -13,8 +13,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "skipLibCheck": true,
-    "allowImportingTsExtensions": true,
+    "skipLibCheck": true
   },
   "files": ["./src/index.ts", "./src/relay.ts"]
 }
