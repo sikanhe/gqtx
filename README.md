@@ -1,5 +1,5 @@
 #### [Why another GraphqQL Server?](https://github.com/sikanhe/gqtx/blob/master/WHY.md)
-Note: 0.9.0 contains breaking API changes. Go [here](https://github.com/sikanhe/gqtx/blob/1c709b529fe0b333b906f2b226039f80cfd540d5/README.md) for previous readme.
+Note: 0.9.x contains breaking API changes. Go [here](https://github.com/sikanhe/gqtx/blob/1c709b529fe0b333b906f2b226039f80cfd540d5/README.md) for previous readme.
 
 ## Getting Started
 
