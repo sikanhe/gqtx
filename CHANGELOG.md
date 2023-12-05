@@ -1,6 +1,13 @@
 # next
 
+- [Breaking] No longer need create a builder just to have user provide Context type
+- [Breaking] No need for defaultArg vs arg, (leverage conditional types)
+- [Breaking] Lowercase all types builders function names
+- [Breaking] Union/Interface resolveType now returns string, as expected by graphql-js v16
+- [Improvement] Union's types array can be now defined as a function to support forward references
+
 # 0.8.1
+
 - [Feat] Allow passing directives for the GraphQL schema to the `buildGraphQLSchema` function.
 - [Feat] Input object type now supports default value (https://github.com/sikanhe/gqtx/pull/56)
 - [Feat] New unified API for field and defaultField. You no longer need to use a different function for default field. (https://github.com/sikanhe/gqtx/pull/52)

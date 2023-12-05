@@ -28,7 +28,7 @@ Most importantly, we achieve all this _without_ having to:
 ### What does it look like?
 
 ```ts
-import { createTypesFactory, buildGraphQLSchema } from 'gqtx';
+import { Gql, buildGraphQLSchema } from 'gqtx';
 
 enum Role {
   Admin,
@@ -46,16 +46,16 @@ const users: User[] = [
   { id: '2', role: Role.User, name: 'Nicole' },
 ];
 
-type AppContext = {
-  viewerId: 1;
-  users: User[];
-};
+// We can declare the app context type once, and it will
+// be automatically inferred for all our resolvers
+declare module "gqtx" {
+  interface GqlContext {
+    viewerId: number;
+    users: User[];
+  }
+}
 
-// We can set the app context type once, and it will
-// be automatically inferred for all our resolvers! :)
-const t = createTypesFactory<AppContext>();
-
-const RoleEnum = t.enumType({
+const RoleEnum = Gql.Enum({
   name: 'Role',
   description: 'A user role',
   values: [
@@ -64,31 +64,30 @@ const RoleEnum = t.enumType({
   ],
 });
 
-const UserType = t.objectType<User>({
+const UserType = Gql.Object<User>({
   name: 'User',
   description: 'A User',
   fields: () => [
-    t.field({ name: 'id', type: t.NonNull(t.ID) }),
-    t.field({ name: 'role', type: t.NonNull(RoleEnum) }),
-    t.field({ name: 'name', type: t.NonNull(t.String) }),
+    Gql.Field({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+    Gql.Field({ name: 'role', type: Gql.NonNull(RoleEnum) }),
+    Gql.Field({ name: 'name', type: Gql.NonNull(Gql.String) }),
   ],
 });
 
-const Query = t.queryType({
+const Query = Gql.Query({
   fields: [
-    t.field({
+    Gql.Field({
       name: 'userById',
       type: UserType,
       args: {
-        id: t.arg(t.NonNullInput(t.ID)),
+        id: Gql.Arg({ type: Gql.NonNullInput(Gql.ID) }),
       },
       resolve: (_, args, ctx) => {
         // `args` is automatically inferred as { id: string }
-        // `ctx` is also automatically inferred as AppContext
-        //  All with no extra work!
+        // `ctx` (context) is also automatically inferred as { viewerId: number, users: User[] }
         const user = ctx.users.find((u) => u.id === args.id);
-        // Also ensures we return an `User | null` type :)
-        return user || null;
+        // Also ensures we return an `User | null | undefined` type
+        return user
       },
     }),
   ],

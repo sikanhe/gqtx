@@ -3,31 +3,33 @@ import * as graphql from 'graphql';
 export type PromiseOrValue<T> = Promise<T> | T;
 type Maybe<T> = T | null | undefined;
 
-export type OutputType<Ctx, Src> =
-  | Scalar<Src>
-  | Enum<Src>
-  | ObjectType<Ctx, Src>
-  | Union<Ctx, Src>
-  | Interface<Ctx, Src>
-  | ListType<Ctx, Src>
-  | NonNullType<Ctx, Src>;
+export interface GqlContext {}
 
-interface ListType<Ctx, Src> extends List<Ctx, OutputType<Ctx, Src>> {}
-interface NonNullType<Ctx, Src> extends NonNull<Ctx, OutputType<Ctx, Src>> {}
+export type OutputType<Src> =
+  | ScalarType<Src>
+  | EnumType<Src>
+  | ObjectType<Src>
+  | UnionType<Src>
+  | InterfaceType<Src>
+  | ListOutput<Src>
+  | NonNullOutput<Src>;
+
+interface ListOutput<Src> extends List<OutputType<Src>> {}
+interface NonNullOutput<Src> extends NonNull<OutputType<Src>> {}
 
 export type InputType<Src> =
-  | Scalar<Src>
-  | Enum<Src>
-  | InputObject<Src>
+  | ScalarType<Src>
+  | EnumType<Src>
+  | InputObjectType<Src>
   | ListInputType<Src>
   | NonNullInputType<Src>;
 
 interface ListInputType<Src> extends ListInput<InputType<Src>> {}
 interface NonNullInputType<Src> extends NonNullInput<InputType<Src>> {}
 
-export type AllType<Ctx> = OutputType<Ctx, any> | InputType<any>;
+export type AllType = OutputType<any> | InputType<any>;
 
-export type Scalar<Src> =
+export type ScalarType<Src> =
   | {
       kind: 'Scalar';
       graphqlTypeConfig: graphql.GraphQLScalarTypeConfig<Src, unknown>;
@@ -37,7 +39,7 @@ export type Scalar<Src> =
       builtInType: graphql.GraphQLScalarType;
     };
 
-export type Enum<Src> = {
+export type EnumType<Src> = {
   kind: 'Enum';
   name: string;
   description?: string;
@@ -51,14 +53,14 @@ export type EnumValue<Src> = {
   value: Src;
 };
 
-export type List<Ctx, Src> = {
+export type List<Src> = {
   kind: 'List';
-  ofType: OutputType<Ctx, Src>;
+  ofType: OutputType<Src>;
 };
 
-export type NonNull<Ctx, Src> = {
+export type NonNull<Src> = {
   kind: 'NonNull';
-  ofType: OutputType<Ctx, Src>;
+  ofType: OutputType<Src>;
 };
 
 export type ListInput<Src> = {
@@ -75,6 +77,7 @@ export type Argument<Src> = {
   kind: 'Argument';
   type: InputType<Src>;
   description?: string;
+  default?: Exclude<Src, null>;
 };
 
 export type DefaultArgument<Src> = {
@@ -100,41 +103,41 @@ export type TOfArgMap<TArgMap> = {
   [K in keyof TArgMap]: ArgMapValue<TArgMap[K]>;
 };
 
-export type Field<Ctx, Src, Out, TArg extends object = {}> = {
+export type Field<Src, Out, TArg extends object = {}> = {
   kind: 'Field';
   name: string;
   description?: string;
-  type: OutputType<Ctx, Out>;
+  type: OutputType<Out>;
   args: ArgMap<TArg>;
   deprecationReason?: string;
   resolve?: (
     src: Src,
     args: TOfArgMap<ArgMap<TArg>>,
-    ctx: Ctx,
+    ctx: GqlContext,
     info: graphql.GraphQLResolveInfo
   ) => Out | Promise<Out>;
   extensions?: Record<string, any>;
 };
 
-export type AbstractField<Ctx, Out> = {
+export type AbstractField<Out> = {
   kind: 'AbstractField';
   name: string;
   description?: string;
   deprecationReason?: string;
   args?: ArgMap<unknown>;
-  type: OutputType<Ctx, Out>;
+  type: OutputType<Out>;
 };
 
-export type ObjectType<Ctx, Src> = {
+export type ObjectType<Src> = {
   kind: 'ObjectType';
   name: string;
   description?: string;
   deprecationReason?: string;
-  interfaces: Array<Interface<Ctx, any>>;
-  fieldsFn: () => Array<Field<Ctx, Src, any, any>>;
+  interfaces: Array<InterfaceType<any>> | (() => Array<InterfaceType<any>>);
+  fieldsFn: () => Array<Field<Src, any, any>>;
   isTypeOf?: (
     src: any,
-    ctx: Ctx,
+    ctx: GqlContext,
     info: graphql.GraphQLResolveInfo
   ) => boolean | Promise<boolean>;
   extensions?: Record<string, any>;
@@ -150,67 +153,68 @@ export type InputFieldMap<T> = {
   [K in keyof T]: InputField<T[K]>;
 };
 
-export type InputObject<Src> = {
+export type InputObjectType<Src> = {
   kind: 'InputObject';
   name: string;
   description?: string;
   fieldsFn: () => InputFieldMap<Src>;
 };
 
-type ResolveType<Src, Ctx> = (
+export type ResolveType<Src> = (
   src: Src,
-  ctx: Ctx,
-  info: graphql.GraphQLResolveInfo
-) => PromiseOrValue<Maybe<ObjectType<Ctx, Src | null> | string>>;
+  ctx: GqlContext,
+  info: graphql.GraphQLResolveInfo,
+  abstractType: UnionType<Src> | InterfaceType<Src>
+) => PromiseOrValue<string | undefined>;
 
-export type Interface<Ctx, Src> = {
+export type InterfaceType<Src> = {
   kind: 'Interface';
   name: string;
   description?: string;
-  interfaces: Array<Interface<Ctx, any>>;
-  fieldsFn: () => Array<AbstractField<Ctx, any>>;
-  resolveType?: ResolveType<Src, Ctx>;
+  interfaces: Array<InterfaceType<any>> | (() => Array<InterfaceType<any>>);
+  fieldsFn: () => Array<AbstractField<any>>;
+  resolveType?: ResolveType<Src>;
 };
 
-export type Union<Ctx, Src> = {
+export type UnionType<Src> = {
   kind: 'Union';
   name: string;
   description?: string;
-  types: Array<ObjectType<Ctx, Src>>;
-  resolveType: ResolveType<Src, Ctx>;
+  types: Array<ObjectType<Src>> | (() => Array<ObjectType<Src>>);
+  resolveType: ResolveType<Src>;
 };
 
-export type SubscriptionObject<Ctx, RootSrc> = {
+export type SubscriptionObjectType<RootSrc> = {
   kind: 'SubscriptionObject';
   name: string;
-  fields: () => Array<SubscriptionField<Ctx, RootSrc, any, any>>;
+  fields: () => Array<SubscriptionField<RootSrc, any, any>>;
 };
 
-export type SubscriptionField<Ctx, RootSrc, TArg, Out> = {
+export type SubscriptionField<RootSrc, TArg, Out> = {
   kind: 'SubscriptionField';
   name: string;
   description?: string;
-  type: OutputType<Ctx, Out>;
+  type: OutputType<Out>;
   args: ArgMap<TArg>;
   deprecationReason?: string;
   subscribe: (
     source: RootSrc,
     args: TOfArgMap<ArgMap<TArg>>,
-    ctx: Ctx,
+    ctx: GqlContext,
     info: graphql.GraphQLResolveInfo
   ) => PromiseOrValue<AsyncIterableIterator<Out>>;
   resolve: (
     source: Out,
     args: TOfArgMap<ArgMap<TArg>>,
-    ctx: Ctx,
+    ctx: GqlContext,
     info: graphql.GraphQLResolveInfo
   ) => PromiseOrValue<Out>;
 };
 
-export type Schema<Ctx, RootSrc = undefined> = {
-  query: ObjectType<Ctx, RootSrc>;
-  mutation?: ObjectType<Ctx, RootSrc>;
-  subscription?: SubscriptionObject<Ctx, RootSrc>;
-  types?: ObjectType<Ctx, any>[];
+export type Schema<RootSrc = undefined> = {
+  query: ObjectType<RootSrc>;
+  mutation?: ObjectType<RootSrc>;
+  subscription?: SubscriptionObjectType<RootSrc>;
+  types?: ObjectType<any>[];
   directives?: graphql.GraphQLDirective[];
 };

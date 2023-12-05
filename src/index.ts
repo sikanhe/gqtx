@@ -1,5 +1,5 @@
 export * from './types';
-export { createTypesFactory } from './define';
+export * from './define';
 export {
   buildGraphQLSchema,
   toGraphQLInputType,

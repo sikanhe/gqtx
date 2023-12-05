@@ -1,19 +1,16 @@
-import { parse, printSchema, subscribe } from 'graphql';
-import {
-  createTypesFactory,
-  buildGraphQLSchema,
-  Interface,
-} from '../src/index';
-import { createRelayHelpers } from '../src/relay';
+import { execute, parse, printSchema, subscribe } from 'graphql';
+import * as relay from '../src/relay';
+import { Gql } from '../src/define';
+import { InterfaceType } from '../src/types';
+import { buildGraphQLSchema } from '../src/build';
 
-test('can build a schema', () => {
-  type Context = {
+declare module '../src/types' {
+  interface GqlContext {
     contextContent: string;
-  };
+  }
+}
 
-  const t = createTypesFactory<Context>();
-  const relay = createRelayHelpers(t);
-
+test('can build a schema', async () => {
   enum Episode {
     NEWHOPE = 4,
     EMPIRE = 5,
@@ -41,6 +38,8 @@ test('can build a schema', () => {
   type Character = Human | Droid;
 
   const luke: Human = {
+    // @ts-expect-error
+    __typename: 'Human',
     type: 'Human',
     id: '1000',
     name: 'Luke Skywalker',
@@ -144,7 +143,7 @@ test('can build a schema', () => {
     getCharacter(id)
   );
 
-  const episodeEnum = t.enumType({
+  const episodeEnum = Gql.Enum({
     name: 'Episode',
     description: 'One of the films in the Star Wars Trilogy',
     values: [
@@ -154,23 +153,23 @@ test('can build a schema', () => {
     ],
   });
 
-  const characterInterface: Interface<Context, Character | null> =
-    t.interfaceType<Character>({
+  const characterInterface: InterfaceType<Character | null> =
+    Gql.InterfaceType<Character>({
       name: 'Character',
       interfaces: [],
       fields: () => [
-        t.abstractField({ name: 'id', type: t.NonNull(t.ID) }),
-        t.abstractField({ name: 'name', type: t.NonNull(t.String) }),
-        t.abstractField({
+        Gql.AbstractField({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+        Gql.AbstractField({ name: 'name', type: Gql.NonNull(Gql.String) }),
+        Gql.AbstractField({
           name: 'appearsIn',
-          type: t.NonNull(t.List(t.NonNull(episodeEnum))),
+          type: Gql.NonNull(Gql.List(Gql.NonNull(episodeEnum))),
         }),
-        t.abstractField({
+        Gql.AbstractField({
           name: 'friends',
           type: characterConnectionType,
           args: {
-            first: t.arg(t.Int),
-            after: t.arg(t.String),
+            first: Gql.Arg({ type: Gql.Int }),
+            after: Gql.Arg({ type: Gql.String }),
           },
         }),
       ],
@@ -180,18 +179,18 @@ test('can build a schema', () => {
     relay.connectionDefinitions<Character>({
       nodeType: characterInterface,
       edgeFields: () => [
-        t.field({
+        Gql.Field({
           name: 'friendshipTime',
-          type: t.String,
+          type: Gql.String,
           resolve: (_edge) => {
             return 'Yesterday';
           },
         }),
       ],
       connectionFields: () => [
-        t.field({
+        Gql.Field({
           name: 'totalCount',
-          type: t.Int,
+          type: Gql.Int,
           resolve: () => {
             return (
               Object.keys(humanData).length + Object.keys(droidData).length
@@ -249,20 +248,20 @@ test('can build a schema', () => {
     return input != null;
   }
 
-  const humanType = t.objectType<Human>({
+  const humanType = Gql.Object<Human>({
     name: 'Human',
     description: 'A humanoid creature in the Star Wars universe.',
     interfaces: [nodeInterface, characterInterface],
     isTypeOf: (thing) => thing.type === 'Human',
     fields: () => [
-      t.field({ name: 'id', type: t.NonNull(t.ID) }),
-      t.field({ name: 'name', type: t.NonNull(t.String) }),
-      t.field({
+      Gql.Field({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+      Gql.Field({ name: 'name', type: Gql.NonNull(Gql.String) }),
+      Gql.Field({
         name: 'appearsIn',
-        type: t.NonNull(t.List(t.NonNull(episodeEnum))),
+        type: Gql.NonNull(Gql.List(Gql.NonNull(episodeEnum))),
       }),
-      t.field({ name: 'homePlanet', type: t.String }),
-      t.field({
+      Gql.Field({ name: 'homePlanet', type: Gql.String }),
+      Gql.Field({
         name: 'friends',
         type: characterConnectionType,
         args: relay.connectionArgs,
@@ -274,9 +273,9 @@ test('can build a schema', () => {
           );
         },
       }),
-      t.field({
+      Gql.Field({
         name: 'secretBackStory',
-        type: t.String,
+        type: Gql.String,
         resolve: () => {
           throw new Error('secretBackstory is secret');
         },
@@ -284,20 +283,20 @@ test('can build a schema', () => {
     ],
   });
 
-  const droidType = t.objectType<Droid>({
+  const droidType = Gql.Object<Droid>({
     name: 'Droid',
     description: 'A mechanical creature in the Star Wars universe.',
     interfaces: [nodeInterface, characterInterface],
     isTypeOf: (thing) => thing.type === 'Droid',
     fields: () => [
-      t.field({ name: 'id', type: t.NonNull(t.ID) }),
-      t.field({ name: 'name', type: t.NonNull(t.String) }),
-      t.field({
+      Gql.Field({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+      Gql.Field({ name: 'name', type: Gql.NonNull(Gql.String) }),
+      Gql.Field({
         name: 'appearsIn',
-        type: t.NonNull(t.List(t.NonNull(episodeEnum))),
+        type: Gql.NonNull(Gql.List(Gql.NonNull(episodeEnum))),
       }),
-      t.field({ name: 'primaryFunction', type: t.NonNull(t.String) }),
-      t.field({
+      Gql.Field({ name: 'primaryFunction', type: Gql.NonNull(Gql.String) }),
+      Gql.Field({
         name: 'friends',
         type: characterConnectionType,
         args: relay.connectionArgs,
@@ -309,9 +308,9 @@ test('can build a schema', () => {
           );
         },
       }),
-      t.field({
+      Gql.Field({
         name: 'secretBackStory',
-        type: t.String,
+        type: Gql.String,
         resolve: () => {
           throw new Error('secretBackstory is secret');
         },
@@ -319,63 +318,66 @@ test('can build a schema', () => {
     ],
   });
 
-  const searchResultType = t.unionType<Droid | Human>({
+  const searchResultType = Gql.Union<Droid | Human>({
     name: 'SearchResult',
     description: 'Either droid or human',
     resolveType: (src) => {
       switch (src.type) {
         case 'Droid':
-          return droidType;
+          return droidType.name;
         case 'Human':
-          return humanType;
+          return humanType.name;
       }
     },
     types: [humanType, droidType],
   });
 
-  const humanInputType = t.inputObjectType({
+  const humanInputType = Gql.InputObject({
     name: 'HumanInput',
     description: 'I just want to test input types',
     fields: () => ({
-      unused: { type: t.NonNullInput(t.String) },
+      unused: { type: Gql.NonNullInput(Gql.String) },
     }),
   });
 
-  const queryType = t.queryType({
+  const query = Gql.Query({
     fields: () => [
       nodeField,
-      t.field({
+      Gql.Field({
         name: 'hero',
         type: characterInterface,
         args: {
-          episode: t.defaultArg(episodeEnum, Episode.EMPIRE),
+          episode: Gql.DefaultArg(episodeEnum, Episode.EMPIRE),
         },
         resolve: (_, { episode }) => getHero(episode),
       }),
-      t.field({
+      Gql.Field({
         name: 'human',
         type: humanType,
-        args: { id: t.arg(t.NonNullInput(t.ID)) },
+        args: { id: Gql.Arg({ type: Gql.NonNullInput(Gql.ID) }) },
         resolve: (_, { id }) => getHuman(id),
       }),
-      t.field({
+      Gql.Field({
         name: 'droid',
         type: droidType,
         args: {
-          id: t.arg(t.NonNullInput(t.String), 'ID of the droid'),
+          id: Gql.Arg({
+            type: Gql.NonNullInput(Gql.String),
+            description: 'ID of the droid',
+          }),
         },
         resolve: (_, { id }) => getDroid(id),
       }),
-      t.field({
+      Gql.Field({
         name: 'contextContent',
-        type: t.String,
+        type: Gql.String,
         resolve: (_, _args, ctx) => ctx.contextContent,
       }),
-      t.field({
+      Gql.Field({
         name: 'search',
-        type: t.List(searchResultType),
+        type: Gql.List(searchResultType),
         args: {
-          human: t.arg(humanInputType),
+          human: Gql.Arg({ type: humanInputType }),
         },
         resolve: () => [
           ...Object.values(humanData),
@@ -386,122 +388,226 @@ test('can build a schema', () => {
   });
 
   const schema = buildGraphQLSchema({
-    query: queryType,
+    query,
   });
 
   const printed = printSchema(schema);
 
   expect(printed).toMatchInlineSnapshot(`
-"type Query {
-  node(
-    \\"\\"\\"The ID of an object\\"\\"\\"
-    id: ID!
-  ): Node
-  hero(episode: Episode = EMPIRE): Character
-  human(id: ID!): Human
-  droid(
-    \\"\\"\\"ID of the droid\\"\\"\\"
-    id: String!
-  ): Droid
-  contextContent: String
-  search(human: HumanInput): [SearchResult]
-}
+    "type Query {
+      node(
+        """The ID of an object"""
+        id: ID!
+      ): Node
+      hero(episode: Episode = EMPIRE): Character
+      human(id: ID!): Human
+      droid(
+        """ID of the droid"""
+        id: String!
+      ): Droid
+      contextContent: String
+      search(human: HumanInput): [SearchResult]
+    }
 
-\\"\\"\\"An object with an ID\\"\\"\\"
-interface Node {
-  \\"\\"\\"The id of the object.\\"\\"\\"
-  id: ID!
-}
+    """An object with an ID"""
+    interface Node {
+      """The id of the object."""
+      id: ID!
+    }
 
-interface Character {
-  id: ID!
-  name: String!
-  appearsIn: [Episode!]!
-  friends(first: Int, after: String): CharacterConnection
-}
+    interface Character {
+      id: ID!
+      name: String!
+      appearsIn: [Episode!]!
+      friends(first: Int, after: String): CharacterConnection
+    }
 
-\\"\\"\\"One of the films in the Star Wars Trilogy\\"\\"\\"
-enum Episode {
-  NEWHOPE
-  EMPIRE
-  JEDI
-}
+    """One of the films in the Star Wars Trilogy"""
+    enum Episode {
+      NEWHOPE
+      EMPIRE
+      JEDI
+    }
 
-\\"\\"\\"A connection to a list of items.\\"\\"\\"
-type CharacterConnection {
-  \\"\\"\\"Information to aid in pagination.\\"\\"\\"
-  pageInfo: PageInfo!
+    """A connection to a list of items."""
+    type CharacterConnection {
+      """Information to aid in pagination."""
+      pageInfo: PageInfo!
 
-  \\"\\"\\"A list of edges.\\"\\"\\"
-  edges: [CharacterEdge]
-  totalCount: Int
-}
+      """A list of edges."""
+      edges: [CharacterEdge]
+      totalCount: Int
+    }
 
-\\"\\"\\"Information about pagination in a connection.\\"\\"\\"
-type PageInfo {
-  \\"\\"\\"When paginating forwards, are there more items?\\"\\"\\"
-  hasNextPage: Boolean!
+    """Information about pagination in a connection."""
+    type PageInfo {
+      """When paginating forwards, are there more items?"""
+      hasNextPage: Boolean!
 
-  \\"\\"\\"When paginating backwards, are there more items?\\"\\"\\"
-  hasPreviousPage: Boolean!
+      """When paginating backwards, are there more items?"""
+      hasPreviousPage: Boolean!
 
-  \\"\\"\\"When paginating backwards, the cursor to continue.\\"\\"\\"
-  startCursor: String
+      """When paginating backwards, the cursor to continue."""
+      startCursor: String
 
-  \\"\\"\\"When paginating forwards, the cursor to continue.\\"\\"\\"
-  endCursor: String
-}
+      """When paginating forwards, the cursor to continue."""
+      endCursor: String
+    }
 
-\\"\\"\\"An edge in a connection.\\"\\"\\"
-type CharacterEdge {
-  \\"\\"\\"The item at the end of the edge\\"\\"\\"
-  node: Character!
+    """An edge in a connection."""
+    type CharacterEdge {
+      """The item at the end of the edge"""
+      node: Character
 
-  \\"\\"\\"A cursor for use in pagination\\"\\"\\"
-  cursor: String!
-  friendshipTime: String
-}
+      """A cursor for use in pagination"""
+      cursor: String!
+      friendshipTime: String
+    }
 
-\\"\\"\\"A humanoid creature in the Star Wars universe.\\"\\"\\"
-type Human implements Node & Character {
-  id: ID!
-  name: String!
-  appearsIn: [Episode!]!
-  homePlanet: String
-  friends(after: String, first: Int, before: String, last: Int): CharacterConnection
-  secretBackStory: String
-}
+    """A humanoid creature in the Star Wars universe."""
+    type Human implements Node & Character {
+      id: ID!
+      name: String!
+      appearsIn: [Episode!]!
+      homePlanet: String
+      friends(after: String, first: Int, before: String, last: Int): CharacterConnection
+      secretBackStory: String
+    }
 
-\\"\\"\\"A mechanical creature in the Star Wars universe.\\"\\"\\"
-type Droid implements Node & Character {
-  id: ID!
-  name: String!
-  appearsIn: [Episode!]!
-  primaryFunction: String!
-  friends(after: String, first: Int, before: String, last: Int): CharacterConnection
-  secretBackStory: String
-}
+    """A mechanical creature in the Star Wars universe."""
+    type Droid implements Node & Character {
+      id: ID!
+      name: String!
+      appearsIn: [Episode!]!
+      primaryFunction: String!
+      friends(after: String, first: Int, before: String, last: Int): CharacterConnection
+      secretBackStory: String
+    }
 
-\\"\\"\\"Either droid or human\\"\\"\\"
-union SearchResult = Human | Droid
+    """Either droid or human"""
+    union SearchResult = Human | Droid
 
-\\"\\"\\"I just want to test input types\\"\\"\\"
-input HumanInput {
-  unused: String!
-}
-"
-`);
+    """I just want to test input types"""
+    input HumanInput {
+      unused: String!
+    }"
+  `);
+
+  const result = await execute({
+    schema,
+    document: parse(/* GraphQL */ `
+      query {
+        node(id: "1000") {
+          __typename
+        }
+
+        luke: human(id: "1000") {
+          __typename
+          name
+        }
+        hero {
+          __typename
+          name
+          friends {
+            pageInfo {
+              endCursor
+              startCursor
+              hasNextPage
+              hasPreviousPage
+            }
+            edges {
+              cursor
+              node {
+                name
+                appearsIn
+              }
+            }
+          }
+        }
+      }
+    `),
+  });
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "data": {
+        "hero": {
+          "__typename": "Human",
+          "friends": {
+            "edges": [
+              {
+                "cursor": "1002",
+                "node": {
+                  "appearsIn": [
+                    "NEWHOPE",
+                    "EMPIRE",
+                    "JEDI",
+                  ],
+                  "name": "Han Solo",
+                },
+              },
+              {
+                "cursor": "1003",
+                "node": {
+                  "appearsIn": [
+                    "NEWHOPE",
+                    "EMPIRE",
+                    "JEDI",
+                  ],
+                  "name": "Leia Organa",
+                },
+              },
+              {
+                "cursor": "2000",
+                "node": {
+                  "appearsIn": [
+                    "NEWHOPE",
+                    "EMPIRE",
+                    "JEDI",
+                  ],
+                  "name": "C-3PO",
+                },
+              },
+              {
+                "cursor": "2001",
+                "node": {
+                  "appearsIn": [
+                    "NEWHOPE",
+                    "EMPIRE",
+                    "JEDI",
+                  ],
+                  "name": "R2-D2",
+                },
+              },
+            ],
+            "pageInfo": {
+              "endCursor": "2001",
+              "hasNextPage": false,
+              "hasPreviousPage": false,
+              "startCursor": "1002",
+            },
+          },
+          "name": "Luke Skywalker",
+        },
+        "luke": {
+          "__typename": "Human",
+          "name": "Luke Skywalker",
+        },
+        "node": {
+          "__typename": "Human",
+        },
+      },
+    }
+  `);
 });
 
 test('Subscription work properly', async () => {
-  const t = createTypesFactory<unknown>();
-
-  const GraphQLSubscriptionObjectType = t.subscriptionType({
+  const GraphQLSubscriptionObject = Gql.Subscription({
     name: 'Subscription',
     fields: () => [
-      t.subscriptionField({
+      Gql.SubscriptionField({
         name: 'greetings',
-        type: t.NonNull(t.String),
+        type: Gql.NonNull(Gql.String),
         subscribe: async function* () {
           for (const greeting of ['hi', 'ola', 'sup', 'hello']) {
             yield greeting;
@@ -512,13 +618,13 @@ test('Subscription work properly', async () => {
   });
 
   const schema = buildGraphQLSchema({
-    query: t.queryType({
+    query: Gql.Query({
       name: 'Query',
       fields: () => [
-        t.field({ name: '_', type: t.Boolean, resolve: () => null }),
+        Gql.Field({ name: '_', type: Gql.Boolean, resolve: () => null }),
       ],
     }),
-    subscription: GraphQLSubscriptionObjectType,
+    subscription: GraphQLSubscriptionObject,
   });
 
   const result = await subscribe({
@@ -536,29 +642,29 @@ test('Subscription work properly', async () => {
     values.push(value);
   }
   expect(values).toMatchInlineSnapshot(`
-Array [
-  Object {
-    "data": Object {
-      "greetings": "hi",
-    },
-  },
-  Object {
-    "data": Object {
-      "greetings": "ola",
-    },
-  },
-  Object {
-    "data": Object {
-      "greetings": "sup",
-    },
-  },
-  Object {
-    "data": Object {
-      "greetings": "hello",
-    },
-  },
-]
-`);
+    [
+      {
+        "data": {
+          "greetings": "hi",
+        },
+      },
+      {
+        "data": {
+          "greetings": "ola",
+        },
+      },
+      {
+        "data": {
+          "greetings": "sup",
+        },
+      },
+      {
+        "data": {
+          "greetings": "hello",
+        },
+      },
+    ]
+  `);
 });
 
 function assertAsyncIterable(
