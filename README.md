@@ -28,7 +28,7 @@ Most importantly, we achieve all this _without_ having to:
 ### What does it look like?
 
 ```ts
-import { buildGraphQLSchema, id, string } from 'gqtx';
+import { Gql, buildGraphQLSchema } from 'gqtx';
 
 enum Role {
   Admin,
@@ -49,13 +49,13 @@ const users: User[] = [
 // We can declare the app context type once, and it will
 // be automatically inferred for all our resolvers
 declare module "gqtx" {
-  interface Context {
+  interface GqlContext {
     viewerId: number;
     users: User[];
   }
 }
 
-const RoleEnum = enumType({
+const RoleEnum = Gql.Enum({
   name: 'Role',
   description: 'A user role',
   values: [
@@ -64,23 +64,23 @@ const RoleEnum = enumType({
   ],
 });
 
-const UserType = objectType<User>({
+const UserType = Gql.Object<User>({
   name: 'User',
   description: 'A User',
   fields: () => [
-    field({ name: 'id', type: nonnull(id) }),
-    field({ name: 'role', type: nonnull(RoleEnum) }),
-    field({ name: 'name', type: nonnull(string) }),
+    Gql.Field({ name: 'id', type: Gql.NonNull(Gql.ID) }),
+    Gql.Field({ name: 'role', type: Gql.NonNull(RoleEnum) }),
+    Gql.Field({ name: 'name', type: Gql.NonNull(Gql.String) }),
   ],
 });
 
-const Query = queryType({
+const Query = Gql.Query({
   fields: [
-    field({
+    Gql.Field({
       name: 'userById',
       type: UserType,
       args: {
-        id: arg({ type: nonnullInput(id) }),
+        id: Gql.Arg({ type: Gql.NonNullInput(Gql.ID) }),
       },
       resolve: (_, args, ctx) => {
         // `args` is automatically inferred as { id: string }
