@@ -31,13 +31,15 @@ type ExtensionsMap = {
   };
 };
 
+type NoInfer<T> = [T][T extends any ? 0 : never];
+
 type ResolvePartialMandatory<Src, Arg, Out> = {
   resolve: (
     src: Src,
     args: TOfArgMap<ArgMap<Arg>>,
     ctx: GqlContext,
     info: graphql.GraphQLResolveInfo
-  ) => PromiseOrValue<Out>;
+  ) => PromiseOrValue<NoInfer<Out>>;
 };
 
 type ResolvePartialOptional<Src, Arg, Out> = {
@@ -46,7 +48,7 @@ type ResolvePartialOptional<Src, Arg, Out> = {
     args: TOfArgMap<ArgMap<Arg>>,
     ctx: GqlContext,
     info: graphql.GraphQLResolveInfo
-  ) => PromiseOrValue<Out>;
+  ) => PromiseOrValue<NoInfer<Out>>;
 };
 
 function builtInScalar<Src>(

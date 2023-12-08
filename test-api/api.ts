@@ -234,3 +234,25 @@ declare module '../src/types.js' {
     fields: () => [],
   });
 }
+
+{
+  type Foo = { foo: string };
+  type Bar = { bar: string };
+
+  const FooType = Gql.Object<Foo>({
+    name: 'Foo',
+    fields: () => [
+      Gql.Field({
+        name: 'foo',
+        type: Gql.NonNull(Gql.String),
+      }),
+    ],
+  });
+
+  Gql.Field({
+    name: 'getFoo',
+    type: Gql.NonNull(FooType),
+    // @ts-expect-error: Type 'Foo | Bar' is not assignable to type 'PromiseOrValue<Foo>'.
+    resolve: () => ({ bar: 'bar' } as Foo | Bar),
+  });
+}
