@@ -7,15 +7,26 @@
   "types": "index.d.ts",
   "exports": {
     ".": {
-      "import": "./index.js",
-      "require": "./cjs/index.cjs"
+      "import": {
+        "types": "./index.d.ts",
+        "default": "./index.js"
+      },
+      "require": {
+        "types": "./cjs/index.d.ts",
+        "default": "./cjs/index.cjs"
+      }
     },
     "./relay": {
-      "import": "./relay.js",
-      "require": "./cjs/relay.cjs"
+      "import": {
+        "types": "./relay.d.ts",
+        "default": "./relay.js"
+      },
+      "require": {
+        "types": "./cjs/relay.d.ts",
+        "default": "./cjs/relay.cjs"
+      }
     },
-    "./package.json": "./package.json",
-    "./": "./"
+    "./package.json": "./package.json"
   },
   "repository": {
     "type": "git",
