@@ -17,25 +17,28 @@ export function buildGraphQLSchema<RootSrc>(
   schema: Schema<RootSrc>
 ): graphql.GraphQLSchema {
   const typeMap = new Map();
+  const reverseTypeMap = new WeakMap();
   return new graphql.GraphQLSchema({
     query: toGraphQLOutputType<RootSrc>(
       schema.query,
-      typeMap
+      typeMap,
+      reverseTypeMap
     ) as graphql.GraphQLObjectType,
     mutation:
       schema.mutation &&
       (toGraphQLOutputType<RootSrc>(
         schema.mutation,
-        typeMap
+        typeMap,
+        reverseTypeMap
       ) as graphql.GraphQLObjectType<RootSrc>),
     subscription:
       schema.subscription &&
-      toGraphQLSubscriptionObject(schema.subscription, typeMap),
+      toGraphQLSubscriptionObject(schema.subscription, typeMap, reverseTypeMap),
     types:
       schema.types &&
       schema.types.map(
         (type) =>
-          toGraphQLOutputType(type, typeMap) as graphql.GraphQLObjectType<
+          toGraphQLOutputType(type, typeMap, reverseTypeMap) as graphql.GraphQLObjectType<
             any,
             any
           >
@@ -46,7 +49,8 @@ export function buildGraphQLSchema<RootSrc>(
 
 export function toGraphQLArgs<T>(
   args: ArgMap<T>,
-  typeMap: Map<AllType, graphql.GraphQLType>
+  typeMap: Map<AllType, graphql.GraphQLType>,
+  reverseTypeMap?: WeakMap<graphql.GraphQLType, AllType>
 ): graphql.GraphQLFieldConfigArgumentMap {
   const graphqlArgs: graphql.GraphQLFieldConfigArgumentMap = {};
 
@@ -54,7 +58,7 @@ export function toGraphQLArgs<T>(
     const arg: DefaultArgument<any> | Argument<any> = (args as any)[k];
 
     graphqlArgs[k] = {
-      type: toGraphQLInputType(arg.type, typeMap),
+      type: toGraphQLInputType(arg.type, typeMap, reverseTypeMap),
       description: arg.description,
       defaultValue: arg.default,
     };
@@ -65,7 +69,8 @@ export function toGraphQLArgs<T>(
 
 export function toGraphQLSubscriptionObject<RootSrc>(
   subscriptionObj: SubscriptionObjectType<RootSrc>,
-  typeMap: Map<AllType, graphql.GraphQLType>
+  typeMap: Map<AllType, graphql.GraphQLType>,
+  reverseTypeMap?: WeakMap<graphql.GraphQLType, AllType>
 ): graphql.GraphQLObjectType {
   return new graphql.GraphQLObjectType({
     name: subscriptionObj.name,
@@ -75,11 +80,11 @@ export function toGraphQLSubscriptionObject<RootSrc>(
 
       subscriptionObj.fields().forEach((field) => {
         gqlFieldConfig[field.name] = {
-          type: toGraphQLOutputType(field.type, typeMap),
+          type: toGraphQLOutputType(field.type, typeMap, reverseTypeMap),
           description: field.description,
           subscribe: field.subscribe,
           resolve: field.resolve,
-          args: toGraphQLArgs(field.args, typeMap),
+          args: toGraphQLArgs(field.args, typeMap, reverseTypeMap),
           deprecationReason: field.deprecationReason,
         };
       });
@@ -91,7 +96,8 @@ export function toGraphQLSubscriptionObject<RootSrc>(
 
 export function toGraphQLInputType(
   t: InputType<any>,
-  typeMap: Map<AllType, graphql.GraphQLType>
+  typeMap: Map<AllType, graphql.GraphQLType>,
+  reverseTypeMap?: WeakMap<graphql.GraphQLType, AllType>
 ): graphql.GraphQLInputType {
   const found = typeMap.get(t);
 
@@ -102,11 +108,11 @@ export function toGraphQLInputType(
   switch (t.kind) {
     case 'Scalar':
     case 'Enum':
-      return toGraphQLOutputType(t, typeMap) as graphql.GraphQLInputType;
+      return toGraphQLOutputType(t, typeMap, reverseTypeMap) as graphql.GraphQLInputType;
     case 'NonNullInput':
-      return new graphql.GraphQLNonNull(toGraphQLInputType(t.ofType, typeMap));
+      return new graphql.GraphQLNonNull(toGraphQLInputType(t.ofType, typeMap, reverseTypeMap));
     case 'ListInput':
-      return new graphql.GraphQLList(toGraphQLInputType(t.ofType, typeMap));
+      return new graphql.GraphQLList(toGraphQLInputType(t.ofType, typeMap, reverseTypeMap));
     case 'InputObject':
       const fields = t.fieldsFn();
 
@@ -116,7 +122,7 @@ export function toGraphQLInputType(
         Object.keys(fields).forEach((k) => {
           const field = (fields as any)[k];
           gqlFieldConfig[k] = {
-            type: toGraphQLInputType(field.type, typeMap),
+            type: toGraphQLInputType(field.type, typeMap, reverseTypeMap),
             description: field.description,
             defaultValue: field.defaultValue,
             deprecationReason: field.deprecationReason,
@@ -133,13 +139,15 @@ export function toGraphQLInputType(
       });
 
       typeMap.set(t, obj);
+      reverseTypeMap?.set(obj, t);
       return obj;
   }
 }
 
 export function toGraphQLOutputType<Src>(
   t: OutputType<any>,
-  typeMap: Map<AllType, graphql.GraphQLType>
+  typeMap: Map<AllType, graphql.GraphQLType>,
+  reverseTypeMap?: WeakMap<graphql.GraphQLType, AllType>
 ): graphql.GraphQLOutputType {
   const found = typeMap.get(t);
 
@@ -159,6 +167,7 @@ export function toGraphQLOutputType<Src>(
         });
       }
       typeMap.set(t, scalar);
+      reverseTypeMap?.set(scalar, t);
       return scalar;
     case 'Enum':
       const enumT = new graphql.GraphQLEnumType({
@@ -174,11 +183,12 @@ export function toGraphQLOutputType<Src>(
         }, {} as { [key: string]: any }),
       });
       typeMap.set(t, enumT);
+      reverseTypeMap?.set(enumT, t);
       return enumT;
     case 'NonNull':
-      return new graphql.GraphQLNonNull(toGraphQLOutputType(t.ofType, typeMap));
+      return new graphql.GraphQLNonNull(toGraphQLOutputType(t.ofType, typeMap, reverseTypeMap));
     case 'List':
-      return new graphql.GraphQLList(toGraphQLOutputType(t.ofType, typeMap));
+      return new graphql.GraphQLList(toGraphQLOutputType(t.ofType, typeMap, reverseTypeMap));
     case 'ObjectType':
       const obj = new graphql.GraphQLObjectType({
         name: t.name,
@@ -186,7 +196,7 @@ export function toGraphQLOutputType<Src>(
         interfaces: (typeof t.interfaces === 'function'
           ? t.interfaces()
           : t.interfaces
-        ).map((intf) => toGraphQLOutputType(intf, typeMap)) as any,
+        ).map((intf) => toGraphQLOutputType(intf, typeMap, reverseTypeMap)) as any,
         isTypeOf: t.isTypeOf,
         fields: () => {
           const fields = t.fieldsFn();
@@ -195,10 +205,10 @@ export function toGraphQLOutputType<Src>(
 
           fields.forEach((field) => {
             gqlFieldConfig[field.name] = {
-              type: toGraphQLOutputType(field.type, typeMap),
+              type: toGraphQLOutputType(field.type, typeMap, reverseTypeMap),
               description: field.description,
               resolve: field.resolve,
-              args: toGraphQLArgs(field.args, typeMap),
+              args: toGraphQLArgs(field.args, typeMap, reverseTypeMap),
               deprecationReason: field.deprecationReason,
               extensions: field.extensions,
             } as graphql.GraphQLFieldConfig<unknown, any>;
@@ -210,6 +220,7 @@ export function toGraphQLOutputType<Src>(
       });
 
       typeMap.set(t, obj);
+      reverseTypeMap?.set(obj, t);
       return obj;
 
     case 'Union':
@@ -217,16 +228,10 @@ export function toGraphQLOutputType<Src>(
       const union = new graphql.GraphQLUnionType({
         name: t.name,
         description: t.description,
-        types: types.map((t) => toGraphQLOutputType(t, typeMap)) as any,
+        types: types.map((t) => toGraphQLOutputType(t, typeMap, reverseTypeMap)) as any,
         resolveType: t.resolveType
           ? async (src, ctx, info, abstractType) => {
-              let ourType;
-              for (const [t, graphqlType] of typeMap.entries()) {
-                if (graphqlType === abstractType) {
-                  ourType = t;
-                  break;
-                }
-              }
+              const ourType = reverseTypeMap?.get(abstractType);
               return t.resolveType?.(
                 src,
                 ctx,
@@ -238,6 +243,7 @@ export function toGraphQLOutputType<Src>(
       });
 
       typeMap.set(t, union);
+      reverseTypeMap?.set(union, t);
       return union;
     case 'Interface':
       const intf = new graphql.GraphQLInterfaceType({
@@ -249,10 +255,10 @@ export function toGraphQLOutputType<Src>(
 
           fields.forEach((field) => {
             result[field.name] = {
-              type: toGraphQLOutputType(field.type, typeMap),
+              type: toGraphQLOutputType(field.type, typeMap, reverseTypeMap),
               description: field.description,
               deprecationReason: field.deprecationReason,
-              args: field.args && toGraphQLArgs(field.args, typeMap),
+              args: field.args && toGraphQLArgs(field.args, typeMap, reverseTypeMap),
             };
           });
 
@@ -261,16 +267,10 @@ export function toGraphQLOutputType<Src>(
         interfaces: (typeof t.interfaces === 'function'
           ? t.interfaces()
           : t.interfaces
-        ).map((intf) => toGraphQLOutputType(intf, typeMap)) as any,
+        ).map((intf) => toGraphQLOutputType(intf, typeMap, reverseTypeMap)) as any,
         resolveType: t.resolveType
           ? async (src, ctx, info, abstractType) => {
-              let ourType;
-              for (const [t, graphqlType] of typeMap.entries()) {
-                if (graphqlType === abstractType) {
-                  ourType = t;
-                  break;
-                }
-              }
+              const ourType = reverseTypeMap?.get(abstractType);
               return t.resolveType?.(
                 src,
                 ctx,
@@ -282,6 +282,7 @@ export function toGraphQLOutputType<Src>(
       });
 
       typeMap.set(t, intf);
+      reverseTypeMap?.set(intf, t);
       return intf;
   }
 }
